@@ -1,0 +1,46 @@
+#FRAMEWORK FLASK
+Flask
+Flask-Limiter
+idna
+itsdangerous
+Jinja2
+limits
+MarkupSafe
+typing_extensions
+Werkzeug
+wrapt
+blinker
+charset-normalizer
+click
+colorama
+Deprecated
+dnspython
+ordered-set
+packaging
+pillow
+requests
+
+# FORMS
+Flask-WTF
+WTForms
+
+# EMAIL
+email-validator
+Flask-Mail
+
+# CONECCIÓN DB
+mysql-connector-python
+
+# UTILIDADES
+python-dotenv
+python-dateutil
+reportlab
+requests
+pandas
+
+# SEGURIDAD
+Flask-JWT-Extended
+PyJWT
+
+qrcode
+pyotp
