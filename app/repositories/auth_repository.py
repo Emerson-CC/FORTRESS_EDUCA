@@ -29,11 +29,18 @@ def sp_validar_data_user(username):
         (username,)
     )
 
-def sp_validar_login(username, password):
+def sp_validar_data_autenticacion(username):
     return db.call_procedure(
-        "sp_tbl_usuario_validar_login",
-        (username, password)
+        "sp_obtener_datos_autenticacion",
+        (username,)
     )
+    
+def sp_exito_login(username):
+        return db.call_procedure(
+        "sp_registrar_exito_login",
+        (username,)
+    )
+
 
 def sp_auditoria_sesion(id_usuario, ip, evento, navegador):
     return db.call_procedure(
@@ -59,6 +66,7 @@ def sp_cerrar_sesion(jti):
     )
 
 
+
 # ====================================================================================================================================================
 #                                           PAGINA VERIFY_MFA.HTML
 # ====================================================================================================================================================
@@ -71,6 +79,30 @@ def sp_obtener_mfa_secret(id_usuario):
         (id_usuario,),
         commit=False
     )
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA CONFIG_MFA.HTML
+# ====================================================================================================================================================
+
+def sp_guardar_mfa_secret_temp(id_usuario, secret):
+    """Guarda el secret temporal mientras el usuario no ha confirmado el código"""
+    return db.call_procedure(
+        "sp_tbl_usuario_guardar_mfa_secret_temp",
+        (id_usuario, secret),
+        commit=False
+    )
+
+def sp_activar_mfa(id_usuario):
+    """Mueve el secret temporal al campo definitivo y activa 2FA"""
+    return db.call_procedure(
+        "sp_tbl_usuario_activar_mfa",
+        (id_usuario,),
+        commit=False
+    )
+
+
 
 # ====================================================================================================================================================
 #                                           PAGINA REGISTER.HTML
@@ -114,6 +146,8 @@ def sp_registrar_usuario(data):
         commit=False
     )
     
+    
+    
 # ====================================================================================================================================================
 #                                           PAGINA RECOVER_PASSWORD.HTML
 # ====================================================================================================================================================
@@ -128,10 +162,10 @@ def sp_obtener_email_por_username(username):
     return result[0]["Email"] if result else None
 
 
-def sp_actualizar_contraseña(username, nuevo_hash, nuevo_salt, ip, user_agent):
+def sp_actualizar_contraseña(username, nuevo_hash, ip, user_agent):
     """Actualiza el hash y salt de la contraseña del usuario."""
     return db.call_procedure(
         "sp_usuario_recuperar_contraseña",
-        (username, nuevo_hash, nuevo_salt, ip, user_agent),
+        (username, nuevo_hash, ip, user_agent),
         commit=False
     )

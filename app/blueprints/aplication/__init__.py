@@ -1,1 +1,1 @@
-from .aplication_routes import aplication_bp
+from .routes import aplication_bp

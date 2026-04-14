@@ -1,11 +1,8 @@
 import re
-import string
 
 class regex:
-    """
-    Clase que centraliza todas las validaciones con expresiones regulares
-    para ser usada de forma segura y reutilizable en toda la aplicación.
-    """
+    """Clase para validaciones con expresiones regulares"""
+    
     # VALIDACIONES DE NOMBRES/APELLIDOS
     @staticmethod
     def formato_nombre_apellido(valor: str) -> bool:

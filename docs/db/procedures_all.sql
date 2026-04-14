@@ -2577,7 +2577,6 @@ CREATE PROCEDURE sp_validar_data_user(
 BEGIN
     SELECT 
         u.ID_Usuario,
-        u.Password_Salt,
         u.Doble_Factor_Activo,
         u.FK_ID_Rol,
 
@@ -2740,7 +2739,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_usuario_recuperar_contraseña(
     IN p_username VARCHAR(100),
     IN p_nuevo_hash VARBINARY(32),
-    IN p_nuevo_salt VARBINARY(16),
     IN p_ip VARCHAR(50),
     IN p_user_agent VARCHAR(255)
 )
@@ -2756,7 +2754,6 @@ BEGIN
 
     UPDATE TBL_USUARIO
     SET Contraseña_Hash = p_nuevo_hash,
-        Password_Salt   = p_nuevo_salt,
         Ultimo_Cambio_Contraseña = CURRENT_TIMESTAMP
     WHERE Nombre_Usuario = p_username;
 
@@ -3019,7 +3016,6 @@ CREATE PROCEDURE sp_registrar_usuario_completo(
 
     -- USUARIO
     IN p_Nombre_Usuario VARCHAR(50),
-    IN p_password_salt VARBINARY(16),
     IN p_password_hash VARBINARY(32),
     IN p_FK_ID_Rol TINYINT,
 

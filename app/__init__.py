@@ -9,10 +9,10 @@ from app.settings import Config_Security, Config_JWT, Config_Email, Config_Sessi
 load_dotenv()
 
 # Importación de blueprints
-from app.blueprints.home.home_routes import home_bp
-from app.blueprints.auth.auth_routes import auth_bp
-from app.blueprints.aplication.aplication_routes import aplication_bp
-from app.blueprints.admin.admin_routes import admin_bp
+from app.blueprints.home.routes import home_bp
+from app.blueprints.auth.routes import auth_bp
+from app.blueprints.aplication.routes import aplication_bp
+from app.blueprints.admin.routes import admin_bp
 
 # Funciones para el manejo de la sesion
 from app.security.jwt_controller import handle_unauthorized_error, handle_expired_error, handle_invalid_error

@@ -7,10 +7,10 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 from app.utils.validation_utils import regex
 
 # ====================================================================================================================================================
-#                                           PAGINA LOGIN.HTML
+#                                           PAGINA LOGIN_USER.HTML
 # ====================================================================================================================================================
 
-class LoginForm(FlaskForm):
+class LoginUserForm(FlaskForm):
 
     username = StringField(
         "Usuario",
@@ -22,7 +22,48 @@ class LoginForm(FlaskForm):
         validators = [DataRequired(), Length(min=6, max=255)]
     )
     
+
+
+# ====================================================================================================================================================
+#                                           PAGINA LOGIN_ADMIN.HTML
+# ====================================================================================================================================================
+
+class LoginAdminForm(FlaskForm):
+
+    username_admin = StringField(
+        "Usuario",
+        validators = [DataRequired(), Length(min=3, max=100), Email()]
+    )
     
+    password = PasswordField(
+        "Contraseña",
+        validators = [DataRequired(), Length(min=6, max=255)]
+    )
+    
+
+
+# ====================================================================================================================================================
+#                                           PAGINA CONFIG_MFA.HTML
+# ====================================================================================================================================================
+
+class FormVerificarMFA(FlaskForm):
+    """Formulario para confirmar un código TOTP al activar o autenticar 2FA."""
+
+    codigo_mfa = StringField(
+        "Código de verificación",
+        validators = [
+            DataRequired(message="Ingrese el código de 6 dígitos."), 
+            Length(min=6, max=6, message="El código debe tener exactamente 6 dígitos.")
+        ]
+    )
+    
+    def validate_codigo_mfa(self, field):
+        # regex.codigo_mfa retorna True si es válido (6 dígitos), False si es inválido
+        if not regex.codigo_mfa(field.data):
+            raise ValidationError("El código debe ser exactamente 6 dígitos numéricos.")
+
+
+
 # ====================================================================================================================================================
 #                                           PAGINA VERIFY_MFA.HTML
 # ====================================================================================================================================================

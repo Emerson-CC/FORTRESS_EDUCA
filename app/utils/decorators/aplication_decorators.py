@@ -18,10 +18,10 @@ def _get_role_id(nombre_rol):
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # 1. Valida firma y expiración del JWT (igual que antes) 
+        # Valida firma y expiración del JWT (igual que antes) 
         verify_jwt_in_request()
         
-        # 2. Verifica que la sesión siga activa en BD
+        # Verifica que la sesión siga activa en BD
         claims = get_jwt()
         jti = claims.get("jti", "")
         
@@ -29,7 +29,7 @@ def login_required(f):
             resultado = sp_verificar_jti(jti)
             # sp_verificar_jti retorna [{"activo": 0}] si fue cerrada manualmente
             if not resultado or resultado[0].get("activo", 0) == 0:
-                response = make_response(redirect(url_for("home.login")))
+                response = make_response(redirect(url_for("auth.login_user")))
                 unset_jwt_cookies(response)
                 session.clear()
                 flash("Su sesión actual ha sido cerrada. Si no ha sido usted, realice cambio de contraseña.", "danger")
@@ -45,7 +45,7 @@ def acudiente_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash("Debe iniciar sesión para continuar", "warning")
-            return redirect(url_for("home.login"))
+            return redirect(url_for("auth.login_user"))
 
         acudiente_id = _get_role_id("Acudiente")
 
@@ -88,6 +88,6 @@ def student_required(f):
 
         # Sin estudiante: redirigir a registro
         flash("Debe registrar al estudiante a su cargo para continuar.", "warning")
-        return redirect(url_for("dashboard.dashboard_register_student"))
+        return redirect(url_for("aplication.register_student"))
 
     return decorated_function

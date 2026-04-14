@@ -228,11 +228,11 @@ def sp_estudiante_existe(num_doc_estudiante, id_usuario):
     
 # CONTRASEÑA
  
-def sp_cambiar_contraseña_perfil(id_usuario, nuevo_hash, nuevo_salt, ip, user_agent):
+def sp_cambiar_contraseña_perfil(id_usuario, nuevo_hash, ip, user_agent):
     """Valida la contraseña actual y actualiza a la nueva"""
     return db.call_procedure(
         "sp_tbl_usuario_cambiar_contraseña_perfil",
-        (id_usuario, nuevo_hash, nuevo_salt, ip, user_agent),
+        (id_usuario, nuevo_hash, ip, user_agent),
         commit=False
     )
 
@@ -241,6 +241,20 @@ def sp_validar_data_user(username):
         "sp_validar_data_user",
         (username,)
     )
+        
+
+def sp_validar_data_autenticacion(username):
+    return db.call_procedure(
+        "sp_obtener_datos_autenticacion",
+        (username,)
+    )
+    
+def sp_exito_login(username):
+        return db.call_procedure(
+        "sp_registrar_exito_login",
+        (username,)
+    )
+
         
 # MFA
 

@@ -567,7 +567,7 @@
             const fechaInput = document.getElementById('fechaNacimiento');
             
             if (form && fechaInput) {
-                // ✅ NUEVO: Limpiar campo de fecha al recargar
+                // NUEVO: Limpiar campo de fecha al recargar
                 if (performance.navigation.type === 1) {
                     console.log('[REGISTRO] Limpiando campo de fecha...');
                     fechaInput.value = '';  // Vaciar el valor

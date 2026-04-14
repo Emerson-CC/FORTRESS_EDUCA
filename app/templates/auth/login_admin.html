@@ -48,12 +48,14 @@
                     Acceso restringido a <strong>funcionarios educativos autorizados</strong>.
                 </div>
 
-                <form method="POST" action="{{ url_for('admin.admin_dashboard') }}">
+                <form method="POST" action="{{ url_for('auth.login_admin') }}"> 
+                    {{ form.hidden_tag() }}
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Credencial Institucional</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-id-badge"></i></span>
-                            <input type="text" class="form-control" id="loginAdmin"
+                            <input type="text" class="form-control" id="username_admin" name="username_admin"
                                 placeholder="ID Funcionario / Credencial">
                         </div>
                     </div>
@@ -61,10 +63,25 @@
                         <label class="form-label fw-bold">Contraseña Institucional</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-key"></i></span>
-                            <input type="password" class="form-control" id="loginAdminPass"
+                            <input type="password" class="form-control" id="password" name="password"
                                 placeholder="Clave de acceso institucional">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Implementación de recaptcha -->
+                    {% if mostrar_recaptcha %}
+                    <div class="mb-3">
+                        <div class="alert alert-warning small py-2">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Por seguridad, confirme que no es un robot.
+                        </div>
+                        <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                    </div>
+                    {% endif %}
+
                     <div class="mb-3">
                         <button type="submit" class="btn btn-dark w-100 btn-lg mt-3" id="btnLoginAdmin">
                             <i class="fas fa-shield-alt me-2"></i>Acceder al Panel Administrativo

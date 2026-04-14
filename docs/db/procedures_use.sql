@@ -96,7 +96,6 @@ CREATE PROCEDURE sp_validar_data_user(
 BEGIN
     SELECT 
         u.ID_Usuario,
-        u.Password_Salt,
         u.Doble_Factor_Activo,
         u.FK_ID_Rol,
 
@@ -119,58 +118,35 @@ DELIMITER ;
 
 -- --------------------------------------------------------
 
-DROP PROCEDURE IF EXISTS sp_tbl_usuario_validar_login;
+DROP PROCEDURE IF EXISTS sp_obtener_datos_autenticacion;
 
 DELIMITER $$
-CREATE PROCEDURE sp_tbl_usuario_validar_login(
-    IN p_nombre_usuario VARCHAR(50),
-    IN p_password_hash VARBINARY(32)
+CREATE PROCEDURE sp_obtener_datos_autenticacion(
+    IN p_nombre_usuario VARCHAR(50)
 )
 BEGIN
-    DECLARE v_id_usuario INT;
-    DECLARE v_hash VARBINARY(32);
-    DECLARE v_resultado VARCHAR(10);
-
-    -- Obtener datos del usuario
-    SELECT ID_Usuario, Contraseña_Hash
-    INTO v_id_usuario, v_hash
+    SELECT 
+        ID_Usuario, 
+        Contraseña_Hash, 
+        Intentos_Fallidos
     FROM TBL_USUARIO
     WHERE Nombre_Usuario = p_nombre_usuario
     LIMIT 1;
+END $$
+DELIMITER ;
 
-    -- Validar existencia del usuario
-    IF v_id_usuario IS NULL THEN
-        SET v_resultado = 'FAILED';
-    ELSE
-        -- Comparar hash
-        IF v_hash = p_password_hash THEN
 
-            -- Login correcto
-            UPDATE TBL_USUARIO
-            SET 
-                Ultimo_Login = NOW(),
-                Intentos_Fallidos = 0
-            WHERE ID_Usuario = v_id_usuario;
+-- --------------------------------------------------------
 
-            SET v_resultado = 'SUCCESS';
 
-        ELSE
+DROP PROCEDURE IF EXISTS sp_registrar_exito_login;
 
-            -- Login incorrecto
-            UPDATE TBL_USUARIO
-            SET 
-                Intentos_Fallidos = IFNULL(Intentos_Fallidos,0) + 1
-            WHERE ID_Usuario = v_id_usuario;
-
-            SET v_resultado = 'FAILED';
-
-        END IF;
-    END IF;
-
-    -- Retorno del resultado
-    SELECT 
-        v_id_usuario AS ID_Usuario,
-        v_resultado AS Resultado;
+DELIMITER $$
+CREATE PROCEDURE sp_registrar_exito_login(IN p_id_usuario INT)
+BEGIN
+    UPDATE TBL_USUARIO
+    SET Ultimo_Login = NOW(), Intentos_Fallidos = 0
+    WHERE ID_Usuario = p_id_usuario;
 END $$
 DELIMITER ;
 
@@ -332,8 +308,7 @@ CREATE PROCEDURE sp_registrar_usuario_completo(
 
     -- USUARIO
     IN p_Nombre_Usuario VARCHAR(50),
-    IN p_password_salt VARBINARY(16),
-    IN p_password_hash VARBINARY(32),
+    IN p_password_hash VARCHAR(255),
     IN p_FK_ID_Rol TINYINT,
 
     -- AUDITORÍA
@@ -392,14 +367,14 @@ BEGIN
 
     -- USUARIO
     INSERT INTO TBL_USUARIO (
-        Nombre_Usuario, Password_Salt, Contraseña_Hash, 
+        Nombre_Usuario, Contraseña_Hash, 
         Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos,
         Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion,
         MFA_Secret, MFA_Secret_Temp, Notificaciones_Email,
         Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona,
         FK_ID_Rol, Estado_Usuario
     ) VALUES (
-        p_Nombre_Usuario, p_password_salt, p_password_hash,
+        p_Nombre_Usuario, p_password_hash,
         NULL, NULL, 0,
         CURRENT_TIMESTAMP, 'INACTIVE', NULL,
         NULL, NULL, 0,
@@ -451,8 +426,7 @@ DROP PROCEDURE IF EXISTS sp_usuario_recuperar_contraseña;
 DELIMITER $$
 CREATE PROCEDURE sp_usuario_recuperar_contraseña(
     IN p_username VARCHAR(100),
-    IN p_nuevo_hash VARBINARY(32),
-    IN p_nuevo_salt VARBINARY(16),
+    IN p_nuevo_hash VARCHAR(255),
     IN p_ip VARCHAR(50),
     IN p_user_agent VARCHAR(255)
 )
@@ -467,7 +441,6 @@ BEGIN
 
     UPDATE TBL_USUARIO
     SET Contraseña_Hash = p_nuevo_hash,
-        Password_Salt   = p_nuevo_salt,
         Ultimo_Cambio_Contraseña = CURRENT_TIMESTAMP
     WHERE Nombre_Usuario = p_username;
 
@@ -1811,8 +1784,7 @@ DROP PROCEDURE IF EXISTS sp_tbl_usuario_cambiar_contraseña_perfil;
 DELIMITER $$
 CREATE PROCEDURE sp_tbl_usuario_cambiar_contraseña_perfil(
     IN p_id_usuario INT,
-    IN p_nuevo_hash VARBINARY(32),
-    IN p_nuevo_salt VARBINARY(16),
+    IN p_nuevo_hash VARCHAR(255),
     IN p_ip VARCHAR(50),
     IN p_user_agent VARCHAR(255)
 )
@@ -1823,7 +1795,6 @@ BEGIN
         -- Actualización de credenciales
         UPDATE TBL_USUARIO
         SET Contraseña_Hash = p_nuevo_hash,
-            Password_Salt = p_nuevo_salt,
             Ultimo_Cambio_Contraseña = CURRENT_TIMESTAMP
         WHERE ID_Usuario = p_id_usuario;
 

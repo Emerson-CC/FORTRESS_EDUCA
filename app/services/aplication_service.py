@@ -1048,7 +1048,7 @@ class Security_Settings_Service:
 
                 # Generar nuevo salt + hash
                 nuevo_salt = generar_salt()
-                nuevo_hash = hashear_contraseña(nueva_contraseña, nuevo_salt)
+                nuevo_hash = hashear_contraseña(nueva_contraseña, "user", nuevo_salt)
 
                 # Llamar SP para cambiar contraseña
                 sp_cambiar_contraseña_perfil(id_usuario, nuevo_hash, nuevo_salt, ip, user_agent)
@@ -1072,7 +1072,7 @@ class Security_Settings_Service:
         
     def _validar_usuario(self, username, password, salt):
         try:
-            hash_password = hashear_contraseña(password, salt)
+            hash_password = hashear_contraseña(password, "user", salt)
             result = sp_validar_login(username, hash_password)
 
             if not result:
@@ -1459,7 +1459,7 @@ class General_Settings_Service:
 
     def _validar_usuario(self, username, password, salt):
         try:
-            hash_password = hashear_contraseña(password, salt)
+            hash_password = hashear_contraseña(password, "user", salt)
             result = sp_validar_login(username, hash_password)
             # Retorna True solo si el resultado es SUCCESS
             return result and result[0].get("Resultado") == "SUCCESS"

@@ -1,1 +1,0 @@
-# FORTRESS_EDUCA
