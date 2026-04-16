@@ -50,13 +50,6 @@ def sp_ticket_crear(data):
         commit=False
     )
 
-def sp_documento_ticket_insertar(data):
-    return db.call_procedure(
-        "sp_documento_ticket_insertar",
-        data,
-        commit=False
-    )
-
 def sp_ticket_obtener_ultimo_numero():
     """Retorna el número secuencial del último ticket creado"""
     resultado = db.call_procedure("sp_ticket_obtener_ultimo_numero", ())
@@ -108,7 +101,7 @@ def sp_tipo_documento_consultar():
 
 def sp_documento_ticket_insertar(id_ticket: str, id_tipo_doc: int, archivo: bytes, nombre_original: str):
     """Inserta un nuevo documento asociado a un ticket."""
-    db.call_procedure("sp_tbl_documento_ticket_insertar", (
+    db.call_procedure("sp_documento_ticket_insertar", (
         id_ticket,
         id_tipo_doc,
         archivo,

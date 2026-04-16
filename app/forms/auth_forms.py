@@ -394,6 +394,15 @@ class NuevacontraseñaForm(FlaskForm):
         validators = [DataRequired(), EqualTo("password", message = "Las contraseñas no coinciden.")]
     )
 
+    # def validate_username(self, field):
+    #     """Validadro personalizado para email"""
+    #     valor = field.data.strip() if field.data else ""
+        
+    #     if not valor:
+    #         raise ValidationError("El teléfono no puede estar vacío.")
+        
+    #     if not regex.formato_email(valor):
+    #         raise ValidationError
 
     def validate_password(self, field):
         """Validador personalizado para contraseña"""

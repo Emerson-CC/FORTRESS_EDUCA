@@ -11,13 +11,8 @@ class regex:
 
     # CORREOS ELECTRÓNICOS
     @staticmethod
-    def formato_email_personal(valor: str) -> bool:
-        return bool(re.fullmatch(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+){1}$", valor.strip()))
-
-    @staticmethod
-    def formato_email_empresarial(valor: str) -> bool:
-        return bool(re.fullmatch(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,6}){2}$", valor.strip()))
-
+    def formato_email(valor: str) -> bool:
+        return bool(re.fullmatch(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,6}){1,2}$", valor.strip()))
 
     # NÚMEROS TELEFÓNICOS
     @staticmethod

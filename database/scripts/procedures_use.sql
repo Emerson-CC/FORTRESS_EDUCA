@@ -343,7 +343,7 @@ BEGIN
     CALL sp_insertar_auditoria(
         'TBL_PERSONA', 'CREATE', CAST(v_ID_Persona AS CHAR),
         NULL, JSON_OBJECT('Doc', p_Num_Doc_Persona, 'Nombre', p_Primer_Nombre), 
-        p_IP, p_User_Agent, 'SYSTEM'
+        p_IP, p_User_Agent, 1
     );
 
     -- DATOS ADICIONALES
@@ -362,7 +362,7 @@ BEGIN
     CALL sp_insertar_auditoria(
         'TBL_DATOS_ADICIONALES', 'CREATE', CAST(v_ID_Datos_Adicionales AS CHAR),
         NULL, JSON_OBJECT('Email', p_Email, 'Tel', p_Telefono), 
-        p_IP, p_User_Agent, 'SYSTEM'
+        p_IP, p_User_Agent, 1
     );
 
     -- USUARIO
@@ -387,7 +387,7 @@ BEGIN
     CALL sp_insertar_auditoria(
         'TBL_USUARIO', 'CREATE', CAST(v_ID_Usuario AS CHAR),
         NULL, JSON_OBJECT('Username', p_Nombre_Usuario), 
-        p_IP, p_User_Agent, 'SYSTEM'
+        p_IP, p_User_Agent, 1
     );
 
     COMMIT;
@@ -452,7 +452,7 @@ BEGIN
         JSON_OBJECT('evento','password_actualizado'),
         p_ip,
         p_user_agent,
-        5157341
+        1
     );
 
     COMMIT;
@@ -465,7 +465,7 @@ DELIMITER ;
 
 
 -- ====================================================================================================================================================
---                                          SPs PARA DASHBOARD_USER
+--                                          SPs PARA APLICATION
 -- ====================================================================================================================================================
 
 -- ====================================================================================================================================================
@@ -807,21 +807,16 @@ BEGIN
         t.Titulo_Ticket,
         t.Fecha_Creacion,
         t.Fecha_Cierre,
-        et.Nombre_Estado,
-        g.Nombre_Grado,
-        CONCAT(p.Primer_Nombre, ' ', COALESCE(p.Segundo_Nombre, ''), ' ', p.Primer_Apellido, ' ', COALESCE(p.Segundo_Apellido, '')) AS Nombre_Estudiante,
-        COALESCE(c.Nombre_Colegio, 'Sin asignar') AS Nombre_Colegio
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-    INNER JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
-    INNER JOIN TBL_PERSONA p ON est.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_GRADO g ON est.FK_ID_Grado_Actual = g.ID_Grado
-    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-    LEFT JOIN TBL_COLEGIO c ON cu.FK_ID_Colegio = c.ID_Colegio
+        t.Nombre_Estado,
 
-    WHERE t.FK_ID_Usuario_Creador = p_id_usuario 
-        AND t.Estado_Ticket = 1
-        AND et.Estado_Final = 1
+        CONCAT(e.Primer_Nombre, ' ', e.Primer_Apellido) AS Nombre_Estudiante,
+        e.Grado_Actual
+
+    FROM vw_ticket_base t
+    INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
+
+    WHERE t.FK_ID_Usuario_Creador = p_id_usuario
+      AND t.Estado_Final = 1
     ORDER BY t.Fecha_Creacion DESC;
 END $$
 DELIMITER ;
@@ -841,56 +836,29 @@ CREATE PROCEDURE sp_tbl_ticket_consultar_detalle(
 )
 BEGIN
     SELECT
-        t.ID_Ticket,
-        t.Titulo_Ticket,
-        t.Descripcion_Ticket,
-        t.Fecha_Creacion,
-        t.Fecha_Cierre,
-        t.Puntaje_Prioridad,
+        t.*,
 
-        et.Nombre_Estado,
-        et.Estado_Final,
+        CONCAT(e.Primer_Nombre, ' ', e.Primer_Apellido) AS Nombre_Estudiante,
+        e.Grado_Actual,
+        e.Grado_Proximo,
 
-        ta.Nombre_Afectacion,
-        ta.Nivel_Prioridad_TC,
-
-        CONCAT(pe.Primer_Nombre, ' ', COALESCE(pe.Segundo_Nombre, ''), ' ', pe.Primer_Apellido, ' ', COALESCE(pe.Segundo_Apellido, '')) AS Nombre_Estudiante,
-        g_act.Nombre_Grado AS Grado_Actual,
-        g_prox.Nombre_Grado AS Grado_Proximo,
-
-        j.Nombre_Jornada AS Jornada_Preferencia,
-        COALESCE(cp.Nombre_Colegio, 'Sin preferencia') AS Colegio_Preferencia,
-
-        COALESCE(c_asig.Nombre_Colegio, 'Sin asignar') AS Colegio_Asignado,
-
-        CONCAT(pt.Primer_Nombre, ' ', pt.Primer_Apellido) AS Nombre_Tecnico,
-
+        j.Nombre_Jornada,
         b.Nombre_Barrio,
-        tr.Nombre_Tiempo AS Tiempo_Residencia
 
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-    INNER JOIN TBL_TIPO_AFECTACION ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afectacion
-    INNER JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
-    INNER JOIN TBL_PERSONA pe ON est.FK_ID_Persona = pe.ID_Persona
-    INNER JOIN TBL_GRADO g_act ON est.FK_ID_Grado_Actual = g_act.ID_Grado
-    LEFT  JOIN TBL_GRADO g_prox ON est.FK_ID_Gardo_Proximo = g_prox.ID_Grado
-    INNER JOIN TBL_JORNADA j ON t.FK_ID_Jornada_Preferencia = j.ID_Jornada
-    LEFT  JOIN TBL_COLEGIO cp ON t.FK_ID_Colegio_Preferencia = cp.ID_Colegio
-    LEFT  JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-    LEFT  JOIN TBL_COLEGIO c_asig ON cu.FK_ID_Colegio = c_asig.ID_Colegio
-    LEFT  JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
-    LEFT  JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
-    INNER JOIN TBL_BARRIO b ON t.FK_ID_Barrio = b.ID_Barrio
-    LEFT  JOIN TBL_TIEMPO_RESIDENCIA tr ON t.FK_ID_Tiempo_Residencia = tr.ID_Tiempo_Residencia
+        tr.Nombre_Tiempo
+
+    FROM vw_ticket_base t
+    INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
+    INNER JOIN TBL_TICKET t_real ON t.ID_Ticket = t_real.ID_Ticket
+
+    INNER JOIN TBL_JORNADA j ON t_real.FK_ID_Jornada_Preferencia = j.ID_Jornada
+    INNER JOIN TBL_BARRIO b ON t_real.FK_ID_Barrio = b.ID_Barrio
+    LEFT JOIN TBL_TIEMPO_RESIDENCIA tr ON t_real.FK_ID_Tiempo_Residencia = tr.ID_Tiempo_Residencia
 
     WHERE t.ID_Ticket = p_id_ticket
-      AND t.FK_ID_Usuario_Creador = p_id_usuario
-      AND t.Estado_Ticket = 1;
+      AND t.FK_ID_Usuario_Creador = p_id_usuario;
 END $$
 DELIMITER ;
-
-
 -- --------------------------------------------------------
 -- Obtener comentarios públicos de un ticket
 
@@ -902,25 +870,16 @@ CREATE PROCEDURE sp_tbl_ticket_comentarios_consultar(
     IN p_id_usuario INT
 )
 BEGIN
-    SELECT
-        tc.ID_Ticket_Comentario,
-        tc.Comentario,
-        tc.Fecha_Comentario,
-        tc.Es_Interno,
-        CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Usuario,
-        r.Nombre_Rol
-    FROM TBL_TICKET_COMENTARIO tc
-    INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
-    INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-    -- Verificar que el ticket pertenece al acudiente
-    INNER JOIN TBL_TICKET t ON tc.FK_ID_Ticket  = t.ID_Ticket
+    SELECT *
+    FROM vw_ticket_comentarios vc
+    INNER JOIN TBL_TICKET t ON vc.FK_ID_Ticket = t.ID_Ticket
 
-    WHERE tc.FK_ID_Ticket = p_id_ticket AND t.FK_ID_Usuario_Creador = p_id_usuario
-      AND tc.Es_Interno = 0               -- solo comentarios públicos
-      AND tc.Estado_Comentario_Ticket = 1
-    ORDER BY tc.Fecha_Comentario ASC;
-END $$
+    WHERE vc.FK_ID_Ticket = p_id_ticket
+      AND t.FK_ID_Usuario_Creador = p_id_usuario
+      AND vc.Es_Interno = 0
+      AND vc.Estado_Comentario_Ticket = 1
+    ORDER BY vc.Fecha_Comentario ASC;
+END;
 DELIMITER ;
 
 
@@ -1296,44 +1255,11 @@ DROP PROCEDURE IF EXISTS sp_perfil_estudiantes_por_acudiente;
 DELIMITER $$
 CREATE PROCEDURE sp_perfil_estudiantes_por_acudiente(IN p_id_usuario INT)
 BEGIN
-    SELECT
-        e.ID_Estudiante,
-        p.Primer_Nombre,
-        p.Segundo_Nombre,
-        p.Primer_Apellido,
-        p.Segundo_Apellido,
-        p.Fecha_Nacimiento,
-        ti.Nombre_Tipo_Iden,
-        p.Num_Doc_Persona AS Numero_Documento,
-        g.Nombre_Genero,
-        gp.Nombre_Grupo_Preferencial,
-        gr_a.Nombre_Grado AS Nombre_Grado_Actual,
-        gr_p.Nombre_Grado AS Nombre_Grado_Proximo,
-        c.Nombre_Colegio AS Nombre_Colegio_Anterior,
-        e.Estado_Estudiante,
-
-        -- IDs para pre-poblar formulario de edición
-        e.FK_ID_Genero AS ID_Genero,
-        e.FK_ID_Grupo_Preferencial AS ID_Grupo_Preferencial,
-        e.FK_ID_Grado_Actual AS ID_Grado_Actual,
-        e.FK_ID_Gardo_Proximo AS ID_Grado_Proximo,
-        e.FK_ID_Colegio_Anterior AS ID_Colegio_Anterior,
-        e.FK_ID_Persona AS ID_Persona,
-        e.FK_ID_Tipo_Iden AS ID_Tipo_Iden,
-        e.FK_ID_Parentesco_Es AS ID_Parentesco
-
-    FROM TBL_ESTUDIANTE e
-    INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
-    INNER JOIN TBL_GENERO g ON e.FK_ID_Genero = g.ID_Genero
-    INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
-    INNER JOIN TBL_GRADO gr_a ON e.FK_ID_Grado_Actual = gr_a.ID_Grado
-    LEFT JOIN TBL_GRADO gr_p ON e.FK_ID_Gardo_Proximo = gr_p.ID_Grado
-    INNER JOIN TBL_COLEGIO c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio
-
-    WHERE e.FK_ID_Acudiente = p_id_usuario
-      AND e.Estado_Estudiante = 1
-    ORDER BY p.Primer_Apellido, p.Primer_Nombre;
+    SELECT *
+    FROM vw_estudiante_detalle
+    WHERE FK_ID_Acudiente = p_id_usuario
+      AND Estado_Estudiante = 1
+    ORDER BY Primer_Apellido, Primer_Nombre;
 END $$
 DELIMITER ;
 
@@ -2149,5 +2075,473 @@ BEGIN
         );
 
     COMMIT;
+END $$
+DELIMITER ;
+
+
+
+
+
+-- ====================================================================================================================================================
+--                                          SPs PARA ADMIN
+-- ====================================================================================================================================================
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE LOGIN
+-- ====================================================================================================================================================
+
+    -- Se usaron los mismo que en login usuario / acudiente
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE CASES
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Listado de todos los Tickets del sistema 
+
+DROP PROCEDURE IF EXISTS sp_cases_listar_todos;
+
+DELIMITER $$
+CREATE PROCEDURE sp_cases_listar_todos(
+    IN p_id_estado TINYINT,
+    IN p_id_grado TINYINT,
+    IN p_id_afectacion TINYINT
+)
+BEGIN
+    SELECT *
+    FROM vw_cases_general
+    WHERE (p_id_estado IS NULL OR FK_ID_Estado_Ticket = p_id_estado)
+      AND (p_id_grado IS NULL OR FK_ID_Grado_Actual = p_id_grado OR FK_ID_Gardo_Proximo = p_id_grado)
+      AND (p_id_afectacion IS NULL OR FK_ID_Tipo_Afectacion = p_id_afectacion)
+    ORDER BY Puntaje_Prioridad DESC, Fecha_Creacion ASC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Datos de las metricas de las tarjetas
+
+DROP PROCEDURE IF EXISTS sp_cases_metricas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_cases_metricas()
+BEGIN
+    SELECT
+        -- Total de tickets activos en el sistema
+        COUNT(*) AS total_solicitudes,
+
+        -- Tickets en estado "En Revisión" (ID 2)
+        SUM(t.FK_ID_Estado_Ticket = 2) AS en_revision,
+
+        -- Tickets con estado final = 1 (Solucionado, Rechazado, Cancelado)
+        SUM(et.Estado_Final = 1) AS solucionados,
+
+        -- Cupos disponibles: suma de Cupos_Disponibles en TBL_CUPOS activos
+        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)FROM TBL_CUPOS c WHERE c.Estado_Cupos = 1) AS cupos_disponibles,
+
+        -- Tickets con cupo asignado (FK_ID_Cupo_Asignado no nulo)
+        SUM(t.FK_ID_Cupo_Asignado IS NOT NULL) AS cupos_asignados
+
+    FROM TBL_TICKET t
+    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    WHERE t.Estado_Ticket = 1;
+END $$
+DELIMITER ;
+
+
+
+    -- CATÁLOGOS PARA LOS FILTROS DEL LISTADO
+
+-- --------------------------------------------------------
+-- SP: Estados del ticket (para el filtro de estado)
+
+DROP PROCEDURE IF EXISTS sp_catalogo_estados_ticket;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_estados_ticket()
+BEGIN
+    SELECT ID_Estado_Ticket, Nombre_Estado
+    FROM TBL_ESTADO_TICKET
+    WHERE Estado_Estado_Ticket = 1
+    ORDER BY ID_Estado_Ticket;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Grados del ticket (para el filtro de grado)
+
+DROP PROCEDURE IF EXISTS sp_catalogo_grados;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_grados()
+BEGIN
+    SELECT ID_Grado, Nombre_Grado
+    FROM TBL_GRADO
+    ORDER BY ID_Grado;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Tipos de afectación (para el filtro de afectación)
+
+DROP PROCEDURE IF EXISTS sp_catalogo_tipo_afectacion;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_tipo_afectacion()
+BEGIN
+    SELECT ID_Tipo_Afectacion, Nombre_Afectacion
+    FROM TBL_TIPO_AFECTACION
+    ORDER BY ID_Tipo_Afectacion;
+END $$
+DELIMITER ;
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE TICKET_PANEL
+-- ====================================================================================================================================================
+
+
+-- --------------------------------------------------------
+-- SP: Detalle completo del ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_consultar_detalle;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_consultar_detalle(
+    IN p_id_ticket VARCHAR(10)
+)
+BEGIN
+    SELECT *
+    FROM vw_ticket_panel_detalle
+    WHERE ID_Ticket = p_id_ticket
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Comentarios del ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_comentarios_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_comentarios_consultar(
+    IN p_id_ticket VARCHAR(10)
+)
+BEGIN
+    SELECT
+        tc.ID_Ticket_Comentario,
+        tc.Comentario,
+        tc.Fecha_Comentario,
+        tc.Es_Interno,
+        CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Usuario,
+        r.Nombre_Rol
+    FROM TBL_TICKET_COMENTARIO tc
+    INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
+    INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+    INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+    WHERE tc.FK_ID_Ticket = p_id_ticket
+      AND tc.Estado_Comentario_Ticket = 1
+    ORDER BY tc.Fecha_Comentario ASC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Insertar comentario de un ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_comentario_insertar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_comentario_insertar(
+    IN p_id_ticket VARCHAR(10),
+    IN p_id_usuario INT,
+    IN p_comentario TEXT,
+    IN p_es_interno TINYINT(1)
+)
+BEGIN
+    INSERT INTO TBL_TICKET_COMENTARIO (
+        Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
+    ) VALUES (
+        p_comentario, p_es_interno, p_id_usuario, p_id_ticket
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Actualizar el estado del ticket y agregar un comentario
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_estado_actualizar;
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_estado_actualizar(
+    IN p_id_ticket VARCHAR(10),
+    IN p_id_estado_nuevo TINYINT,
+    IN p_fecha_cierre DATETIME,    -- NULL si no se cierra
+    IN p_resolucion TEXT,
+    IN p_id_tecnico INT           -- técnico que ejecuta el cambio
+)
+BEGIN
+    DECLARE v_estado_anterior VARCHAR(60);
+    DECLARE v_estado_nuevo VARCHAR(60);
+    DECLARE v_msg_auditoria TEXT;
+
+    -- Capturar el nombre del estado anterior para la auditoría
+    SELECT et.Nombre_Estado INTO v_estado_anterior
+    FROM TBL_TICKET t
+    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    WHERE t.ID_Ticket = p_id_ticket
+    LIMIT 1;
+
+    -- Capturar el nombre del nuevo estado
+    SELECT Nombre_Estado INTO v_estado_nuevo
+    FROM TBL_ESTADO_TICKET
+    WHERE ID_Estado_Ticket = p_id_estado_nuevo
+    LIMIT 1;
+
+    -- Actualizar el ticket
+    UPDATE TBL_TICKET
+    SET FK_ID_Estado_Ticket = p_id_estado_nuevo,
+        Fecha_Cierre = p_fecha_cierre
+    WHERE ID_Ticket = p_id_ticket;
+
+    -- Construir el mensaje de auditoría
+    SET v_msg_auditoria = CONCAT(
+        '[Cambio de Estado] ', v_estado_anterior,
+        ' → ', v_estado_nuevo,
+        IF(p_resolucion IS NOT NULL AND p_resolucion != '',
+           CONCAT(' | Resolución: ', p_resolucion), '')
+    );
+
+    -- Registrar el cambio como comentario interno automático
+    INSERT INTO TBL_TICKET_COMENTARIO (
+        Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
+    ) VALUES (
+        v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Asignar cupo al ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_asignar_cupo;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_asignar_cupo(
+    IN p_id_ticket VARCHAR(10),
+    IN p_id_cupo INT,
+    IN p_id_tecnico INT
+)
+BEGIN
+    DECLARE v_nombre_colegio VARCHAR(100);
+    DECLARE v_msg_auditoria TEXT;
+
+    -- Obtener el nombre del colegio para la auditoría
+    SELECT col.Nombre_Colegio INTO v_nombre_colegio
+    FROM TBL_CUPOS c
+    INNER JOIN TBL_COLEGIO col ON c.FK_ID_Colegio = col.ID_Colegio
+    WHERE c.ID_Cupos = p_id_cupo
+    LIMIT 1;
+
+    -- Asignar el cupo al ticket
+    UPDATE TBL_TICKET
+    SET FK_ID_Cupo_Asignado = p_id_cupo
+    WHERE ID_Ticket = p_id_ticket;
+
+    -- Registrar auditoría
+    SET v_msg_auditoria = CONCAT(
+        '[Cupo Asignado] Colegio: ', COALESCE(v_nombre_colegio, 'Desconocido'),
+        ' | Cupo ID: ', p_id_cupo
+    );
+
+    INSERT INTO TBL_TICKET_COMENTARIO (
+        Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
+    ) VALUES (
+        v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Documentos del ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_documentos_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_documentos_consultar(
+    IN p_id_ticket VARCHAR(10)
+)
+BEGIN
+    SELECT
+        dt.ID_Doc_Ticket,
+        dt.Nombre_Original,
+        dt.Fecha_Subida,
+        td.Nombre_Tipo_Doc
+    FROM TBL_DOCUMENTO_TICKET dt
+    INNER JOIN TBL_TIPO_DOCUMENTO td ON dt.FK_ID_Tipo_Doc = td.ID_Tipo_Doc
+    WHERE dt.FK_ID_Ticket = p_id_ticket
+      AND dt.Estado_Documentos = 1
+    ORDER BY dt.Fecha_Subida DESC;
+END $$
+DELIMITER ;
+
+-- --------------------------------------------------------
+-- SP: Descargar documento del ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_documento_descargar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_documento_descargar(
+    IN p_id_doc INT
+)
+BEGIN
+    SELECT
+        dt.Archivo,
+        dt.Nombre_Original
+    FROM TBL_DOCUMENTO_TICKET dt
+    WHERE dt.ID_Doc_Ticket = p_id_doc
+      AND dt.Estado_Documentos = 1
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Insertar documento al ticket
+    -- Reutilización de sp_documento_ticket_insertar
+
+
+-- --------------------------------------------------------
+-- SP: Datos del acudiente para el panel
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_acudiente_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_acudiente_consultar(
+    IN p_id_ticket VARCHAR(10)
+)
+BEGIN
+    SELECT *
+    FROM vw_ticket_acudiente_detalle
+    WHERE ID_Ticket = p_id_ticket
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Datos del Estudiante del ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_panel_estudiante_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_panel_estudiante_consultar(
+    IN p_id_ticket VARCHAR(10)
+)
+BEGIN
+    SELECT *
+    FROM vw_ticket_estudiante_detalle
+    WHERE ID_Ticket = p_id_ticket
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+
+    --  CATALOGOS PARA LOS SELECTFIELDS DEL FORMULARIO
+
+-- --------------------------------------------------------
+-- SP: Estados del ticket activos
+
+DROP PROCEDURE IF EXISTS sp_catalogo_estados_ticket;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_estados_ticket()
+BEGIN
+    SELECT ID_Estado_Ticket, Nombre_Estado
+    FROM TBL_ESTADO_TICKET
+    ORDER BY ID_Estado_Ticket;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Colegios activos
+
+DROP PROCEDURE IF EXISTS sp_catalogo_colegios;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_colegios()
+BEGIN
+    SELECT ID_Colegio, Nombre_Colegio
+    FROM TBL_COLEGIO
+    ORDER BY Nombre_Colegio;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Jornadas
+
+DROP PROCEDURE IF EXISTS sp_catalogo_jornadas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_jornadas()
+BEGIN
+    SELECT ID_Jornada, Nombre_Jornada
+    FROM TBL_JORNADA
+    ORDER BY ID_Jornada;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Tipos de afectación
+
+DROP PROCEDURE IF EXISTS sp_catalogo_tipo_afectacion;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_tipo_afectacion()
+BEGIN
+    SELECT ID_Tipo_Afectacion, Nombre_Afectacion
+    FROM TBL_TIPO_AFECTACION
+    ORDER BY ID_Tipo_Afectacion;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Cupos disponibles
+
+DROP PROCEDURE IF EXISTS sp_catalogo_cupos_disponibles;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_cupos_disponibles(
+    IN p_id_ticket VARCHAR(10)     -- ticket actual (para no excluirlo de su propio cupo)
+)
+BEGIN
+    SELECT
+        cu.ID_Cupos,
+        CONCAT(col.Nombre_Colegio, ' — ', jor.Nombre_Jornada, ' — Grado: ', g.Nombre_Grado) AS Label_Cupo
+    FROM TBL_CUPOS cu
+    INNER JOIN TBL_COLEGIO col ON cu.FK_ID_Colegio = col.ID_Colegio
+    INNER JOIN TBL_JORNADA jor ON cu.FK_ID_Jornada = jor.ID_Jornada
+    INNER JOIN TBL_GRADO g ON cu.FK_ID_Grado = g.ID_Grado
+    WHERE cu.Estado_Cupo = 1   -- activo/disponible
+      AND (
+          -- Cupos sin asignar a ningún ticket
+          cu.ID_Cupos NOT IN (
+              SELECT FK_ID_Cupo_Asignado
+              FROM TBL_TICKET
+              WHERE FK_ID_Cupo_Asignado IS NOT NULL
+                AND ID_Ticket != p_id_ticket
+          )
+      )
+    ORDER BY col.Nombre_Colegio, jor.Nombre_Jornada;
 END $$
 DELIMITER ;

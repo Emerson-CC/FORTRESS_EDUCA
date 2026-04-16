@@ -238,17 +238,17 @@ class Ticket_Request_Service:
             for file_storage, id_tipo_doc, max_size in archivos:
                 datos = _leer_archivo(file_storage, max_size)
                 if datos:
-                    sp_documento_ticket_insertar((
+                    sp_documento_ticket_insertar(
                         id_ticket, id_tipo_doc, datos, file_storage.filename
-                    ))
+                    )
 
             # Certificados múltiples
             for cert in (form_p5.doc_certificados.data or []):
                 datos = _leer_archivo(cert, _MAX_FILE_SIZE_CERTS)
                 if datos:
-                    sp_documento_ticket_insertar((
+                    sp_documento_ticket_insertar(
                         id_ticket, 3, datos, cert.filename
-                    ))
+                    )
 
             db.commit()
             flash(f"Solicitud {id_ticket} creada correctamente. La revisaremos pronto.", "success")

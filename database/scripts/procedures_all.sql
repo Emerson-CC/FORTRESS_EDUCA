@@ -2445,7 +2445,7 @@ DELIMITER $$
 
 CREATE PROCEDURE sp_tbl_usuario_actualizar(
     IN p_ID_Usuario INT,
-    IN p_Nombre_Usuario VARCHAR(50),
+    IN p_Nombre_Usuario VARCHAR(255),
     IN p_password VARCHAR(255),
     IN p_Ultimo_Cambio_Contraseña DATETIME,
     IN p_Intentos_Fallidos INT,
@@ -2525,7 +2525,7 @@ DROP PROCEDURE IF EXISTS sp_tbl_usuario_insertar;
 DELIMITER $$
 CREATE PROCEDURE sp_tbl_usuario_insertar(
     IN p_ID_Usuario INT,
-    IN p_Nombre_Usuario VARCHAR(50),
+    IN p_Nombre_Usuario VARCHAR(255),
     IN p_password_salt VARBINARY(16),
     IN p_password_hash VARBINARY(32),
     IN p_Doble_Factor_Activo ENUM('ACTIVE','INACTIVE'),
@@ -2572,7 +2572,7 @@ DROP PROCEDURE IF EXISTS sp_validar_data_user;
 DELIMITER $$
 
 CREATE PROCEDURE sp_validar_data_user(
-    IN p_nombre_usuario VARCHAR(50)
+    IN p_nombre_usuario VARCHAR(255)
 )
 BEGIN
     SELECT 
@@ -2606,7 +2606,7 @@ DROP PROCEDURE IF EXISTS sp_tbl_usuario_validar_login;
 DELIMITER $$
 
 CREATE PROCEDURE sp_tbl_usuario_validar_login(
-    IN p_nombre_usuario VARCHAR(50),
+    IN p_nombre_usuario VARCHAR(255),
     IN p_password_hash VARBINARY(32)
 )
 BEGIN
@@ -2781,7 +2781,7 @@ DROP PROCEDURE IF EXISTS sp_usuario_obtener_email;
 DELIMITER $$
 
 CREATE PROCEDURE sp_usuario_obtener_email(
-    IN p_Nombre_Usuario VARCHAR(50)
+    IN p_Nombre_Usuario VARCHAR(255)
 )
 BEGIN
     SELECT DA.Email
@@ -3015,7 +3015,7 @@ CREATE PROCEDURE sp_registrar_usuario_completo(
     IN p_FK_ID_Barrio INT,
 
     -- USUARIO
-    IN p_Nombre_Usuario VARCHAR(50),
+    IN p_Nombre_Usuario VARCHAR(255),
     IN p_password_hash VARBINARY(32),
     IN p_FK_ID_Rol TINYINT,
 
@@ -3162,7 +3162,9 @@ DELIMITER ;
 
 -- --------------------------------------------------------
 -- SP: Guardar secret MFA temporal
+
 DROP PROCEDURE IF EXISTS sp_tbl_usuario_guardar_mfa_secret_temp;
+
 DELIMITER $$
 CREATE PROCEDURE sp_tbl_usuario_guardar_mfa_secret_temp(
     IN p_id_usuario INT,
@@ -3177,6 +3179,7 @@ DELIMITER ;
 
 -- --------------------------------------------------------
 -- SP: Confirmar y activar MFA
+
 DROP PROCEDURE IF EXISTS sp_tbl_usuario_activar_mfa;
 
 DELIMITER $$

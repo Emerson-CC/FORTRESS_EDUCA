@@ -100,7 +100,7 @@ class Register_Student_Service:
                 form=form,
             )
 
-        # ── Datos seguros, proceder con BD ───────────────────────────────────
+        # Datos seguros, proceder con BD
         user_id = session["user_id"]
         ip  = request.remote_addr
         user_agent = request.headers.get("User-Agent")

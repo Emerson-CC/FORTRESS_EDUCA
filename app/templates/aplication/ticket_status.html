@@ -26,6 +26,17 @@
             </ol>
         </nav>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <!-- Tickets Abiertos -->
         <div class="row g-4 mb-4">
             <!-- Tabla de Solicitudes -->
@@ -39,17 +50,6 @@
                             <i class="fas fa-plus me-1"></i> Nueva
                         </a>
                     </div>
-
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
 
                     <!-- Lista de tickets abiertos -->
                     <div class="table-responsive">
@@ -130,17 +130,6 @@
                             <i class="fas fa-list me-2 text-primary"></i>Mis Solicitudes de Cupo Solucionadas
                         </h5>
                     </div>
-
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
 
                     <!-- Lista de tickets cerrados -->
                     <div class="table-responsive">
