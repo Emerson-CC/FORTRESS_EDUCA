@@ -859,6 +859,7 @@ BEGIN
       AND t.FK_ID_Usuario_Creador = p_id_usuario;
 END $$
 DELIMITER ;
+
 -- --------------------------------------------------------
 -- Obtener comentarios públicos de un ticket
 
@@ -879,7 +880,7 @@ BEGIN
       AND vc.Es_Interno = 0
       AND vc.Estado_Comentario_Ticket = 1
     ORDER BY vc.Fecha_Comentario ASC;
-END;
+END $$
 DELIMITER ;
 
 
@@ -2495,6 +2496,7 @@ CREATE PROCEDURE sp_catalogo_jornadas()
 BEGIN
     SELECT ID_Jornada, Nombre_Jornada
     FROM TBL_JORNADA
+    WHERE Estado_Jornada = 1
     ORDER BY ID_Jornada;
 END $$
 DELIMITER ;
@@ -2510,6 +2512,7 @@ CREATE PROCEDURE sp_catalogo_tipo_afectacion()
 BEGIN
     SELECT ID_Tipo_Afectacion, Nombre_Afectacion
     FROM TBL_TIPO_AFECTACION
+    WHERE Estado_Afectacion = 1
     ORDER BY ID_Tipo_Afectacion;
 END $$
 DELIMITER ;
@@ -2532,7 +2535,7 @@ BEGIN
     INNER JOIN TBL_COLEGIO col ON cu.FK_ID_Colegio = col.ID_Colegio
     INNER JOIN TBL_JORNADA jor ON cu.FK_ID_Jornada = jor.ID_Jornada
     INNER JOIN TBL_GRADO g ON cu.FK_ID_Grado = g.ID_Grado
-    WHERE cu.Estado_Cupo = 1   -- activo/disponible
+    WHERE cu.Estado_Cupos = 1   -- activo/disponible
       AND (
           -- Cupos sin asignar a ningún ticket
           cu.ID_Cupos NOT IN (
@@ -2545,3 +2548,5 @@ BEGIN
     ORDER BY col.Nombre_Colegio, jor.Nombre_Jornada;
 END $$
 DELIMITER ;
+
+

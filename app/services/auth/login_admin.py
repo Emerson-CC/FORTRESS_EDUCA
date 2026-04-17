@@ -156,9 +156,9 @@ class Login_Admin_Service:
 
                 primer_nombre   = data_user.get("Primer_Nombre", "")
                 primer_apellido = data_user.get("Primer_Apellido", "")
-                nombre_completo = data_user.get("Nombre_Completo", "")
+                nombre_admin = data_user.get("Nombre_Completo", "")
 
-                iniciales = (
+                iniciales_admin = (
                     (primer_nombre[0] if primer_nombre else "") +
                     (primer_apellido[0] if primer_apellido else "")
                 ).upper()
@@ -167,12 +167,12 @@ class Login_Admin_Service:
                 # Guardar datos importantes para la sesión
                 session.permanent = True
                 session["user_id"] = data_user["ID_Usuario"]
-                session["username"] = nombre_completo
+                session["username"] = nombre_admin
                 session["username_login"] = username
                 session["role_id"] = data_user["FK_ID_Rol"]
                 session["double_factor"] = data_user["Doble_Factor_Activo"]
-                session["nombre_acudiente"] = nombre_completo
-                session["iniciales"] = iniciales
+                session["nombre_admin"] = nombre_admin
+                session["iniciales_admin"] = iniciales_admin
                 session["session_start"] = datetime.now(timezone.utc).isoformat()
                 session["ultima_actividad"] = datetime.now(timezone.utc).isoformat()
                 

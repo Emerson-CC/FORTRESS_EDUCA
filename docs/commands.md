@@ -10,6 +10,9 @@ ACTIVAR EL SERVIDOR
 python run.py
 
 
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\env\Scripts\Activate.ps1; python run.py
+
+
 REQUERIMENTS
 pip freeze > requirements.txt // Tomar librerias del env
 pip install -r requirements.txt  // Instalar librerias del archivo requirements.txt

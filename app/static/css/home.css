@@ -95,6 +95,31 @@
     -webkit-text-fill-color: transparent;
 }
 
+.dh-qa-icon--green,
+.dh-qa-icon--blue,
+.dh-qa-icon--orange {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.dh-qa-icon--green {
+    background: linear-gradient(135deg, var(--color-accent-green), var(--color-primary-light));
+}
+
+.dh-qa-icon--blue {
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+}
+
+.dh-qa-icon--orange {
+    background: linear-gradient(135deg, var(--color-warning), #e67e22);
+}
+
 /* ============================================================
    AUTH PAGES — Para login.html y registro.html
    ============================================================ */

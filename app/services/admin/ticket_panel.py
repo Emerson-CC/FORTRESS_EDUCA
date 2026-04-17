@@ -107,7 +107,7 @@ class Ticket_Panel_Service:
             "documentos": documentos,
             "acudiente": acudiente,
             "estudiante": estudiante,
-        }
+        }   
 
     def _contexto_tecnico(self) -> dict:
         """Construye datos de contexto del técnico para el navbar."""
@@ -127,7 +127,7 @@ class Ticket_Panel_Service:
         forms["form_estado"].estado.data = ctx["ticket"]["ID_Estado_Ticket"]
 
         return render_template(
-            "tecnico/ticket_panel.html",
+            "admin/ticket_panel.html",
             **ctx,
             **forms,
             tecnico=self._contexto_tecnico(),
@@ -250,8 +250,8 @@ class Ticket_Panel_Service:
                 f"{f}: {', '.join(msgs)}" for f, msgs in form_doc.errors.items()
             )
             print(f"[FORM ERROR - documento] {errores}")
-            flash("Por favor revise el formulario de documentos.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            flash(f"Por favor revise el formulario de documentos: {errores}", "danger")
+            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket) + "#pane-documentos")
 
         archivo_field = form_doc.archivo.data
         nombre_original = archivo_field.filename
@@ -259,12 +259,12 @@ class Ticket_Panel_Service:
 
         if extension not in self._allowed_extensions:
             flash("Tipo de archivo no permitido. Solo PDF, JPG o PNG.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket) + "#pane-documentos")
 
         contenido = archivo_field.read()
         if len(contenido) > self._max_file_bytes:
             flash("El archivo supera el límite de 5 MB.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket) + "#pane-documentos")
 
         try:
             sp_ticket_panel_documento_insertar(

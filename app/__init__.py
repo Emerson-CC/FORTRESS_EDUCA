@@ -18,7 +18,7 @@ from app.blueprints.admin.routes import admin_bp
 from app.security.jwt_controller import handle_unauthorized_error, handle_expired_error, handle_invalid_error
 from app.security.session_controller import controlar_sesion
 
-from app.utils.extensions_utils import mail, register_context_processors
+from app.utils.extensions_utils import mail, register_context_processors, register_context_processors_admin
 from app.controllers.error_controller import register_error_handlers
 
 
@@ -52,9 +52,10 @@ def create_app():
     # Controlador de errores 
     # register_error_handlers(app)
     
-    # Datos del usuario requiridos en header 
+    # Datos del usuario/admin requiridos en header 
     register_context_processors(app)
-
+    register_context_processors_admin(app)
+    
     # Manejador en caso de fallo del token JWT
     jwt = JWTManager(app)
     jwt.unauthorized_loader(handle_unauthorized_error)

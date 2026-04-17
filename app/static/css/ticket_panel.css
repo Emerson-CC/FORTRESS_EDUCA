@@ -37,6 +37,8 @@ body {
     top: 0;
     z-index: 1030;
     box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    margin-bottom: 1.25rem;
+    
 }
 .topnav-brand {
     font-weight: 700;
@@ -91,7 +93,7 @@ body {
 .page-header-title {
     font-size: 1.15rem;
     font-weight: 700;
-    color: var(--color-heading);
+    color: #fff;
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -180,6 +182,8 @@ body {
     font-size: .82rem;
     color: #334155;
     line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* ===== BADGES DE ESTADO ===== */
@@ -224,6 +228,10 @@ body {
     border-bottom-color: var(--color-primary);
 }
 .tab-content-inner { padding: 1.5rem; }
+
+.tab-content {
+    background-color: #fff;
+}
 
 /* ===== CARDS INTERNAS ===== */
 .inner-card {

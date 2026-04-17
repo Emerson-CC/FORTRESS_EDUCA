@@ -159,4 +159,4 @@ def sp_tipo_documento_consultar() -> list[dict]:
 
 def sp_catalogo_barrios() -> list[dict]:
     """Retorna todos los barrios activos para el SelectField de asignación."""
-    return db.call_procedure("sp_catalogo_barrios", ()) or []
+    return db.call_procedure("sp_tbl_barrio_consultar", ()) or []

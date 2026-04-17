@@ -4,7 +4,7 @@
 {% block titulo %}Todas las Solicitudes - Fortress Educa{% endblock %}
 
 <!-- Titulo del Header -->
-{% set header_title = "Todas las Solicitudes de Cupo" %}
+{% set admin_header_title = "Todas las Solicitudes de Cupo" %}
 
 <!-- invocar el bloque -->
 {% block Contenido_Pagina %}
@@ -187,7 +187,7 @@
                             {# ID → enlace al panel del ticket #}
                             <td>
                                 <a href="{{ url_for('admin.ticket_panel_detail', id_ticket=t.ID_Ticket) }}"
-                                class="fw-bold text-primary text-decoration-none">
+                                class="fw-bold text-primary text-decoration-none" target="_blank">
                                     #{{ t.ID_Ticket }}
                                 </a>
                             </td>
@@ -251,14 +251,13 @@
                             {# Botón de acción → ticket_panel.html #}
                             <td class="text-center">
                                 <a href="{{ url_for('admin.ticket_panel_detail', id_ticket=t.ID_Ticket) }}"
-                                class="btn btn-outline-primary btn-sm">
+                                class="btn btn-outline-primary btn-sm" target="_blank">
                                     <i class="fas fa-eye me-1"></i>Ver
                                 </a>
                             </td>
 
                         </tr>
                         {% else %}
-                        {# Estado vacío: no hay tickets con los filtros aplicados #}
                         <tr>
                             <td colspan="11" class="text-center text-muted py-5">
                                 <i class="fas fa-inbox fa-2x mb-2 d-block opacity-50"></i>
@@ -271,7 +270,7 @@
                                 {% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
+                        {% endfor %}                     
                     </tbody>
                 </table>
             </div>

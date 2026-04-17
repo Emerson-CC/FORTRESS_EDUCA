@@ -17,3 +17,16 @@ def register_context_processors(app):
                 "iniciales": session.get("iniciales", "")
             }
         }
+
+def register_context_processors_admin(app):
+    """Registra los context processors globales de la aplicación para admin"""
+
+    @app.context_processor
+    def inject_admin_header():
+        """Disponibiliza {{ user.nombre_admin }} y {{ user.iniciales_admin }} en cualquier template que use el header del dashboard."""
+        return {
+            "user": {
+                "nombre_admin": session.get("nombre_admin", ""),
+                "iniciales_admin": session.get("iniciales_admin", "")
+            }
+        }

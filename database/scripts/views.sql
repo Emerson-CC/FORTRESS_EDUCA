@@ -107,7 +107,7 @@ INNER JOIN TBL_TIPO_AFECTACION ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afecta
 -- Contiene toda la información del estudiante asociada a un ticket
 -- USADO EN sp_ticket_panel_estudiante_consultar
 
-CREATE VIEW vw_ticket_estudiante_detalle AS
+CREATE OR REPLACE VIEW vw_ticket_estudiante_detalle AS
 SELECT
     t.ID_Ticket,
 
@@ -154,7 +154,7 @@ INNER JOIN TBL_COLEGIO col ON e.FK_ID_Colegio_Anterior = col.ID_Colegio;
 -- Contiene información completa del acudiente (usuario creador del ticket)
 -- USADO EN sp_ticket_panel_acudiente_consultar
 
-CREATE VIEW vw_ticket_acudiente_detalle AS
+CREATE OR REPLACE VIEW vw_ticket_acudiente_detalle AS
 SELECT
     t.ID_Ticket,
 
@@ -208,7 +208,7 @@ INNER JOIN TBL_PARENTESCO par ON da.FK_ID_Parentesco = par.ID_Parentesco;
 -- Consolida toda la información del ticket para el panel
 -- USADO EN sp_ticket_panel_consultar_detalle
 
-CREATE VIEW vw_ticket_panel_detalle AS
+CREATE OR REPLACE VIEW vw_ticket_panel_detalle AS
 SELECT
     t.ID_Ticket,
     t.Titulo_Ticket,
@@ -235,7 +235,7 @@ SELECT
     jor.Nombre_Jornada,
     afec.Nombre_Afectacion,
     b.Nombre_Barrio,
-    tres.Nombre_Tiempo_Residencia,
+    tres.Nombre_Tiempo,
 
     -- Asignación
     COALESCE(col_asig.Nombre_Colegio, 'Sin asignar') AS Colegio_Asignado,
@@ -267,7 +267,7 @@ WHERE t.Estado_Ticket = 1;
 -- Vista general para listados de tickets con información resumida
 -- USADO EN sp_cases_listar_todos
 
-CREATE VIEW vw_cases_general AS
+CREATE OR REPLACE VIEW vw_cases_general AS
 SELECT
     t.ID_Ticket,
     t.Titulo_Ticket,

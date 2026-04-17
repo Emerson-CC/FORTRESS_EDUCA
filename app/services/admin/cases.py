@@ -1,8 +1,7 @@
 from flask import render_template, request
  
 from app.repositories.admin_repository import sp_cases_listar_todos, sp_cases_metricas, sp_catalogo_estados_ticket, sp_catalogo_grados, sp_catalogo_tipo_afectacion
- 
- 
+
 class Cases_Service:
     """Servicio para la vista de listado de todos los tickets (admin)."""
  

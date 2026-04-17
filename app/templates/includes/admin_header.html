@@ -11,13 +11,9 @@
         <div class="text-end me-2 d-none d-sm-block">
             <small class="d-block text-muted" style="line-height:1">Funcionario/a,</small>
             <!-- Muestra el nombre real desde la base de datos -->
-            {# <span class="fw-bold text-dark">{{ user.nombre_acudiente }}</span> #}
-            <span class="fw-bold text-dark">Esteban Castro</span>
+            <span class="fw-bold text-dark">{{ user.nombre_admin }}</span>
         </div>
         <!-- Muestra las iniciales generadas -->
-        {# <div class="user-avatar">{{ user.iniciales }}</div> #}
-        <div class="user-avatar"
-            style="background: linear-gradient(135deg, var(--color-danger), var(--color-danger-end));">EC
-        </div>
+        <div class="user-avatar">{{ user.iniciales_admin }}</div>
     </div>
 </header>
