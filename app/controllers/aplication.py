@@ -63,8 +63,8 @@ class AplicationController:
         return self.service_security.mfa_desactivar()
     
         # SESION CONTROLADOR
-    def security_session_one(self):
-        return self.service_security.cerrar_sesion()
+    def security_session_one(self, jti_sesion):
+        return self.service_security.cerrar_sesion(jti_sesion)
     
     def security_session_all(self):
         return self.service_security.cerrar_sesiones()    

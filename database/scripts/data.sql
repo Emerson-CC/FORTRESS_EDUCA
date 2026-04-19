@@ -195,11 +195,11 @@ INSERT INTO TBL_CUPOS (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponib
 -- -----------------------------------------------------
 
 INSERT INTO TBL_ROL (ID_Rol, Nombre_Rol, Descripcion_Rol) VALUES
-    (1,'Sistema', 'Usuario generico del sistema'),
+    (1,'Sistema', 'Usuario generico que representa el sistema'),
     (2,'Acudiente', 'Persona encargada de registrar estudiantes y la creación de sus respectivos ticktes'), 
     (3,'Tecnico', 'Resolvera tickets'), 
-    (4,'Admin', 'Encargado de la pagina');
-
+    (4,'Admin', 'Encargado de la pagina'),
+    (5,'Desconocido', 'Usuario generico para exepciones en la auditoria');
 
 -- -----------------------------------------------------
 -- TBL_TIPO_AFECTACION
@@ -266,17 +266,28 @@ INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, FK_ID_Per
     (1,'system@audit', "$argon2id$v=19$m=65536,t=3,p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgU", 1, 1);
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------------
+-- USUARIO GENERAL DE AUDITORIA
+-- -----------------------------------------------------
+
+INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona) VALUES 
+    (2, '000000020000000', 'Unknown', '-', 'User', '-', '2000-01-01', 1);
+
+INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, FK_ID_Persona, FK_ID_Rol) VALUES 
+    (2,'unknown@audit', "$argon2id$v=19$m=65536,t=3,p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgl", 1, 5);
+
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------------------
 -- USUARIO PRUEBA: USUARIO ADMIN N°1
 -- -----------------------------------------------------
 
 INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona) VALUES 
-    (2, '1010101101', 'Fortress', NULL, 'Educa', NULL, '2005-08-26', '1')
+    (3, '1010101101', 'Fortress', NULL, 'Educa', NULL, '2005-08-26', '1');
 
 INSERT INTO TBL_DATOS_ADICIONALES (ID_Datos_Adicionales, Email, Telefono, FK_ID_Parentesco, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Estrato, FK_ID_Barrio, Estado_Datos_Adicionales) VALUES 
-    (2, 'fortress.educa@gmail.com', '3213397085', '15', '1', '2', '1', '1', '1', '16', '1')
+    (3, 'fortress.educa@gmail.com', '3213397085', '15', '1', '3', '1', '1', '1', '16', '1');
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos, Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion, MFA_Secret, MFA_Secret_Temp, Notificaciones_Email, Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona, FK_ID_Rol, Estado_Usuario) VALUES 
-    (2, 'fortress.educa@gmail.com', '$argon2id$v=19$m=65536,t=3,p=4$0U/atEbAItQ7XZWBC0FZZg$LWd6K360PXCfwnmpx2dLrZ2QHHVt2/FJIl1jzWQK40w', NULL, '2026-04-17 02:06:16', '0', '2026-04-17 02:01:41', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '6', '4', '1')
+    (3, 'fortress.educa@gmail.com', '$argon2id$v=19$m=65536,t=3,p=4$0U/atEbAItQ7XZWBC0FZZg$LWd6K360PXCfwnmpx2dLrZ2QHHVt2/FJIl1jzWQK40w', NULL, '2026-04-17 02:06:16', '0', '2026-04-17 02:01:41', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '3', '4', '1');
 
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -284,36 +295,36 @@ INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Ca
 -- -----------------------------------------------------
 
 INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona) VALUES 
-    (3, '1019762928', 'Emerson', 'Daniel', 'Caicedo', 'Cobos', '2000-01-01', 1);
+    (4, '1019762928', 'Emerson', 'Daniel', 'Caicedo', 'Cobos', '2000-01-01', 1);
 
 INSERT INTO TBL_DATOS_ADICIONALES (ID_Datos_Adicionales, Email, Telefono, FK_ID_Parentesco, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Estrato, FK_ID_Barrio, Estado_Datos_Adicionales) VALUES 
-    (3, 'edcaicedoc@sanmateo.edu.co', '3213397584', '13', '1', '2', '1', '3', '3', '18', 1);
+    (4, 'edcaicedoc@sanmateo.edu.co', '3213397584', '13', '1', '4', '1', '3', '3', '18', 1);
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos, Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion, MFA_Secret, MFA_Secret_Temp, Notificaciones_Email, Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona, FK_ID_Rol, Estado_Usuario) VALUES 
-    (3, 'edcaicedoc@sanmateo.edu.co', '$argon2id$v=19$m=65536,t=3,p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgU', '2026-04-14 11:44:39', '2026-04-16 06:13:17', '0', '2026-03-30 23:07:59', 'ACTIVE', '2026-04-14 12:43:47', 'PWHFBTGG3SXTCWGBE6QI5GG6KUZKV2O5', NULL, '0', '0', 'ACCEPTED', '2', '3', '1');
+    (4, 'edcaicedoc@sanmateo.edu.co', '$argon2id$v=19$m=65536,t=3,p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgU', '2026-04-14 11:44:39', '2026-04-16 06:13:17', '0', '2026-03-30 23:07:59', 'ACTIVE', '2026-04-14 12:43:47', 'PWHFBTGG3SXTCWGBE6QI5GG6KUZKV2O5', NULL, '0', '0', 'ACCEPTED', '4', '3', '1');
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------------
 -- USUARIO PRUEBA: USUARIO NORMAL N°1
 -- -----------------------------------------------------
 
 INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona) VALUES 
-    (4, '54269132', 'Luis', 'Felipe', 'Gonzalez', 'Mogollon', '2000-01-01', 1);
+    (5, '54269132', 'Luis', 'Felipe', 'Gonzalez', 'Mogollon', '2000-01-01', 1);
 
 INSERT INTO TBL_DATOS_ADICIONALES (ID_Datos_Adicionales, Email, Telefono, FK_ID_Parentesco, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Estrato, FK_ID_Barrio, Estado_Datos_Adicionales) VALUES 
-    (4, 'danicaicedo2005@gmail.com', '3152512350', '9', '1', '4', '1', '4', '3', '19', 1);
+    (5, 'danicaicedo2005@gmail.com', '3152512350', '9', '1', '5', '1', '4', '3', '19', 1);
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos, Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion, MFA_Secret, MFA_Secret_Temp, Notificaciones_Email, Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona, FK_ID_Rol, Estado_Usuario) VALUES 
-    (4, 'danicaicedo2005@gmail.com', '$argon2id$v=19$m=65536,t=3,p=4$O3SKOg6+GyV47LDTUl6EDA$bc+rBVlaChqD6ecoCUrLVhZvN+oS9TW6Z0VAjHc3zuY', '2026-04-15 15:11:51', '2026-04-15 16:56:45', '0', '2026-04-03 17:09:56', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '4', '2', '1');
+    (5, 'danicaicedo2005@gmail.com', '$argon2id$v=19$m=65536,t=3,p=4$O3SKOg6+GyV47LDTUl6EDA$bc+rBVlaChqD6ecoCUrLVhZvN+oS9TW6Z0VAjHc3zuY', '2026-04-15 15:11:51', '2026-04-15 16:56:45', '0', '2026-04-03 17:09:56', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '5', '2', '1');
 
 -- -----------------------------------------------------
 -- ESTUDIANTE PRUEBA N°1
 -- -----------------------------------------------------
 
 INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona) VALUES 
-    (5, '1524524213', 'Luis', 'Alejandro', 'Narvaez', 'Talavera', '2015-11-19', 1);
+    (6, '1524524213', 'Luis', 'Alejandro', 'Narvaez', 'Talavera', '2015-11-19', 1);
 
-INSERT INTO TBL_ESTUDIANTE (ID_Estudiante, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Grado_Actual, FK_ID_Gardo_Proximo, FK_ID_Colegio_Anterior, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Acudiente, FK_ID_Parentesco_Es, Estado_Estudiante) VALUES 
-    (1, '3', '5', '6', '7', '9', '1', '4', '4', '6', 1);
+INSERT INTO TBL_ESTUDIANTE (ID_Estudiante, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Grado_Actual, FK_ID_Grado_Proximo, FK_ID_Colegio_Anterior, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Acudiente, FK_ID_Parentesco_Es, Estado_Estudiante) VALUES 
+    (1, '3', '6', '6', '7', '9', '1', '4', '5', '6', 1);
 
 
 -- -----------------------------------------------------
@@ -321,19 +332,9 @@ INSERT INTO TBL_ESTUDIANTE (ID_Estudiante, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID
 -- -----------------------------------------------------
 
 INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona) VALUES 
-    (6, '1064298354', 'Andres', 'Felipe', 'Saenz', 'Gutierrez', '2008-06-19', 1);
+    (7, '1064298354', 'Andres', 'Felipe', 'Saenz', 'Gutierrez', '2008-06-19', 1);
 
-INSERT INTO TBL_ESTUDIANTE (ID_Estudiante, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Grado_Actual, FK_ID_Gardo_Proximo, FK_ID_Colegio_Anterior, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Acudiente, FK_ID_Parentesco_Es, Estado_Estudiante) VALUES 
-    (2, '3', '6', '10', '11', '11', '1', '1', '4', '6', 1);
+INSERT INTO TBL_ESTUDIANTE (ID_Estudiante, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Grado_Actual, FK_ID_Grado_Proximo, FK_ID_Colegio_Anterior, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Acudiente, FK_ID_Parentesco_Es, Estado_Estudiante) VALUES 
+    (2, '3', '7', '10', '11', '11', '1', '1', '5', '6', 1);
 
-
-
-
-
-
--- -----------------------------------------------------
--- TICKETS DE PRUEBA N°2
--- -----------------------------------------------------
-
-INSERT INTO TBL_TICKET (ID_Ticket, Titulo_Ticket, Descripcion_Ticket, Fecha_Creacion, Fecha_Cierre, Puntaje_Prioridad, FK_ID_Usuario_Creador, FK_ID_Usuario_Tecnico, FK_ID_Estudiante, FK_ID_Tipo_Afectacion, FK_ID_Colegio_Preferencia, FK_ID_Jornada_Preferencia, FK_ID_Cupo_Asignado, FK_ID_Estado_Ticket, FK_ID_Barrio, FK_ID_Tiempo_Residencia, Estado_Ticket) VALUES 
-    ('EDU-000001', 'Solicitud de cupo — Luis Narvaez — Quinto', 'Describa brevemente la situación del menor y las circunstancias que motivaron la solicitud de cupo educativo. Sea lo más detallado posible para una mejor evaluación del caso...', '2026-04-06 08:36:12', NULL, '65', '4', '2', '1', '1', '15', '1', NULL, '3', '18', '1', '1');
+    

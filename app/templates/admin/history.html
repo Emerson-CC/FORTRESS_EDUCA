@@ -16,7 +16,6 @@
             <strong>Módulo de Auditoría:</strong> Este registro captura todas las acciones sensibles del sistema
             para garantizar transparencia y trazabilidad. No puede ser modificado por los administradores.
             <br>
-            <em class="text-muted">FUTURA INTEGRACIÓN CON BASE DE DATOS - tabla 'auditoria_log'</em>
         </div>
     
         <!-- Filtros de Auditoría -->
@@ -46,6 +45,9 @@
                     <button class="btn btn-outline-secondary btn-sm flex-grow-1" id="btnFiltrarAuditoria">
                         <i class="fas fa-filter me-1"></i>Filtrar
                     </button>
+                    <a href="{{ url_for('admin.history') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-times me-1"></i>Limpiar
+                    </a>                    
                     <button class="btn btn-outline-success btn-sm" id="btnExportarAuditoria">
                         <i class="fas fa-download me-1"></i>CSV
                     </button>

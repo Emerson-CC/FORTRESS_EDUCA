@@ -4,6 +4,7 @@
  */
 
 html,
+
 body {
     height: 100%;
 }
@@ -381,6 +382,130 @@ input:checked+.slider:before {
     opacity: 1;
 }
 
+/* 1. OCULTAR SUBMENÚ CUANDO EL SIDEBAR ESTÉ RETRAÍDO 
+   Esto evita que los iconos hijos se encimen en los 68px */
+.dashboard-sidebar:not(:hover) #usersSubmenu {
+    display: none !important;
+}
+
+/* 2. DISEÑO DEL CONTENEDOR DE SUBMENÚ */
+.submenu-container {
+    margin-left: 20px; /* La sangría */
+    border-left: 1px solid rgba(255, 255, 255, 0.1); /* Línea guía visual opcional */
+    margin-bottom: 5px;
+}
+
+/* Reducimos un poco el tamaño de los sub-iconos para jerarquía */
+.submenu-container .nav-link i {
+    font-size: 0.85rem; 
+    opacity: 0.8;
+}
+
+/* 3. CONTROL DE LA FLECHA (CHEVRON) */
+.arrow-icon {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0; /* Oculta por defecto */
+}
+
+.dashboard-sidebar:hover .arrow-icon {
+    opacity: 1; /* Aparece solo cuando expandes el sidebar */
+}
+
+/* Rotación cuando el colapsable está abierto */
+.nav-link[aria-expanded="true"] .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* Asegurar que el texto del submenú siga la misma animación que los padres */
+.submenu-container .nav-link span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.3s ease, opacity 0.2s ease;
+}
+
+.dashboard-sidebar:hover .submenu-container .nav-link span {
+    max-width: 200px;
+    opacity: 1;
+    margin-left: 14px;
+}
+
+/*-----------------------  */
+/* Contenedor grupal para alinear link y flecha */
+.nav-link-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 6px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+/* El link principal ocupa todo el espacio posible */
+.nav-link-main {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 0 0.8rem 16px;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* El botón de la flecha */
+.submenu-toggle {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.65);
+    padding: 0.8rem 12px;
+    cursor: pointer;
+    display: none; /* Se oculta cuando el sidebar está contraído */
+}
+
+/* Mostrar la flecha y ajustar padding solo en hover del sidebar */
+.dashboard-sidebar:hover .submenu-toggle {
+    display: block;
+}
+
+.dashboard-sidebar:hover .nav-link-main {
+    padding-left: 1.1rem;
+}
+
+/* Estados Active y Hover del grupo */
+.nav-link-group:hover, 
+.nav-link-group.active {
+    background: rgba(37, 99, 235, 0.20);
+}
+
+.nav-link-group:hover .nav-link-main,
+.nav-link-group:hover .submenu-toggle,
+.nav-link-group.active .nav-link-main {
+    color: var(--color-accent-teal);
+}
+
+/* Animación del texto (igual que tus otros links) */
+.nav-link-main span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-left: 0;
+    transition: max-width 0.3s ease, opacity 0.2s ease 0.08s, margin-left 0.3s ease;
+}
+
+.dashboard-sidebar:hover .nav-link-main span {
+    max-width: 200px;
+    opacity: 1;
+    margin-left: 14px;
+}
+
+/* Rotación de flecha */
+.submenu-toggle[aria-expanded="true"] .arrow-icon {
+    transform: rotate(180deg);
+}
+
+
 /* ============================================================
    TOP NAVBAR — Para admin_header.html
    ============================================================ */
@@ -607,3 +732,5 @@ input:checked+.slider:before {
         display: block;
     }
 }
+
+

@@ -14,23 +14,36 @@ SELECT
     e.FK_ID_Acudiente,
     e.Estado_Estudiante,
 
-    p.ID_Persona,
+    -- Persona
+    p.ID_Persona AS ID_Persona,
     p.Primer_Nombre,
     p.Segundo_Nombre,
     p.Primer_Apellido,
     p.Segundo_Apellido,
     p.Fecha_Nacimiento,
-    p.Num_Doc_Persona,
+    p.Num_Doc_Persona AS Numero_Documento,
 
+    -- Catálogos
     ti.Nombre_Tipo_Iden,
-
     g.Nombre_Genero,
     gp.Nombre_Grupo_Preferencial,
 
-    gr_a.Nombre_Grado AS Grado_Actual,
-    gr_p.Nombre_Grado AS Grado_Proximo,
+    -- Grados
+    gr_a.Nombre_Grado AS Nombre_Grado_Actual,
+    gr_p.Nombre_Grado AS Nombre_Grado_Proximo,
 
-    c.Nombre_Colegio
+    -- Colegio
+    c.Nombre_Colegio AS Nombre_Colegio_Anterior,
+
+    -- IDs (CLAVE para formularios)
+    e.FK_ID_Genero AS ID_Genero,
+    e.FK_ID_Grupo_Preferencial AS ID_Grupo_Preferencial,
+    e.FK_ID_Grado_Actual AS ID_Grado_Actual,
+    e.FK_ID_Grado_Proximo AS ID_Grado_Proximo,
+    e.FK_ID_Colegio_Anterior AS ID_Colegio_Anterior,
+    e.FK_ID_Persona AS FK_ID_Persona,
+    e.FK_ID_Tipo_Iden AS ID_Tipo_Iden,
+    e.FK_ID_Parentesco_Es AS ID_Parentesco
 
 FROM TBL_ESTUDIANTE e
 INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
@@ -38,8 +51,8 @@ INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
 INNER JOIN TBL_GENERO g ON e.FK_ID_Genero = g.ID_Genero
 INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
 INNER JOIN TBL_GRADO gr_a ON e.FK_ID_Grado_Actual = gr_a.ID_Grado
-LEFT JOIN TBL_GRADO gr_p ON e.FK_ID_Gardo_Proximo = gr_p.ID_Grado
-LEFT JOIN TBL_COLEGIO c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio;
+LEFT JOIN TBL_GRADO gr_p ON e.FK_ID_Grado_Proximo = gr_p.ID_Grado
+INNER JOIN TBL_COLEGIO c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio;
 
 
 
@@ -76,7 +89,7 @@ INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;
 -- Obtener datos completos de un ticket específico
 -- USADO EN sp_tbl_ticket_consultar_detalle | sp_tbl_ticket_cerrado_consultar_por_usuario
 
-CREATE OR REPLACE VIEW vw_ticket_base AS
+CREATE OR REPLACE VIEW vw_ticket_detalle AS
 SELECT
     t.ID_Ticket,
     t.Titulo_Ticket,
@@ -84,8 +97,16 @@ SELECT
     t.Fecha_Creacion,
     t.Fecha_Cierre,
     t.Puntaje_Prioridad,
+    t.Estado_Ticket,
+
     t.FK_ID_Usuario_Creador,
+    t.FK_ID_Usuario_Tecnico,
     t.FK_ID_Estudiante,
+    t.FK_ID_Jornada_Preferencia,
+    t.FK_ID_Barrio,
+    t.FK_ID_Tiempo_Residencia,
+    t.FK_ID_Colegio_Preferencia,
+    t.FK_ID_Cupo_Asignado,
 
     et.Nombre_Estado,
     et.Estado_Final,
@@ -100,7 +121,7 @@ INNER JOIN TBL_TIPO_AFECTACION ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afecta
 
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE TICKET_OANEL
+-- VIEWS PARA LA PAGINA DE TICKET_PANEL
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -146,7 +167,7 @@ INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
 INNER JOIN TBL_GENERO gen ON e.FK_ID_Genero = gen.ID_Genero
 INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
 INNER JOIN TBL_GRADO g_act ON e.FK_ID_Grado_Actual = g_act.ID_Grado
-LEFT JOIN TBL_GRADO g_prx ON e.FK_ID_Gardo_Proximo = g_prx.ID_Grado
+LEFT JOIN TBL_GRADO g_prx ON e.FK_ID_Grado_Proximo = g_prx.ID_Grado
 INNER JOIN TBL_COLEGIO col ON e.FK_ID_Colegio_Anterior = col.ID_Colegio;
 
 
@@ -249,7 +270,7 @@ INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
 INNER JOIN TBL_ESTUDIANTE es ON t.FK_ID_Estudiante = es.ID_Estudiante
 INNER JOIN TBL_PERSONA pe ON es.FK_ID_Persona = pe.ID_Persona
 INNER JOIN TBL_GRADO g_act ON es.FK_ID_Grado_Actual = g_act.ID_Grado
-LEFT JOIN TBL_GRADO g_prx ON es.FK_ID_Gardo_Proximo = g_prx.ID_Grado
+LEFT JOIN TBL_GRADO g_prx ON es.FK_ID_Grado_Proximo = g_prx.ID_Grado
 INNER JOIN TBL_JORNADA jor ON t.FK_ID_Jornada_Preferencia = jor.ID_Jornada
 INNER JOIN TBL_TIPO_AFECTACION afec ON t.FK_ID_Tipo_Afectacion = afec.ID_Tipo_Afectacion
 INNER JOIN TBL_BARRIO b ON t.FK_ID_Barrio = b.ID_Barrio
@@ -294,7 +315,7 @@ SELECT
     -- IDs necesarios para filtros
     t.FK_ID_Estado_Ticket,
     es.FK_ID_Grado_Actual,
-    es.FK_ID_Gardo_Proximo,
+    es.FK_ID_Grado_Proximo,
     t.FK_ID_Tipo_Afectacion
 
 FROM TBL_TICKET t
@@ -302,7 +323,7 @@ INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
 INNER JOIN TBL_ESTUDIANTE es ON t.FK_ID_Estudiante = es.ID_Estudiante
 INNER JOIN TBL_PERSONA pe ON es.FK_ID_Persona = pe.ID_Persona
 INNER JOIN TBL_GRADO g_act ON es.FK_ID_Grado_Actual = g_act.ID_Grado
-LEFT JOIN TBL_GRADO g_prx ON es.FK_ID_Gardo_Proximo = g_prx.ID_Grado
+LEFT JOIN TBL_GRADO g_prx ON es.FK_ID_Grado_Proximo = g_prx.ID_Grado
 INNER JOIN TBL_TIPO_AFECTACION afec ON t.FK_ID_Tipo_Afectacion = afec.ID_Tipo_Afectacion
 INNER JOIN TBL_USUARIO ua ON t.FK_ID_Usuario_Creador = ua.ID_Usuario
 INNER JOIN TBL_PERSONA pa ON ua.FK_ID_Persona = pa.ID_Persona
@@ -312,3 +333,170 @@ LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
 LEFT JOIN TBL_COLEGIO col_asig ON cu.FK_ID_Colegio = col_asig.ID_Colegio
 
 WHERE t.Estado_Ticket = 1;
+
+
+
+-- ====================================================================================================================================================
+-- VIEWS PARA LA PAGINA DE ACCOUNTS / ACCOUNTS_USER / ACCOUNTS_FUNC
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- Vista general para listado del historial de acceso
+-- USADO EN sp_admin_historial_acceso_listar
+
+
+CREATE OR REPLACE VIEW vw_historial_acceso AS
+SELECT
+    sa.ID_Auditoria,
+    COALESCE(u.Nombre_Usuario, 'Desconocido') AS Nombre_Usuario,
+    COALESCE(r.ID_Rol, 0) AS ID_Rol,
+    COALESCE(r.Nombre_Rol, '————') AS Nombre_Rol,
+    sa.Tipo_Evento AS Evento,
+    sa.IP_Usuario AS IP,
+    -- Extrae nombre del navegador desde el User_Agent
+    CASE
+        WHEN User_Agent LIKE '%Brave/%' OR User_Agent LIKE '% Brave %' THEN 'Brave'
+        WHEN User_Agent LIKE '%Edg/%' THEN 'Edge'
+        WHEN User_Agent LIKE '%OPR/%' OR User_Agent LIKE '%Opera/%' THEN 'Opera'
+        WHEN User_Agent LIKE '%Vivaldi/%' THEN 'Vivaldi'
+        WHEN User_Agent LIKE '%CriOS/%' THEN 'Chrome (iOS)'
+        WHEN User_Agent LIKE '%Chrome/%' THEN 'Chrome'
+        WHEN User_Agent LIKE '%Firefox/%' THEN 'Firefox'
+        WHEN User_Agent LIKE '%Safari/%' AND User_Agent NOT LIKE '%Chrome/%' AND User_Agent NOT LIKE '%Chromium/%' THEN 'Safari'
+        WHEN User_Agent LIKE '%MSIE %' OR User_Agent LIKE '%Trident/%' THEN 'Internet Explorer'
+        ELSE 'Otro'
+    END AS Navegador,
+    sa.User_Agent,
+    sa.Fecha_Evento
+FROM TBL_AUDITORIA_SESION sa
+LEFT JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
+LEFT JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+WHERE sa.Estado_Auditoria_Sesion = 1;
+-- --------------------------------------------------------
+-- Vista general para listado de acciones sobre los usuarios
+-- USADO EN sp_admin_historial_acciones_listar
+
+CREATE OR REPLACE VIEW vw_historial_acciones AS
+SELECT
+    a.ID_Auditoria,
+    a.Tipo_Evento AS Evento,
+    a.Tabla_Afectada,
+    a.ID_Registro_Afectado,
+    -- Si el usuario no existe, muestra el ID crudo
+    COALESCE(
+        CONCAT(
+            CASE r.Nombre_Rol
+                WHEN 'Admin' THEN 'ADM'
+                WHEN 'Tecnico' THEN 'TEC'
+                WHEN 'Acudiente' THEN 'ACU'
+                WHEN 'Sistema' THEN 'SIS'
+                ELSE 'SIS'
+            END, '-', u.ID_Usuario
+        ),
+        CONCAT('USR-', a.FK_ID_Usuario)
+    ) AS ID_Formateado,
+    COALESCE(r.ID_Rol, 0) AS ID_Rol,
+    COALESCE(r.Nombre_Rol, '—') AS Nombre_Rol,
+    a.IP_Usuario AS IP,
+    COALESCE(CAST(a.Datos_Antiguo AS CHAR), 'No aplica') AS Dato_Antiguo,
+    COALESCE(CAST(a.Datos_Nuevos  AS CHAR), 'No aplica') AS Dato_Nuevo,
+    a.Fecha_Auditoria AS Fecha_Evento
+FROM TBL_AUDITORIA a
+LEFT JOIN TBL_USUARIO u ON a.FK_ID_Usuario = u.ID_Usuario   -- LEFT: muestra aunque el user no exista
+LEFT JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol       -- LEFT: muestra aunque no tenga rol
+WHERE a.Estado_Auditoria = 1;
+
+
+-- --------------------------------------------------------
+-- Contiene información parcial del acudiente
+-- USADO EN sp_admin_metricas_usuarios
+
+CREATE OR REPLACE VIEW vw_admin_acudientes AS
+SELECT
+    u.ID_Usuario,
+    CONCAT('ACU-', u.ID_Usuario) AS ID_Formateado,
+    TRIM(CONCAT(
+        p.Primer_Nombre,  ' ',
+        COALESCE(p.Segundo_Nombre,  ''), ' ',
+        p.Primer_Apellido, ' ',
+        COALESCE(p.Segundo_Apellido, '')
+    )) AS Nombre_Completo,
+    u.Doble_Factor_Activo AS MFA,
+    da.Email,
+    (SELECT COUNT(*) FROM TBL_TICKET t
+     WHERE t.FK_ID_Usuario_Creador = u.ID_Usuario
+       AND t.Estado_Ticket = 1) AS Total_Solicitudes,
+    u.Estado_Usuario,
+    CASE u.Estado_Usuario WHEN 1 THEN 'Activo' ELSE 'Eliminado' END AS Estado_Texto,
+    u.Ultimo_Login
+FROM TBL_USUARIO u
+INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+LEFT JOIN TBL_DATOS_ADICIONALES da ON da.FK_ID_Persona = p.ID_Persona
+WHERE r.Nombre_Rol = 'Acudiente';
+
+-- --------------------------------------------------------
+-- Contiene información parcial del estudiante
+-- USADO EN sp_admin_estudiantes_listar
+
+CREATE OR REPLACE VIEW vw_admin_estudiantes AS
+SELECT
+    e.ID_Estudiante,
+    CONCAT('EST-', e.ID_Estudiante) AS ID_Formateado,
+    CONCAT(pe.Primer_Nombre, ' ', pe.Primer_Apellido) AS Nombre_Estudiante,
+    CONCAT(pa.Primer_Nombre, ' ', pa.Primer_Apellido) AS Nombre_Acudiente,
+    TIMESTAMPDIFF(YEAR, pe.Fecha_Nacimiento, CURDATE()) AS Edad,
+    g.Nombre_Genero AS Genero,
+    e.Estado_Estudiante,
+    CASE e.Estado_Estudiante WHEN 1 THEN 'Activo' ELSE 'Eliminado' END AS Estado_Texto
+FROM TBL_ESTUDIANTE e
+INNER JOIN TBL_PERSONA pe ON e.FK_ID_Persona = pe.ID_Persona
+INNER JOIN TBL_USUARIO ua ON e.FK_ID_Acudiente = ua.ID_Usuario
+INNER JOIN TBL_PERSONA pa ON ua.FK_ID_Persona = pa.ID_Persona
+INNER JOIN TBL_GENERO g ON e.FK_ID_Genero = g.ID_Genero;
+
+
+-- --------------------------------------------------------
+-- Contiene información parcial de los tecnicos
+-- USADO EN sp_admin_tecnicos_listar | sp_admin_metricas_funcionarios
+
+CREATE OR REPLACE VIEW vw_admin_tecnicos AS
+SELECT
+    u.ID_Usuario,
+    CONCAT('TEC-', u.ID_Usuario) AS ID_Formateado,
+    CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo,
+    da.Email,
+    (SELECT COUNT(*) FROM TBL_TICKET t
+     INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+     WHERE t.FK_ID_Usuario_Tecnico = u.ID_Usuario
+       AND et.Estado_Final = 0) AS Casos_Asignados,
+    (SELECT COUNT(*) FROM TBL_TICKET t
+     INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+     WHERE t.FK_ID_Usuario_Tecnico = u.ID_Usuario
+       AND et.Estado_Final = 1) AS Casos_Cerrados,
+    u.Estado_Usuario,
+    CASE u.Estado_Usuario WHEN 1 THEN 'Activo' ELSE 'Desactivado' END AS Estado_Texto,
+    u.Ultimo_Login
+FROM TBL_USUARIO u
+INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+LEFT  JOIN TBL_DATOS_ADICIONALES da ON da.FK_ID_Persona = p.ID_Persona
+WHERE r.Nombre_Rol = 'Tecnico';
+
+
+-- --------------------------------------------------------
+-- Contiene información parcial de los administradores
+-- USADO EN sp_admin_administradores_listar | sp_admin_metricas_funcionarios
+
+CREATE OR REPLACE VIEW vw_admin_administradores AS
+SELECT
+    u.ID_Usuario,
+    CONCAT('ADM-', LPAD(u.ID_Usuario, 4, '0')) AS ID_Formateado,
+    CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo,
+    u.Ultimo_Login,
+    u.Estado_Usuario,
+    CASE u.Estado_Usuario WHEN 1 THEN 'Activo' ELSE 'Desactivado' END AS Estado_Texto
+FROM TBL_USUARIO u
+INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+WHERE r.Nombre_Rol = 'Admin';

@@ -93,9 +93,9 @@ class Login_Admin_Service:
                 data_user = sp_validar_data_user(username)
 
                 if not data_user:
-                    # Se pasa None como ID si no existe en la BD. 
-                    Auditoria_Session(None, ip, "ADMIN_FAILED_LOGIN", user_agent)
-
+                    # Se pasa 2 como ID (usuario generido de auditoria del sistema) si no existe en la BD. 
+                    Auditoria_Session(2, ip, "AD_FAILED_LOGIN", user_agent)
+                    
                     # Incrementar contador de intentos fallidos
                     session["login_intentos_admin"] = intentos_fallidos + 1
                     mostrar_recaptcha = session["login_intentos_admin"] >= INTENTOS_PARA_RECAPTCHA
@@ -117,7 +117,7 @@ class Login_Admin_Service:
     
                 if not login_validate:
                     # Auditar intento fallido con usuario existente
-                    Auditoria_Session(data_user["ID_Usuario"], ip, "ADMIN_FAILED_LOGIN", user_agent)
+                    Auditoria_Session(data_user["ID_Usuario"], ip, "FAILED_LOGIN", user_agent)
 
                     # Incrementar contador de intentos fallidos
                     session["login_intentos_admin"] = intentos_fallidos + 1
@@ -137,7 +137,7 @@ class Login_Admin_Service:
 
                 if not rol_usuario_validate:
                     # Auditar intento fallido con usuario existente
-                    Auditoria_Session(data_user["ID_Usuario"], ip, "ADMIN_FAILED_LOGIN", user_agent)
+                    Auditoria_Session(data_user["ID_Usuario"], ip, "FAILED_LOGIN", user_agent)
 
                     # Incrementar contador de intentos fallidos
                     session["login_intentos_admin"] = intentos_fallidos + 1
@@ -214,13 +214,13 @@ class Login_Admin_Service:
                     session["mfa_success_url"] = url_for("admin.dashboard")
 
                     response = make_response(redirect(url_for("auth.verify_mfa")))
-                    Auditoria_Session(data_user["ID_Usuario"], ip, "LOGIN_ADMIN_PENDING_MFA", user_agent)
+                    Auditoria_Session(data_user["ID_Usuario"], ip, "PENDING_MFA", user_agent)
                 else:
                     # MFA no configurado → forzar configuración antes de entrar
                     session["mfa_setup_pendiente"] = True   # guardia de acceso a setup
 
                     response = make_response(redirect(url_for("auth.config_mfa")))
-                    Auditoria_Session(data_user["ID_Usuario"], ip, "LOGIN_ADMIN_PENDING_MFA", user_agent)
+                    Auditoria_Session(data_user["ID_Usuario"], ip, "PENDING_MFA", user_agent)
 
                 set_access_cookies(response, access_token)
                 set_refresh_cookies(response, refresh_token)
@@ -315,7 +315,7 @@ class Login_Admin_Service:
                     except Exception as e:
                         print(f"[WARN] No se pudo cerrar sesión en BD: {e}")
 
-                Auditoria_Session(user_id, ip, "ADMIN_LOGOUT", user_agent)
+                Auditoria_Session(user_id, ip, "LOGOUT", user_agent)
 
             response = make_response(redirect(url_for("auth.login_admin")))
             unset_jwt_cookies(response)

@@ -99,7 +99,7 @@ class Config_MFA_Service:
                 return redirect(url_for("auth.login_admin"))
 
             if not MFA_Controller.verificar_codigo(secret_temp, form.codigo_mfa.data.strip()):
-                Auditoria_Session(id_usuario, ip, "ADMIN_FAILED_MFA_SETUP", user_agent)
+                Auditoria_Session(id_usuario, ip, "MFA_SETUP_FAILED", user_agent)
                 flash("Código incorrecto. Verifique la hora de su dispositivo.", "danger")
                 return render_template("auth/config_mfa.html", form=form)
 
@@ -113,7 +113,7 @@ class Config_MFA_Service:
             session.pop("mfa_qr_temp", None)
             session["double_factor"] = "ACTIVE"
 
-            Auditoria_Session(id_usuario, ip, "ADMIN_MFA_SETUP_OK", user_agent)
+            Auditoria_Session(id_usuario, ip, "MFA_SETUP_OK", user_agent)
             flash("Autenticación de dos factores activada. Bienvenido.", "success")
             return redirect(url_for("admin.dashboard"))
 

@@ -147,6 +147,7 @@ class Ticket_Panel_Service:
         try:
             sp_ticket_panel_comentario_insertar(
                 id_ticket=id_ticket,
+                tipo_evento="Comentario",
                 id_usuario=session["user_id"],
                 comentario=form.comentario.data.strip(),
                 es_interno=form.es_interno.data,
@@ -275,6 +276,7 @@ class Ticket_Panel_Service:
             )
             sp_ticket_panel_comentario_insertar(
                 id_ticket=id_ticket,
+                tipo_evento="Documento Subido",
                 id_usuario=session["user_id"],
                 comentario=f"[Documento Subido] {nombre_original}",
                 es_interno=True,

@@ -64,7 +64,7 @@ class Verify_MFA_Service:
                 session.pop("mfa_login_url", None)
                 session.pop("mfa_success_url", None)
                 
-                Auditoria_Session(id_usuario, ip, "LOGIN_MFA_OK", user_agent)
+                Auditoria_Session(id_usuario, ip, "LOGIN_MFA", user_agent)
                 return redirect(success_url)
 
             except Exception as e:

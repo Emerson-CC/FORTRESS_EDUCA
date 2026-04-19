@@ -127,3 +127,12 @@ class FormSubirDocumentoTecnico(FlaskForm):
             ),
         ],
     )
+    
+
+# ====================================================================================================================================================
+#                                           PAGINA ACCOUNTS.HTML
+# ====================================================================================================================================================
+
+class FormToggleEstado(FlaskForm):
+    """Form para cambiar estado de usuario/estudiante/técnico via POST."""
+    nuevo_estado = HiddenField("nuevo_estado", validators=[DataRequired()])

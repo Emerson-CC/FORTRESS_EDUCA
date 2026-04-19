@@ -1,7 +1,7 @@
 from app.utils.database_utils import db
 
 # ====================================================================================================================================================
-#                                           PAGINA TICKET_PANEL.HTML
+#                                           PAGINA CASES.HTML
 # ====================================================================================================================================================
 
 
@@ -62,11 +62,11 @@ def sp_ticket_panel_comentarios_consultar(id_ticket) -> list[dict]:
     return db.call_procedure("sp_ticket_panel_comentarios_consultar", (id_ticket,)) or []
 
 
-def sp_ticket_panel_comentario_insertar(id_ticket, id_usuario, comentario, es_interno) -> None:
+def sp_ticket_panel_comentario_insertar(id_ticket, tipo_evento, id_usuario, comentario, es_interno) -> None:
     """Inserta un comentario manual en el ticket."""
     db.call_procedure(
         "sp_ticket_panel_comentario_insertar",
-        (id_ticket, id_usuario, comentario, int(es_interno)),
+        (id_ticket, tipo_evento, id_usuario, comentario, int(es_interno)),
     )
 
 
@@ -160,3 +160,95 @@ def sp_tipo_documento_consultar() -> list[dict]:
 def sp_catalogo_barrios() -> list[dict]:
     """Retorna todos los barrios activos para el SelectField de asignación."""
     return db.call_procedure("sp_tbl_barrio_consultar", ()) or []
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA ACCOUNTS.HTML
+# ====================================================================================================================================================
+
+def sp_admin_metricas_accounts():
+    resultado = db.call_procedure("sp_admin_metricas_accounts", ())
+    return resultado[0] if resultado else {}
+
+def sp_admin_roles_consultar():
+    return db.call_procedure("sp_tbl_rol_consultar", ()) or []
+
+def sp_admin_eventos_acceso_consultar():
+    return db.call_procedure("sp_admin_eventos_acceso_consultar", ()) or []
+
+def sp_admin_eventos_auditoria_consultar():
+    return db.call_procedure("sp_admin_eventos_auditoria_consultar", ()) or []
+
+def sp_admin_navegadores_consultar():
+    return db.call_procedure("sp_admin_navegadores_consultar", ()) or []
+
+def sp_admin_historial_acceso_listar(id_rol=None, evento=None, navegador=None):
+    return db.call_procedure(
+        "sp_admin_historial_acceso_listar",
+        (id_rol, evento, navegador)
+    ) or []
+
+def sp_admin_historial_acciones_listar(id_rol=None, evento=None):
+    return db.call_procedure(
+        "sp_admin_historial_acciones_listar",
+        (id_rol, evento)
+    ) or []
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA ACCOUNTS_USER.HTML
+# ====================================================================================================================================================
+
+def sp_admin_metricas_usuarios():
+    resultado = db.call_procedure("sp_admin_metricas_usuarios", ())
+    return resultado[0] if resultado else {}
+
+def sp_admin_acudientes_listar():
+    return db.call_procedure("sp_admin_acudientes_listar", ()) or []
+
+def sp_admin_estudiantes_listar():
+    return db.call_procedure("sp_admin_estudiantes_listar", ()) or []
+
+def sp_admin_toggle_estado_usuario(id_usuario, nuevo_estado, ejecutor_id, ip, user_agent):
+    return db.call_procedure(
+        "sp_admin_toggle_estado_usuario",
+        (id_usuario, nuevo_estado, ejecutor_id, ip, user_agent),
+        commit=True
+    )
+
+def sp_admin_toggle_estado_estudiante(id_estudiante, nuevo_estado, ejecutor_id, ip, user_agent):
+    return db.call_procedure(
+        "sp_admin_toggle_estado_estudiante",
+        (id_estudiante, nuevo_estado, ejecutor_id, ip, user_agent),
+        commit=True
+    )
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA ACCOUNTS_FUNC.HTML
+# ====================================================================================================================================================
+
+def sp_admin_metricas_funcionarios():
+    resultado = db.call_procedure("sp_admin_metricas_funcionarios", ())
+    return resultado[0] if resultado else {}
+
+def sp_admin_tecnicos_listar(estado=None):
+    return db.call_procedure(
+        "sp_admin_tecnicos_listar",
+        (estado,)
+    ) or []
+
+def sp_admin_administradores_listar():
+    return db.call_procedure("sp_admin_administradores_listar", ()) or []
+
+def sp_admin_toggle_estado_tecnico(id_usuario, nuevo_estado, ejecutor_id, ip, user_agent):
+    """Reutiliza el mismo SP que toggle_estado_usuario."""
+    return db.call_procedure(
+        "sp_admin_toggle_estado_usuario",
+        (id_usuario, nuevo_estado, ejecutor_id, ip, user_agent),
+        commit=True
+    )
+    

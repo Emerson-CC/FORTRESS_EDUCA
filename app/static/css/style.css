@@ -37,6 +37,10 @@
     --color-danger: #EF4444;
     --color-danger-end: #F87171;
 
+    /* --Badges */
+    --color-admin: #212529;
+    --color-tec: #3a5b77;
+
     /* ── Fondos ── */
     --color-bg-body: #F8FAFC;
     /* Fondo principal — casi blanco azulado */
@@ -44,6 +48,7 @@
     /* Tarjetas */
     --color-bg-alt: #F1F5F9;
     /* Filas alternas / secciones */
+
 
     /* ── Texto ── */
     --color-text-main: #0F172A;
@@ -62,6 +67,11 @@
     --shadow-hover: 0 8px 24px rgba(37, 99, 235, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
     --shadow-primary: 0 4px 14px rgba(37, 99, 235, 0.30);
     --shadow-card: 0 0 0 1px var(--color-border), 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.bg-tec {
+    background-color: #4b7192;
+    color: white; /* Asegura que el texto se lea bien */
 }
 
 /* ============================================================

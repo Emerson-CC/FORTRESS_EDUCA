@@ -93,8 +93,8 @@ class Login_User_Service:
                 data_user = sp_validar_data_user(username)
 
                 if not data_user:
-                    # Se pasa None como ID si no existe en la BD. 
-                    Auditoria_Session(None, ip, "FAILED_LOGIN", user_agent)
+                    # Se pasa 2 como ID (usuario generido de auditoria del sistema) si no existe en la BD. 
+                    Auditoria_Session(2, ip, "US_FAILED_LOGIN", user_agent)
 
                     # Incrementar contador de intentos fallidos
                     session["login_intentos"] = intentos_fallidos + 1
@@ -230,7 +230,7 @@ class Login_User_Service:
                     except Exception as e:
                         print(f"[WARN] No se pudo registrar sesión: {e}")
 
-                    Auditoria_Session(data_user["ID_Usuario"], ip, "LOGIN_PENDING_MFA", user_agent)
+                    Auditoria_Session(data_user["ID_Usuario"], ip, "PENDING_MFA", user_agent)
                     
                 return response
 

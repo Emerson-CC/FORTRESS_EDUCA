@@ -159,7 +159,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_auditoria_sesion(
     IN p_usuario INT,
     IN p_ip VARCHAR(45),
-    IN p_evento VARCHAR(20),
+    IN p_evento VARCHAR(45),
     IN p_user_agent VARCHAR(255)
 )
 BEGIN
@@ -385,7 +385,7 @@ BEGIN
     SET v_ID_Usuario = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_USUARIO', 'CREATE', CAST(v_ID_Usuario AS CHAR),
+        'TBL_USUARIO', 'CREATE_ACCOUNT', CAST(v_ID_Usuario AS CHAR),
         NULL, JSON_OBJECT('Username', p_Nombre_Usuario), 
         p_IP, p_User_Agent, 1
     );
@@ -535,7 +535,7 @@ BEGIN
     INNER JOIN TBL_ESTUDIANTE est ON est.FK_ID_Acudiente = u.ID_Usuario
     INNER JOIN TBL_PERSONA pe ON est.FK_ID_Persona = pe.ID_Persona
     INNER JOIN TBL_GRADO g_act ON est.FK_ID_Grado_Actual = g_act.ID_Grado
-    LEFT  JOIN TBL_GRADO g_prox ON est.FK_ID_Gardo_Proximo = g_prox.ID_Grado
+    LEFT  JOIN TBL_GRADO g_prox ON est.FK_ID_Grado_Proximo = g_prox.ID_Grado
     -- Ticket más reciente
     LEFT JOIN TBL_TICKET t ON t.FK_ID_Usuario_Creador = u.ID_Usuario 
         AND t.Estado_Ticket = 1
@@ -647,6 +647,7 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
+-- 
 
 DROP PROCEDURE IF EXISTS sp_ticket_crear;
 
@@ -672,6 +673,15 @@ BEGIN
     DECLARE v_nivel_afectacion TINYINT DEFAULT 0;
     DECLARE v_nivel_gp TINYINT DEFAULT 0;
     DECLARE v_id_estado_inicial TINYINT;
+    DECLARE v_msg_comentario TEXT;
+
+    -- Manejo de errores: rollback automático
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
 
     -- Nombre del estudiante y grado para el título
     SELECT CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido),
@@ -679,7 +689,7 @@ BEGIN
     INTO   v_nombre_est, v_grado
     FROM   TBL_ESTUDIANTE e
     INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_GRADO gr ON e.FK_ID_Gardo_Proximo = gr.ID_Grado
+    INNER JOIN TBL_GRADO gr ON e.FK_ID_Grado_Proximo = gr.ID_Grado
     WHERE  e.ID_Estudiante = p_id_estudiante;
 
     SET v_titulo = CONCAT('Solicitud de Cupo — ', v_nombre_est, ' — ', v_grado);
@@ -697,7 +707,7 @@ BEGIN
 
     SET v_puntaje = COALESCE(v_nivel_afectacion, 0) + COALESCE(v_nivel_gp, 0);
 
-    -- Estado inicial (primer estado no final activo)
+    -- Estado inicial
     SELECT ID_Estado_Ticket INTO v_id_estado_inicial
     FROM TBL_ESTADO_TICKET
     WHERE Estado_Final = 0 AND Estado_Estado_Ticket = 1
@@ -717,8 +727,34 @@ BEGIN
         v_id_estado_inicial, p_id_barrio, p_id_tiempo_residencia
     );
 
-    -- Retornar el ticket creado para confirmación
-    SELECT p_id_ticket AS id_ticket, v_titulo AS titulo, v_puntaje AS puntaje;
+    -- Crear mensaje del comentario automático
+    SET v_msg_comentario = CONCAT(
+        '[Nueva Solicitud] Ticket creado: ',
+        v_titulo
+    );
+
+    -- Insertar comentario automático
+    INSERT INTO TBL_TICKET_COMENTARIO (
+        Tipo_Evento,
+        Comentario,
+        Es_Interno,
+        FK_ID_Usuario,
+        FK_ID_Ticket
+    ) VALUES (
+        'Nueva Solicitud',
+        v_msg_comentario,
+        1, -- interno
+        p_id_usuario,
+        p_id_ticket
+    );
+
+    COMMIT;
+
+    -- Retorno
+    SELECT 
+        p_id_ticket AS id_ticket, 
+        v_titulo AS titulo, 
+        v_puntaje AS puntaje;
 END $$
 DELIMITER ;
 
@@ -810,7 +846,7 @@ BEGIN
         t.Nombre_Estado,
 
         CONCAT(e.Primer_Nombre, ' ', e.Primer_Apellido) AS Nombre_Estudiante,
-        e.Grado_Actual
+        e.Nombre_Grado_Actual
 
     FROM vw_ticket_base t
     INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
@@ -836,27 +872,46 @@ CREATE PROCEDURE sp_tbl_ticket_consultar_detalle(
 )
 BEGIN
     SELECT
-        t.*,
+        t.ID_Ticket,
+        t.Titulo_Ticket,
+        t.Descripcion_Ticket,
+        t.Fecha_Creacion,
+        t.Fecha_Cierre,
+        t.Puntaje_Prioridad,
+
+        t.Nombre_Estado,
+        t.Estado_Final,
+
+        t.Nombre_Afectacion,
+        t.Nivel_Prioridad_TC,
 
         CONCAT(e.Primer_Nombre, ' ', e.Primer_Apellido) AS Nombre_Estudiante,
-        e.Grado_Actual,
-        e.Grado_Proximo,
+        e.Nombre_Grado_Actual,
+        e.Nombre_Grado_Proximo,
 
-        j.Nombre_Jornada,
+        j.Nombre_Jornada AS Jornada_Preferencia,
+        COALESCE(cp.Nombre_Colegio, 'Sin preferencia') AS Colegio_Preferencia,
+        COALESCE(c_asig.Nombre_Colegio, 'Sin asignar') AS Colegio_Asignado,
+
+        CONCAT(pt.Primer_Nombre, ' ', pt.Primer_Apellido) AS Nombre_Tecnico,
+
         b.Nombre_Barrio,
-
         tr.Nombre_Tiempo
 
-    FROM vw_ticket_base t
+    FROM vw_ticket_detalle t
     INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
-    INNER JOIN TBL_TICKET t_real ON t.ID_Ticket = t_real.ID_Ticket
-
-    INNER JOIN TBL_JORNADA j ON t_real.FK_ID_Jornada_Preferencia = j.ID_Jornada
-    INNER JOIN TBL_BARRIO b ON t_real.FK_ID_Barrio = b.ID_Barrio
-    LEFT JOIN TBL_TIEMPO_RESIDENCIA tr ON t_real.FK_ID_Tiempo_Residencia = tr.ID_Tiempo_Residencia
+    INNER JOIN TBL_JORNADA j ON t.FK_ID_Jornada_Preferencia = j.ID_Jornada
+    INNER JOIN TBL_BARRIO b ON t.FK_ID_Barrio = b.ID_Barrio
+    LEFT JOIN TBL_TIEMPO_RESIDENCIA tr ON t.FK_ID_Tiempo_Residencia = tr.ID_Tiempo_Residencia
+    LEFT JOIN TBL_COLEGIO cp ON t.FK_ID_Colegio_Preferencia = cp.ID_Colegio
+    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+    LEFT JOIN TBL_COLEGIO c_asig ON cu.FK_ID_Colegio = c_asig.ID_Colegio
+    LEFT JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
+    LEFT JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
 
     WHERE t.ID_Ticket = p_id_ticket
-      AND t.FK_ID_Usuario_Creador = p_id_usuario;
+    AND t.FK_ID_Usuario_Creador = p_id_usuario
+    AND t.Estado_Ticket = 1;
 END $$
 DELIMITER ;
 
@@ -1264,7 +1319,6 @@ BEGIN
 END $$
 DELIMITER ;
 
-
 -- --------------------------------------------------------
 -- SP: Obtener un estudiante específico por su ID (para edición)
 
@@ -1289,7 +1343,7 @@ BEGIN
         e.FK_ID_Genero AS ID_Genero,
         e.FK_ID_Grupo_Preferencial AS ID_Grupo_Preferencial,
         e.FK_ID_Grado_Actual AS ID_Grado_Actual,
-        e.FK_ID_Gardo_Proximo AS ID_Grado_Proximo,
+        e.FK_ID_Grado_Proximo AS ID_Grado_Proximo,
         e.FK_ID_Colegio_Anterior AS ID_Colegio_Anterior,
         e.FK_ID_Tipo_Iden AS ID_Tipo_Iden,
         ti.Nombre_Tipo_Iden,
@@ -1353,7 +1407,7 @@ BEGIN
 
         -- Académicos (Editables)
         e.FK_ID_Grado_Actual AS ID_Grado_Actual,
-        e.FK_ID_Gardo_Proximo AS ID_Grado_Proximo,
+        e.FK_ID_Grado_Proximo AS ID_Grado_Proximo,
         e.FK_ID_Colegio_Anterior AS ID_Colegio_Anterior
         
     FROM TBL_ESTUDIANTE e
@@ -1504,7 +1558,7 @@ BEGIN
     -- OLD DATA
     SELECT JSON_OBJECT(
         'Grado_Actual', FK_ID_Grado_Actual,
-        'Grado_Proximo', FK_ID_Gardo_Proximo,
+        'Grado_Proximo', FK_ID_Grado_Proximo,
         'Colegio', FK_ID_Colegio_Anterior,
         'Genero', FK_ID_Genero,
         'Grupo_Preferencial', FK_ID_Grupo_Preferencial
@@ -1518,7 +1572,7 @@ BEGIN
     UPDATE TBL_ESTUDIANTE
     SET
         FK_ID_Grado_Actual = p_grado_actual,
-        FK_ID_Gardo_Proximo = p_grado_proximo,
+        FK_ID_Grado_Proximo = p_grado_proximo,
         FK_ID_Colegio_Anterior = p_colegio,
         FK_ID_Genero = p_genero,
         FK_ID_Grupo_Preferencial = p_grupo_pref
@@ -1570,7 +1624,7 @@ CREATE PROCEDURE sp_registrar_estudiante_completo(
     -- ESTUDIANTE
     IN p_FK_ID_Tipo_Iden TINYINT,
     IN p_FK_ID_Grado_Actual TINYINT,
-    IN p_FK_ID_Gardo_Proximo TINYINT,
+    IN p_FK_ID_Grado_Proximo TINYINT,
     IN p_FK_ID_Colegio_Anterior INT,
     IN p_FK_ID_Genero TINYINT,
     IN p_FK_ID_Grupo_Preferencial TINYINT,
@@ -1635,7 +1689,7 @@ BEGIN
         FK_ID_Tipo_Iden,
         FK_ID_Persona,
         FK_ID_Grado_Actual,
-        FK_ID_Gardo_Proximo,
+        FK_ID_Grado_Proximo,
         FK_ID_Colegio_Anterior,
         FK_ID_Genero,
         FK_ID_Grupo_Preferencial,
@@ -1647,7 +1701,7 @@ BEGIN
         p_FK_ID_Tipo_Iden,
         v_ID_Persona_New,
         p_FK_ID_Grado_Actual,
-        p_FK_ID_Gardo_Proximo,
+        p_FK_ID_Grado_Proximo,
         p_FK_ID_Colegio_Anterior,
         p_FK_ID_Genero,
         p_FK_ID_Grupo_Preferencial,
@@ -2114,7 +2168,7 @@ BEGIN
     SELECT *
     FROM vw_cases_general
     WHERE (p_id_estado IS NULL OR FK_ID_Estado_Ticket = p_id_estado)
-      AND (p_id_grado IS NULL OR FK_ID_Grado_Actual = p_id_grado OR FK_ID_Gardo_Proximo = p_id_grado)
+      AND (p_id_grado IS NULL OR FK_ID_Grado_Actual = p_id_grado OR FK_ID_Grado_Proximo = p_id_grado)
       AND (p_id_afectacion IS NULL OR FK_ID_Tipo_Afectacion = p_id_afectacion)
     ORDER BY Puntaje_Prioridad DESC, Fecha_Creacion ASC;
 END $$
@@ -2235,6 +2289,7 @@ CREATE PROCEDURE sp_ticket_panel_comentarios_consultar(
 BEGIN
     SELECT
         tc.ID_Ticket_Comentario,
+        tc.Tipo_Evento,
         tc.Comentario,
         tc.Fecha_Comentario,
         tc.Es_Interno,
@@ -2246,7 +2301,7 @@ BEGIN
     INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
     WHERE tc.FK_ID_Ticket = p_id_ticket
       AND tc.Estado_Comentario_Ticket = 1
-    ORDER BY tc.Fecha_Comentario ASC;
+    ORDER BY tc.Fecha_Comentario DESC;
 END $$
 DELIMITER ;
 
@@ -2259,15 +2314,16 @@ DROP PROCEDURE IF EXISTS sp_ticket_panel_comentario_insertar;
 DELIMITER $$
 CREATE PROCEDURE sp_ticket_panel_comentario_insertar(
     IN p_id_ticket VARCHAR(10),
+    IN p_tipo_evento VARCHAR(20),
     IN p_id_usuario INT,
     IN p_comentario TEXT,
     IN p_es_interno TINYINT(1)
 )
 BEGIN
     INSERT INTO TBL_TICKET_COMENTARIO (
-        Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
+        Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
     ) VALUES (
-        p_comentario, p_es_interno, p_id_usuario, p_id_ticket
+        p_tipo_evento, p_comentario, p_es_interno, p_id_usuario, p_id_ticket
     );
 END $$
 DELIMITER ;
@@ -2288,6 +2344,8 @@ CREATE PROCEDURE sp_ticket_panel_estado_actualizar(
 BEGIN
     DECLARE v_estado_anterior VARCHAR(60);
     DECLARE v_estado_nuevo VARCHAR(60);
+    DECLARE v_tipo_evento VARCHAR(20);
+    DECLARE v_es_final TINYINT;    
     DECLARE v_msg_auditoria TEXT;
 
     -- Capturar el nombre del estado anterior para la auditoría
@@ -2303,25 +2361,35 @@ BEGIN
     WHERE ID_Estado_Ticket = p_id_estado_nuevo
     LIMIT 1;
 
+    -- Obtener si es estado final
+    SELECT Estado_Final 
+    INTO v_es_final
+    FROM TBL_ESTADO_TICKET
+    WHERE ID_Estado_Ticket = p_id_estado_nuevo
+    LIMIT 1;
+    
     -- Actualizar el ticket
     UPDATE TBL_TICKET
     SET FK_ID_Estado_Ticket = p_id_estado_nuevo,
         Fecha_Cierre = p_fecha_cierre
     WHERE ID_Ticket = p_id_ticket;
 
+    -- Definir el tipo de evento para auditoria
+    SET v_tipo_evento = IF(v_es_final = 1, 'Cierre Solicitud', 'Cambio de Estado');
+
     -- Construir el mensaje de auditoría
     SET v_msg_auditoria = CONCAT(
-        '[Cambio de Estado] ', v_estado_anterior,
-        ' → ', v_estado_nuevo,
+        '[', v_tipo_evento, '] ',
+        v_estado_anterior, ' → ', v_estado_nuevo,
         IF(p_resolucion IS NOT NULL AND p_resolucion != '',
-           CONCAT(' | Resolución: ', p_resolucion), '')
+        CONCAT(' | Resolución: ', p_resolucion), '')
     );
 
     -- Registrar el cambio como comentario interno automático
     INSERT INTO TBL_TICKET_COMENTARIO (
-        Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
+        Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
     ) VALUES (
-        v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
+        v_tipo_evento, v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
     );
 END $$
 DELIMITER ;
@@ -2340,6 +2408,7 @@ CREATE PROCEDURE sp_ticket_panel_asignar_cupo(
 )
 BEGIN
     DECLARE v_nombre_colegio VARCHAR(100);
+    DECLARE v_tipo_evento VARCHAR(20);
     DECLARE v_msg_auditoria TEXT;
 
     -- Obtener el nombre del colegio para la auditoría
@@ -2354,6 +2423,9 @@ BEGIN
     SET FK_ID_Cupo_Asignado = p_id_cupo
     WHERE ID_Ticket = p_id_ticket;
 
+    -- Definir el tipo de evento para auditoria
+    SET v_tipo_evento = 'Cupo Asignado';
+
     -- Registrar auditoría
     SET v_msg_auditoria = CONCAT(
         '[Cupo Asignado] Colegio: ', COALESCE(v_nombre_colegio, 'Desconocido'),
@@ -2361,9 +2433,9 @@ BEGIN
     );
 
     INSERT INTO TBL_TICKET_COMENTARIO (
-        Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
+        Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
     ) VALUES (
-        v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
+        v_tipo_evento, v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
     );
 END $$
 DELIMITER ;
@@ -2550,3 +2622,375 @@ END $$
 DELIMITER ;
 
 
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE ACCOUNTS / ACCOUNTS_USER / ACCOUNTS_FUNC
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Para roles activos
+
+DROP PROCEDURE IF EXISTS sp_tbl_rol_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_tbl_rol_consultar()
+BEGIN
+    SELECT ID_Rol, Nombre_Rol
+    FROM TBL_ROL
+    WHERE ID_Rol <> 1 AND Estado_Rol = 1 
+    ORDER BY Nombre_Rol;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Para tener los eventos de sesión (LOGIN / LOGOUT / FAILED_LOGIN)
+
+DROP PROCEDURE IF EXISTS sp_admin_eventos_acceso_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_eventos_acceso_consultar()
+BEGIN
+    SELECT 'LOGIN' AS Nombre_Evento
+    UNION ALL SELECT 'LOGIN_MFA'
+
+    UNION ALL SELECT 'LOGOUT'
+
+    UNION ALL SELECT 'PENDING_MFA'
+
+    UNION ALL SELECT 'MFA_SETUP_OK'
+    UNION ALL SELECT 'MFA_SETUP_FAILED'
+
+    UNION ALL SELECT 'AD_FAILED_LOGIN'
+    UNION ALL SELECT 'US_FAILED_LOGIN'
+
+    UNION ALL SELECT 'FAILED_MFA'
+    UNION ALL SELECT 'FAILED_LOGIN';
+
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Para tener los eventos de auditoría de tablas
+
+DROP PROCEDURE IF EXISTS sp_admin_eventos_auditoria_consultar;
+
+DELIMITER $$
+-- Eventos de auditoría de tablas
+CREATE PROCEDURE sp_admin_eventos_auditoria_consultar()
+BEGIN
+    SELECT DISTINCT Tipo_Evento AS Nombre_Evento
+    FROM TBL_AUDITORIA
+    WHERE Estado_Auditoria = 1
+    ORDER BY Tipo_Evento;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Navegadores distintos extraídos de User_Agent en TBL_AUDITORIA_SESION
+
+DROP PROCEDURE IF EXISTS sp_admin_navegadores_consultar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_navegadores_consultar()
+BEGIN
+    SELECT DISTINCT
+        CASE
+            WHEN User_Agent LIKE '%Brave/%' OR User_Agent LIKE '% Brave %' THEN 'Brave'
+            WHEN User_Agent LIKE '%Edg/%' THEN 'Edge'
+            WHEN User_Agent LIKE '%OPR/%' OR User_Agent LIKE '%Opera/%' THEN 'Opera'
+            WHEN User_Agent LIKE '%Vivaldi/%' THEN 'Vivaldi'
+            WHEN User_Agent LIKE '%CriOS/%' THEN 'Chrome (iOS)'
+            WHEN User_Agent LIKE '%Chrome/%' THEN 'Chrome'
+            WHEN User_Agent LIKE '%Firefox/%' THEN 'Firefox'
+            WHEN User_Agent LIKE '%Safari/%' AND User_Agent NOT LIKE '%Chrome/%' AND User_Agent NOT LIKE '%Chromium/%' THEN 'Safari'
+            WHEN User_Agent LIKE '%MSIE %' OR User_Agent LIKE '%Trident/%' THEN 'Internet Explorer'
+            ELSE 'Otro'
+        END AS Nombre_Navegador
+    FROM TBL_AUDITORIA_SESION
+    WHERE Estado_Auditoria_Sesion = 1
+    ORDER BY Nombre_Navegador;
+END $$
+DELIMITER ;
+
+
+
+-- --------------------------------------------------------
+-- SP: Obtener historial de acceso con filtros opcionales
+
+DROP PROCEDURE IF EXISTS sp_admin_historial_acceso_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_historial_acceso_listar(
+    IN p_id_rol TINYINT,
+    IN p_evento VARCHAR(50),
+    IN p_navegador VARCHAR(100)
+)
+BEGIN
+    SELECT *
+    FROM vw_historial_acceso
+    WHERE ID_Rol <> 1
+        AND (p_id_rol IS NULL OR ID_Rol = p_id_rol)
+        AND (p_evento IS NULL OR Evento = p_evento)
+        AND (p_navegador IS NULL OR Navegador = p_navegador)
+    ORDER BY Fecha_Evento DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Obtener historial de acciones con filtros opcionales
+
+DROP PROCEDURE IF EXISTS sp_admin_historial_acciones_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_historial_acciones_listar(
+    IN p_id_rol TINYINT,
+    IN p_evento VARCHAR(50)
+)
+BEGIN
+    SELECT *
+    FROM vw_historial_acciones
+    WHERE (p_id_rol IS NULL OR ID_Rol = p_id_rol)
+        AND (p_evento IS NULL OR Evento = p_evento)
+    ORDER BY Fecha_Evento DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Obtener la lista de acudientes
+
+DROP PROCEDURE IF EXISTS sp_admin_acudientes_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_acudientes_listar()
+BEGIN
+    SELECT * FROM VW_ADMIN_ACUDIENTES ORDER BY ID_Usuario DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Obtener la lista de estudiantes
+
+DROP PROCEDURE IF EXISTS sp_admin_estudiantes_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_estudiantes_listar()
+BEGIN
+    SELECT * FROM VW_ADMIN_ESTUDIANTES ORDER BY ID_Estudiante DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Métricas para accounts_user.html
+
+DROP PROCEDURE IF EXISTS sp_admin_metricas_usuarios;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_metricas_usuarios()
+BEGIN
+    SELECT
+        (SELECT COUNT(*) FROM VW_ADMIN_ACUDIENTES) AS acudientes,
+        (SELECT COUNT(*) FROM TBL_ESTUDIANTE) AS estudiantes,
+        (SELECT COUNT(*) FROM TBL_USUARIO u
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE r.Nombre_Rol = 'Acudiente'
+                AND u.Doble_Factor_Activo = 'ACTIVE') AS usuarios_mfa;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Obtener las métricas globales de cuentas
+
+DROP PROCEDURE IF EXISTS sp_admin_metricas_accounts;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_metricas_accounts()
+BEGIN
+    SELECT
+        -- Total de usuarios en el sistema
+        (SELECT COUNT(*)
+         FROM TBL_USUARIO
+         WHERE Estado_Usuario = 1) AS total_usuarios,
+
+        -- Acudientes con sesión activa ahora mismo
+        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
+            FROM TBL_SESION_ACTIVA sa
+            INNER JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE sa.Activa = 1
+                AND r.Nombre_Rol = 'Acudiente') AS acudientes_con,
+
+        -- Técnicos con sesión activa ahora mismo
+        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
+            FROM TBL_SESION_ACTIVA sa
+            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE sa.Activa = 1
+                AND r.Nombre_Rol = 'Tecnico') AS tecnicos_con,
+
+        -- Administradores con sesión activa ahora mismo
+        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
+            FROM TBL_SESION_ACTIVA sa
+            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE sa.Activa = 1
+            AND r.Nombre_Rol = 'Admin') AS administradores_con;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Toggle estado de usuario, registra en TBL_AUDITORIA con JSON
+
+DROP PROCEDURE IF EXISTS sp_admin_toggle_estado_usuario;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_toggle_estado_usuario(
+    IN p_id_usuario INT,
+    IN p_nuevo_estado TINYINT,
+    IN p_ejecutor_id INT,
+    IN p_ip VARCHAR(50),
+    IN p_user_agent   VARCHAR(255)
+)
+BEGIN
+    DECLARE v_estado_actual TINYINT;
+    DECLARE v_evento VARCHAR(20);
+
+    -- Estado actual antes del cambio
+    SELECT Estado_Usuario INTO v_estado_actual
+    FROM TBL_USUARIO
+    WHERE ID_Usuario = p_id_usuario;
+
+    SET v_evento = IF(p_nuevo_estado = 1, 'UPDATE', 'DELETE');
+
+    -- Aplicar cambio
+    UPDATE TBL_USUARIO
+    SET Estado_Usuario = p_nuevo_estado
+    WHERE ID_Usuario = p_id_usuario;
+
+    -- Registrar en auditoría con JSON estructurado
+    INSERT INTO TBL_AUDITORIA (
+        Tabla_Afectada,
+        Tipo_Evento,
+        ID_Registro_Afectado,
+        Datos_Antiguo,
+        Datos_Nuevos,
+        IP_Usuario,
+        User_Agent,
+        FK_ID_Usuario
+    ) VALUES (
+        'TBL_USUARIO',
+        v_evento,
+        CAST(p_id_usuario AS CHAR),
+        JSON_OBJECT('Estado_Usuario', v_estado_actual),
+        JSON_OBJECT('Estado_Usuario', p_nuevo_estado),
+        p_ip,
+        p_user_agent,
+        p_ejecutor_id
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Toggle estado de estudiante, registra en TBL_AUDITORIA con JSON
+
+DROP PROCEDURE IF EXISTS sp_admin_toggle_estado_estudiante;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_toggle_estado_estudiante(
+    IN p_id_estudiante INT,
+    IN p_nuevo_estado TINYINT,
+    IN p_ejecutor_id INT,
+    IN p_ip VARCHAR(50),
+    IN p_user_agent VARCHAR(255)
+)
+BEGIN
+    DECLARE v_estado_actual TINYINT;
+
+    SELECT Estado_Estudiante INTO v_estado_actual
+    FROM TBL_ESTUDIANTE
+    WHERE ID_Estudiante = p_id_estudiante;
+
+    UPDATE TBL_ESTUDIANTE
+    SET Estado_Estudiante = p_nuevo_estado
+    WHERE ID_Estudiante = p_id_estudiante;
+
+    INSERT INTO TBL_AUDITORIA (
+        Tabla_Afectada,
+        Tipo_Evento,
+        ID_Registro_Afectado,
+        Datos_Antiguo,
+        Datos_Nuevos,
+        IP_Usuario,
+        User_Agent,
+        FK_ID_Usuario
+    ) VALUES (
+        'TBL_ESTUDIANTE',
+        'DELETE',
+        CAST(p_id_estudiante AS CHAR),
+        JSON_OBJECT('Estado_Estudiante', v_estado_actual),
+        JSON_OBJECT('Estado_Estudiante', p_nuevo_estado),
+        p_ip,
+        p_user_agent,
+        p_ejecutor_id
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Listar técnicos con filtro de estado opcional
+
+DROP PROCEDURE IF EXISTS sp_admin_tecnicos_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_tecnicos_listar(
+    IN p_estado TINYINT
+)
+BEGIN
+    SELECT *
+    FROM VW_ADMIN_TECNICOS
+    WHERE (p_estado IS NULL OR Estado_Usuario = p_estado)
+    ORDER BY ID_Usuario DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Listar técnicos con filtro de estado opcional
+
+DROP PROCEDURE IF EXISTS sp_admin_administradores_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_administradores_listar()
+BEGIN
+    SELECT * FROM VW_ADMIN_ADMINISTRADORES ORDER BY ID_Usuario DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Métricas para accounts_func.html
+
+DROP PROCEDURE IF EXISTS sp_admin_metricas_funcionarios;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_metricas_funcionarios()
+BEGIN
+    SELECT
+        (SELECT COUNT(*)
+         FROM VW_ADMIN_TECNICOS) AS tecnicos,
+        (SELECT COUNT(*)
+         FROM VW_ADMIN_TECNICOS WHERE Estado_Usuario = 0) AS tecnicos_desactivados,
+        (SELECT COUNT(*)
+         FROM VW_ADMIN_ADMINISTRADORES) AS administradores;
+END $$
+DELIMITER ;

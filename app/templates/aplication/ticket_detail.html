@@ -90,14 +90,14 @@
                             <div class="col-sm-6">
                                 <div class="p-2 bg-light rounded">
                                     <small class="text-muted d-block">Grado Actual</small>
-                                    <span class="fw-semibold">{{ ticket.Grado_Actual }}</span>
+                                    <span class="fw-semibold">{{ ticket.Nombre_Grado_Actual }}</span>
                                 </div>
                             </div>
                             {% if ticket.Grado_Proximo %}
                             <div class="col-sm-6">
                                 <div class="p-2 bg-light rounded">
                                     <small class="text-muted d-block">Grado Solicitado</small>
-                                    <span class="fw-semibold">{{ ticket.Grado_Proximo }}</span>
+                                    <span class="fw-semibold">{{ ticket.Nombre_Grado_Proximo }}</span>
                                 </div>
                             </div>
                             {% endif %}
@@ -310,9 +310,9 @@
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-5">
-                            <i class="fas fa-comment-slash fa-2x mb-2 d-block"></i>
+                            <i class="fas fa-comment-slash fa-2x mb-2 d-block mx-auto"></i>
                             <p class="mb-0">Aún no hay comentarios en esta solicitud.</p>
-                        </div>
+                        </div>                     
                     {% endif %}
                 </div>
             </div>

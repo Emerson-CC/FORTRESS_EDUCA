@@ -139,10 +139,13 @@ class Ticket_Detail_Service:
     def cargar_datos_ticket(self, id_ticket: str):
         user_id = session["user_id"]
 
+        print(id_ticket, user_id)
         ticket = sp_ticket_consultar_detalle(id_ticket, user_id)
         if not ticket:
             flash("La solicitud no existe o no tiene permisos para verla.", "danger")
             return redirect(url_for("aplication.ticket_status"))
+
+        print(ticket)
 
         comentarios = sp_ticket_comentarios_consultar(id_ticket, user_id)
         documentos  = sp_ticket_documentos_consultar(id_ticket, user_id)

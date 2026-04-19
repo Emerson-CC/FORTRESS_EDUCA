@@ -11,12 +11,14 @@ controller = AdminController()
 def dashboard():
     return render_template("admin/dashboard.html", active_page="dashboard")
 
+# CASES
 @admin_bp.route("/cases")
 #@login_required
 #@admin_required
 def cases():
     return controller.cases()
 
+# TICKET PANEL
 @admin_bp.route("/ticket_panel/<string:id_ticket>", methods=["GET"])
 #@login_required
 #@admin_required
@@ -53,11 +55,46 @@ def ticket_upload_doc(id_ticket):
 def ticket_download_doc(id_ticket, id_doc):
     return controller.ticket_download_doc(id_ticket, id_doc)
 
-@admin_bp.route("/users")
-##@login_required
-#@admin_required
-def users():
-    return render_template("admin/users.html", active_page="users")
+# ACCOUNTS
+@admin_bp.route("/cuentas")
+# @login_required
+# @admin_required
+def accounts():
+    return controller.accounts()
+
+    # ACCOUNTS USER
+@admin_bp.route("/cuentas/usuarios")
+# @login_required
+# @admin_required
+def accounts_user():
+    return controller.accounts_user()
+
+@admin_bp.route("/cuentas/usuarios/<int:id_usuario>/estado", methods=["POST"])
+# @login_required
+# @admin_required
+def accounts_user_toggle_estado(id_usuario):
+    return controller.toggle_estado_usuario(id_usuario)
+
+@admin_bp.route("/cuentas/usuarios/estudiante/<int:id_estudiante>/estado", methods=["POST"])
+# @login_required
+# @admin_required
+def accounts_estudiante_toggle_estado(id_estudiante):
+    return controller.toggle_estado_estudiante(id_estudiante)
+
+    # ACCOUNTS FUNC
+@admin_bp.route("/cuentas/funcionarios")
+# @login_required
+# @admin_required
+def accounts_func():
+    return controller.accounts_func()
+
+@admin_bp.route("/cuentas/funcionarios/<int:id_usuario>/estado", methods=["POST"])
+# @login_required
+# @admin_required
+def accounts_func_toggle_estado(id_usuario):
+    return controller.toggle_estado_tecnico(id_usuario)
+
+
 
 @admin_bp.route("/history")
 #@login_required
