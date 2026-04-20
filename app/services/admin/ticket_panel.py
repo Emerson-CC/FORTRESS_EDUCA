@@ -205,9 +205,6 @@ class Ticket_Panel_Service:
         form_asignacion.jornada_asignada.choices = [(0, "-- Seleccione --")] + [
             (j["ID_Jornada"], j["Nombre_Jornada"]) for j in sp_catalogo_jornadas()
         ]
-        form_asignacion.tipo_afectacion.choices = [(0, "-- Seleccione --")] + [
-            (a["ID_Tipo_Afectacion"], a["Nombre_Afectacion"]) for a in sp_catalogo_tipo_afectacion()
-        ]
         form_asignacion.barrio.choices = [(0, "-- Seleccione --")] + [
             (b["ID_Barrio"], b["Nombre_Barrio"]) for b in sp_catalogo_barrios()
         ]

@@ -84,13 +84,6 @@ class FormAsignarCupo(FlaskForm):
         choices=[],
     )
 
-    tipo_afectacion = SelectField(
-        "Tipo de Afectación",
-        validators=[DataRequired(), seleccion_valida],
-        coerce=int,
-        choices=[],
-    )
-
     barrio = SelectField(
         "Barrio",
         validators=[DataRequired(), seleccion_valida],

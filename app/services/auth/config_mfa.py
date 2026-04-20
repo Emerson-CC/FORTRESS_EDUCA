@@ -9,6 +9,7 @@ from app.utils.database_utils import db
 
 from app.security.mfa_controller import MFA_Controller
 from app.forms.auth_forms  import FormVerificarMFA
+from app.utils.response_utils import render_no_cache
 
 
 class Config_MFA_Service:
@@ -38,7 +39,7 @@ class Config_MFA_Service:
             if secret_temp_bd and session.get("mfa_secret_temp") == secret_temp_bd:
                 # Ya hay un QR pendiente, solo renderizar
                 form = FormVerificarMFA()
-                return render_template("auth/config_mfa.html", form=form)
+                return render_no_cache("auth/config_mfa.html", form=form)
 
             # Generar nuevo secret y QR
             secret = MFA_Controller.generar_secret()
@@ -58,7 +59,7 @@ class Config_MFA_Service:
             return redirect(url_for("auth.login_admin"))
 
         form = FormVerificarMFA()
-        return render_template("auth/config_mfa.html", form=form)
+        return render_no_cache("auth/config_mfa.html", form=form)
 
 
     def Verify_Config_MFA(self):
@@ -77,7 +78,7 @@ class Config_MFA_Service:
 
         if not form.validate_on_submit():
             flash("Código inválido. Intente nuevamente.", "danger")
-            return render_template("auth/config_mfa.html", form=form)
+            return render_no_cache("auth/config_mfa.html", form=form)
 
         try:
             data = sp_obtener_mfa_secret(id_usuario)
@@ -101,7 +102,7 @@ class Config_MFA_Service:
             if not MFA_Controller.verificar_codigo(secret_temp, form.codigo_mfa.data.strip()):
                 Auditoria_Session(id_usuario, ip, "MFA_SETUP_FAILED", user_agent)
                 flash("Código incorrecto. Verifique la hora de su dispositivo.", "danger")
-                return render_template("auth/config_mfa.html", form=form)
+                return render_no_cache("auth/config_mfa.html", form=form)
 
             # Código válido: activar MFA
             sp_activar_mfa(id_usuario)
@@ -115,10 +116,10 @@ class Config_MFA_Service:
 
             Auditoria_Session(id_usuario, ip, "MFA_SETUP_OK", user_agent)
             flash("Autenticación de dos factores activada. Bienvenido.", "success")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(session.get("mfa_success_url", url_for("admin.dashboard")))
 
         except Exception as e:
             db.rollback()
             print(f"[ERROR] Confirmar_Setup_MFA: {e}")
             flash("Error interno. Intente nuevamente.", "danger")
-            return render_template("auth/config_mfa.html", form=form)
+            return render_no_cache("auth/config_mfa.html", form=form)

@@ -9,203 +9,262 @@
 <!-- invocar el bloque -->
 {% block Contenido_Pagina %}
 
+{# ── Macro: construye query-string conservando filtros activos ── #}
+{% macro qs(extra={}) %}
+  {%- set params = [] -%}
+  {%- if filtros.tipo_evento -%}  {%- set _ = params.append("tipo_evento=" ~ filtros.tipo_evento) -%}  {%- endif -%}
+  {%- if filtros.fecha_desde -%}  {%- set _ = params.append("fecha_desde=" ~ filtros.fecha_desde) -%}   {%- endif -%}
+  {%- if filtros.fecha_hasta -%}  {%- set _ = params.append("fecha_hasta=" ~ filtros.fecha_hasta) -%}   {%- endif -%}
+  {%- for k, v in extra.items() -%}{%- set _ = params.append(k ~ "=" ~ v) -%}{%- endfor -%}
+  {%- if params %}?{{ params | join("&") }}{%- endif -%}
+{% endmacro %}
+
     <main class="page-content">
-    
-        <div class="alert alert-light border small py-2 mb-4">
-            <i class="fas fa-shield-alt text-primary me-1"></i>
-            <strong>Módulo de Auditoría:</strong> Este registro captura todas las acciones sensibles del sistema
-            para garantizar transparencia y trazabilidad. No puede ser modificado por los administradores.
-            <br>
-        </div>
-    
-        <!-- Filtros de Auditoría -->
-        <div class="card border-0 shadow-sm p-3 mb-4">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold">Tipo de Evento</label>
-                    <select class="form-select form-select-sm" id="filtroEvento">
-                        <option value="">Todos los eventos</option>
-                        <option value="solicitud_nueva">Nueva Solicitud de Cupo</option>
-                        <option value="cupo_asignado">Asignación de Cupo</option>
-                        <option value="estado_cambiado">Cambio de Estado</option>
-                        <option value="config_cambiada">Cambio de Configuración</option>
-                        <option value="login_admin">Inicio de Sesión Admin</option>
-                        <option value="login_acudiente">Inicio de Sesión Acudiente</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold">Fecha Desde</label>
-                    <input type="date" class="form-control form-control-sm" id="fechaDesde">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold">Fecha Hasta</label>
-                    <input type="date" class="form-control form-control-sm" id="fechaHasta">
-                </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-outline-secondary btn-sm flex-grow-1" id="btnFiltrarAuditoria">
-                        <i class="fas fa-filter me-1"></i>Filtrar
-                    </button>
-                    <a href="{{ url_for('admin.history') }}" class="btn btn-outline-danger btn-sm">
-                        <i class="fas fa-times me-1"></i>Limpiar
-                    </a>                    
-                    <button class="btn btn-outline-success btn-sm" id="btnExportarAuditoria">
-                        <i class="fas fa-download me-1"></i>CSV
-                    </button>
-                </div>
+
+    <!-- Aviso de módulo -->
+    <div class="alert alert-light border small py-2 mb-4">
+        <i class="fas fa-shield-alt text-primary me-1"></i>
+        <strong>Módulo de Auditoría:</strong> Este registro captura todas las acciones sensibles del sistema
+        para garantizar transparencia y trazabilidad. No puede ser modificado por los administradores.
+    </div>
+
+    <!-- ── Filtros ── -->
+    <div class="card border-0 shadow-sm p-3 mb-4">
+        <form method="GET" action="{{ url_for('admin.history') }}" id="filtrosForm">
+        <div class="row g-3 align-items-end">
+
+            <!-- Tipo de Evento -->
+            <div class="col-md-3">
+            <label class="form-label small fw-bold" for="tipo_evento">Tipo de Evento</label>
+            <select class="form-select form-select-sm" id="tipo_evento" name="tipo_evento">
+                <option value="">Todos los eventos</option>
+                {% for valor, etiqueta in tipos_evento %}
+                <option value="{{ valor }}" {% if filtros.tipo_evento == valor %}selected{% endif %}>
+                    {{ etiqueta }}
+                </option>
+                {% endfor %}
+            </select>
             </div>
-        </div>
-    
-        <!-- Tabla de Historial -->
-        <div class="card border-0 shadow-sm p-4">
-            <h5 class="fw-bold mb-4">
-                <i class="fas fa-scroll me-2 text-primary"></i>Registro de Auditoría
-            </h5>
-    
-            <!--
-                            AQUÍ SE CARGARÁN LOS EVENTOS DESDE LA BASE DE DATOS
-                            DATA_SOURCE: GET /api/admin/auditoria?tipo=&fechaDesde=&fechaHasta=&page=
-                            ESTA TABLA SE ALIMENTARÁ AUTOMÁTICAMENTE CON CADA ACCIÓN DEL SISTEMA
-                            Estructura tabla BD: (id, timestamp, tipo_evento, usuario, detalle, ip_address, resultado)
-                        -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle small">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Fecha y Hora</th>
-                            <th>Tipo de Evento</th>
-                            <th>Usuario</th>
-                            <th>Detalle</th>
-                            <th>IP</th>
-                            <th>Resultado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Evento: Asignación de Cupo -->
-                        <tr>
-                            <td class="text-nowrap">
-                                <i class="fas fa-clock text-muted me-1"></i>
-                                19 Feb 2026, 10:32 AM
-                            </td>
-                            <td>
-                                <span class="badge bg-success">
-                                    <i class="fas fa-school me-1"></i>Cupo Asignado
-                                </span>
-                            </td>
-                            <td>Adm. Luis Narváez</td>
-                            <td>Cupo asignado a <strong>#EDU-0040</strong> (Laura Pérez) en IED Las Ferias · 2°
-                                Primaria</td>
-                            <td><code>192.168.1.10</code></td>
-                            <td><span class="badge bg-success">Exitoso</span></td>
-                        </tr>
-    
-                        <!-- Evento: Nueva Solicitud -->
-                        <tr>
-                            <td class="text-nowrap">
-                                <i class="fas fa-clock text-muted me-1"></i>
-                                19 Feb 2026, 09:15 AM
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">
-                                    <i class="fas fa-file-alt me-1"></i>Nueva Solicitud
-                                </span>
-                            </td>
-                            <td>María García (acudiente)</td>
-                            <td>Nueva solicitud de cupo registrada: <strong>#EDU-0041</strong> · Carlos García ·
-                                4° Primaria · Prioridad Alta</td>
-                            <td><code>190.24.18.55</code></td>
-                            <td><span class="badge bg-success">Exitoso</span></td>
-                        </tr>
-    
-                        <!-- Evento: Cambio de Estado -->
-                        <tr>
-                            <td class="text-nowrap">
-                                <i class="fas fa-clock text-muted me-1"></i>
-                                19 Feb 2026, 11:30 AM
-                            </td>
-                            <td>
-                                <span class="badge bg-warning text-dark">
-                                    <i class="fas fa-exchange-alt me-1"></i>Cambio Estado
-                                </span>
-                            </td>
-                            <td>Func. Ana Bejarano</td>
-                            <td>Estado de solicitud <strong>#EDU-0041</strong> cambiado de "Pendiente" a "En
-                                Revisión"</td>
-                            <td><code>192.168.1.12</code></td>
-                            <td><span class="badge bg-success">Exitoso</span></td>
-                        </tr>
-    
-                        <!-- Evento: Login Admin -->
-                        <tr>
-                            <td class="text-nowrap">
-                                <i class="fas fa-clock text-muted me-1"></i>
-                                19 Feb 2026, 08:45 AM
-                            </td>
-                            <td>
-                                <span class="badge bg-dark">
-                                    <i class="fas fa-shield-alt me-1"></i>Login Admin
-                                </span>
-                            </td>
-                            <td>Adm. Luis Narváez</td>
-                            <td>Inicio de sesión administrativo exitoso (credential: ADM-0001)</td>
-                            <td><code>192.168.1.10</code></td>
-                            <td><span class="badge bg-success">Exitoso</span></td>
-                        </tr>
-    
-                        <!-- Evento: Config Cambiada -->
-                        <tr>
-                            <td class="text-nowrap">
-                                <i class="fas fa-clock text-muted me-1"></i>
-                                18 Feb 2026, 03:15 PM
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">
-                                    <i class="fas fa-cog me-1"></i>Configuración
-                                </span>
-                            </td>
-                            <td>Adm. Claudia Vargas</td>
-                            <td>Actualización de cupos disponibles en IED Quirigua: 8 cupos en 4° Primaria
-                                (jornada mañana)</td>
-                            <td><code>192.168.1.11</code></td>
-                            <td><span class="badge bg-success">Exitoso</span></td>
-                        </tr>
-    
-                        <!-- Evento: Login Fallido -->
-                        <tr>
-                            <td class="text-nowrap">
-                                <i class="fas fa-clock text-muted me-1"></i>
-                                18 Feb 2026, 11:02 AM
-                            </td>
-                            <td>
-                                <span class="badge bg-dark">
-                                    <i class="fas fa-user-lock me-1"></i>Intento Login
-                                </span>
-                            </td>
-                            <td>Desconocido</td>
-                            <td>Intento de acceso administrativo fallido con credencial inválida (3 intentos)
-                            </td>
-                            <td><code>200.45.12.99</code></td>
-                            <td><span class="badge bg-danger">Bloqueado</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- Fecha Desde -->
+            <div class="col-md-3">
+            <label class="form-label small fw-bold" for="fecha_desde">Fecha Desde</label>
+            <input type="date" class="form-control form-control-sm" id="fecha_desde"
+                    name="fecha_desde" value="{{ filtros.fecha_desde or '' }}">
             </div>
-    
-            <!-- Paginación -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <small class="text-muted">Mostrando 6 de 342 registros de auditoría</small>
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">...</a></li>
-                        <li class="page-item"><a class="page-link" href="#">57</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
-                    </ul>
-                </nav>
+
+            <!-- Fecha Hasta -->
+            <div class="col-md-3">
+            <label class="form-label small fw-bold" for="fecha_hasta">Fecha Hasta</label>
+            <input type="date" class="form-control form-control-sm" id="fecha_hasta"
+                    name="fecha_hasta" value="{{ filtros.fecha_hasta or '' }}">
             </div>
+
+            <!-- Botones -->
+            <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                <i class="fas fa-filter me-1"></i>Filtrar
+            </button>
+            <a href="{{ url_for('admin.history') }}" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-times me-1"></i>Limpiar
+            </a>
+            <a href="{{ url_for('admin.history_export') }}{{ qs() }}"
+                class="btn btn-outline-success btn-sm" title="Exportar CSV">
+                <i class="fas fa-download me-1"></i>CSV
+            </a>
+            </div>
+
         </div>
-    
+        </form>
+    </div><!-- /filtros -->
+
+    <!-- ── Tabla de auditoría ── -->
+    <div class="card border-0 shadow-sm p-4">
+
+        <h5 class="fw-bold mb-4">
+        <i class="fas fa-scroll me-2 text-primary"></i>Registro de Auditoría
+        <span class="badge bg-secondary ms-2" style="font-size:.75rem;">
+            {{ total_registros }}
+        </span>
+        </h5>
+
+        <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead class="table-dark">
+            <tr>
+                <th>Fecha y Hora</th>
+                <th>Tipo de Evento</th>
+                <th>Usuario</th>
+                <th>Detalle</th>
+                <th>Ticket</th>
+                <th>Visibilidad</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in registros %}
+            <tr>
+
+                <!-- Fecha -->
+                <td class="text-nowrap">
+                {{ r.Fecha_Comentario.strftime("%d %b %Y, %I:%M %p") if r.Fecha_Comentario else "—" }}
+                </td>
+
+                <!-- Tipo de Evento (badge) -->
+                <td>
+                {% if r.Tipo_Evento == "Cupo Asignado" %}
+                    <span class="badge bg-success">
+                    <i class="fas fa-school me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% elif r.Tipo_Evento == "Nueva Solicitud" %}
+                    <span class="badge bg-primary">
+                    <i class="fas fa-file-alt me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% elif r.Tipo_Evento == "Cambio de Estado" %}
+                    <span class="badge bg-warning text-dark">
+                    <i class="fas fa-exchange-alt me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% elif r.Tipo_Evento == "Cambio Tecnico" %}
+                    <span class="badge bg-info text-dark">
+                    <i class="fas fa-user-cog me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% elif r.Tipo_Evento == "Documento Subido" %}
+                    <span class="badge bg-secondary">
+                    <i class="fas fa-paperclip me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% elif r.Tipo_Evento == "Cierre Solicitud" %}
+                    <span class="badge bg-danger">
+                    <i class="fas fa-lock me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary">
+                    <i class="fas fa-comment me-1"></i>{{ r.Tipo_Evento }}
+                    </span>
+                {% endif %}
+                </td>
+
+                <!-- Usuario -->
+                <td>
+                {{ r.Nombre_Completo_Usuario }}
+                <br>
+                <small class="text-muted">{{ r.Nombre_Rol }}</small>
+                </td>
+
+                <!-- Detalle -->
+                <td style="max-width:320px;">{{ r.Comentario }}</td>
+
+                <!-- Ticket -->
+                <td>
+                    {% if r.FK_ID_Ticket %}
+                    <a href="{{ url_for('admin.ticket_panel_detail', id_ticket=r.FK_ID_Ticket) }}"
+                        class="fw-bold text-primary text-decoration-none" target="_blank">
+                        #{{ r.FK_ID_Ticket }}
+                    </a>
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                
+                <!-- Visibilidad -->
+                <td>
+                    {% if r.Es_Interno %}
+                    <span class="badge bg-warning text-dark" style="font-size: 0.875em;">Interno</span>
+                    {% else %}
+                    <span class="badge bg-primary" style="font-size: 0.875em;">Público</span>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-5">
+                <i class="fas fa-inbox fa-2x mb-2 d-block opacity-50 mx-auto"></i>
+                No se encontraron registros de auditoría
+                {% if filtros.tipo_evento or filtros.fecha_desde or filtros.fecha_hasta %}
+                    con los filtros seleccionados.
+                    <a href="{{ url_for('admin.history') }}" class="ms-1">Limpiar filtros</a>
+                {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div><!-- /table-responsive -->
+
+        <!-- ── Pie: contador + paginación ── -->
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+
+        <small class="text-muted">
+            Mostrando
+            <strong>{{ registros | length }}</strong>
+            de <strong>{{ total_registros }}</strong> registros
+            {% if filtros.tipo_evento or filtros.fecha_desde or filtros.fecha_hasta %}
+            (filtros activos)
+            {% endif %}
+        </small>
+
+        <!-- Paginador -->
+        {% if total_paginas > 1 %}
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+
+            {# Anterior #}
+            <li class="page-item {% if pagina_actual <= 1 %}disabled{% endif %}">
+                <a class="page-link"
+                href="{{ url_for('admin.history') }}{{ qs({'pagina': pagina_actual - 1}) }}">
+                Anterior
+                </a>
+            </li>
+
+            {# Páginas visibles: primera, ventana centrada, última #}
+            {% set rango_ini = [pagina_actual - 2, 1] | max %}
+            {% set rango_fin = [pagina_actual + 2, total_paginas] | min %}
+
+            {% if rango_ini > 1 %}
+                <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin.history') }}{{ qs({'pagina': 1}) }}">1</a>
+                </li>
+                {% if rango_ini > 2 %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endif %}
+
+            {% for p in range(rango_ini, rango_fin + 1) %}
+                <li class="page-item {% if p == pagina_actual %}active{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('admin.history') }}{{ qs({'pagina': p}) }}">
+                    {{ p }}
+                </a>
+                </li>
+            {% endfor %}
+
+            {% if rango_fin < total_paginas %}
+                {% if rango_fin < total_paginas - 1 %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+                <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('admin.history') }}{{ qs({'pagina': total_paginas}) }}">
+                    {{ total_paginas }}
+                </a>
+                </li>
+            {% endif %}
+
+            {# Siguiente #}
+            <li class="page-item {% if pagina_actual >= total_paginas %}disabled{% endif %}">
+                <a class="page-link"
+                href="{{ url_for('admin.history') }}{{ qs({'pagina': pagina_actual + 1}) }}">
+                Siguiente
+                </a>
+            </li>
+
+            </ul>
+        </nav>
+        {% endif %}
+
+        </div><!-- /pie -->
+
+    </div><!-- /card tabla -->
+
     </main>
 
 {% endblock %}

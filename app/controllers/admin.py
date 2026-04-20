@@ -1,18 +1,26 @@
+from app.services.admin.dashboard import Dashboard_Service
 from app.services.admin.ticket_panel import Ticket_Panel_Service
 from app.services.admin.cases import Cases_Service
 from app.services.admin.accounts import Accounts_Service
 from app.services.admin.accounts_user import Accounts_User_Service
 from app.services.admin.accounts_func import Accounts_Func_Service
+from app.services.admin.history import History_Service
 
 class AdminController:
     """Controlador de funciones para la parte de admin"""
 
     def __init__(self):
+        self.dashboard_service = Dashboard_Service()        
         self.ticket_panel_service = Ticket_Panel_Service()
         self.cases_service = Cases_Service()
         self.accounts_service = Accounts_Service()
         self.accounts_user_service = Accounts_User_Service()
         self.accounts_func_service = Accounts_Func_Service()
+        self.history_service = History_Service()
+        
+    # DASHBOARD
+    def dashboard(self):
+        return self.dashboard_service.cargar_dashboard()
         
     # CASES
     def cases(self):
@@ -57,3 +65,10 @@ class AdminController:
 
     def toggle_estado_tecnico(self, id_usuario: int):
         return self.accounts_func_service.toggle_estado_tecnico(id_usuario)
+    
+    # HISTORY
+    def history(self):
+        return self.history_service.listar_auditoria()
+
+    def history_export(self):
+        return self.history_service.exportar_csv()    

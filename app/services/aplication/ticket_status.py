@@ -139,13 +139,10 @@ class Ticket_Detail_Service:
     def cargar_datos_ticket(self, id_ticket: str):
         user_id = session["user_id"]
 
-        print(id_ticket, user_id)
         ticket = sp_ticket_consultar_detalle(id_ticket, user_id)
         if not ticket:
             flash("La solicitud no existe o no tiene permisos para verla.", "danger")
             return redirect(url_for("aplication.ticket_status"))
-
-        print(ticket)
 
         comentarios = sp_ticket_comentarios_consultar(id_ticket, user_id)
         documentos  = sp_ticket_documentos_consultar(id_ticket, user_id)
@@ -200,6 +197,14 @@ class Ticket_Detail_Service:
                 contenido,
                 nombre_original,
             )
+            sp_documento_comentario_insertar(
+                id_ticket=id_ticket,
+                tipo_evento="Documento Subido",
+                id_usuario=session["user_id"],
+                comentario=f"[Documento Subido] El usuario ha subido el documento: {nombre_original}",
+                es_interno=0,
+            )
+            
             db.commit()
             flash("Documento subido correctamente.", "success")
             return redirect(url_for("aplication.ticket_detail", id_ticket=id_ticket, active_page="status"))

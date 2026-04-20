@@ -77,7 +77,7 @@ def student_required(f):
                 and resultado[0].get("tiene_estudiante", 0) > 0
             )
         except Exception as e:
-            print(f"[ERROR] Decorador estudiante_requerido: {e}")
+            # print(f"[ERROR] Decorador estudiante_requerido: {e}")
             # Ante error técnico se permite el paso para no bloquear al usuario
             tiene_estudiante = True
 

@@ -52,7 +52,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                             <input type="text" class="form-control" id="username" name="username"
-                                placeholder="Ingrese su documento o correo" required>
+                                placeholder="Ingrese su correo" required>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -60,7 +60,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password"
-                                placeholder="Ingrese su contraseña" required>
+                                placeholder="Ingrese su contraseña" autocomplete="new-password" required>
                             <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -75,7 +75,7 @@
                     {% if mostrar_recaptcha %}
                     <div class="mb-3">
                         <div class="alert alert-warning small py-2">
-                            <i class="fas fa-shield-alt me-1"></i>
+                            <i class="fas fa-shield-alt me-1 mx-auto"></i>
                             Por seguridad, confirme que no es un robot.
                         </div>
                         <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>

@@ -9,7 +9,7 @@ controller = AdminController()
 ##@login_required
 #@admin_required
 def dashboard():
-    return render_template("admin/dashboard.html", active_page="dashboard")
+    return controller.dashboard()
 
 # CASES
 @admin_bp.route("/cases")
@@ -95,12 +95,19 @@ def accounts_func_toggle_estado(id_usuario):
     return controller.toggle_estado_tecnico(id_usuario)
 
 
-
+# HISTORY
 @admin_bp.route("/history")
-#@login_required
-#@admin_required
+# @login_required
+# @admin_required
 def history():
-    return render_template("admin/history.html", active_page="history")
+    return controller.history()
+
+@admin_bp.route("/history/export")
+# @login_required
+# @admin_required
+def history_export():
+    return controller.history_export()
+
 
 @admin_bp.route("/settings")
 #@login_required

@@ -1,10 +1,8 @@
 from flask import request, render_template, redirect, url_for, flash
-from app.repositories.admin_repository import (
-    sp_admin_metricas_funcionarios, 
-    sp_admin_tecnicos_listar, 
-    sp_admin_administradores_listar, 
-    sp_admin_toggle_estado_tecnico
-)
+from app.repositories.admin_repository import sp_admin_metricas_funcionarios, sp_admin_tecnicos_listar, sp_admin_administradores_listar, sp_admin_toggle_estado_tecnico
+
+from app.forms.admin_forms import FormToggleEstado
+
 
 class Accounts_Func_Service:
     """Lógica de negocio para accounts_func.html (técnicos y admins)."""
@@ -20,6 +18,9 @@ class Accounts_Func_Service:
     # Vista principal
     # ------------------------------------------------------------------
     def listar_funcionarios(self):
+        
+        form_toggle = FormToggleEstado()
+        
         filtros = {
             "estado": self._int_or_none(request.args.get("estado")),
         }
@@ -30,6 +31,7 @@ class Accounts_Func_Service:
         return render_template(
             "admin/accounts_func.html",
             active_page="staff",
+            form_toggle = form_toggle,            
             metricas=datos_metricas,
             tecnicos=datos_tecnicos,
             admins=datos_admins,

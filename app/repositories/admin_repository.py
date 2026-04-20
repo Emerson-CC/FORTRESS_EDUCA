@@ -1,6 +1,20 @@
 from app.utils.database_utils import db
 
 # ====================================================================================================================================================
+#                                           PAGINA DASHBOARD.HTML
+# ====================================================================================================================================================
+
+def sp_dashboard_metricas() -> dict | None:
+    """Retorna las métricas agregadas para el dashboard del admin"""
+    resultado = db.call_procedure("sp_dashboard_metricas", ())
+    return resultado[0] if resultado else None
+
+def sp_dashboard_chart_actividad() -> list[dict]:
+    """Retorna la actividad de solicitudes de los últimos 7 días para el gráfico del dashboard"""
+    return db.call_procedure("sp_dashboard_chart_actividad", ()) or []
+    
+
+# ====================================================================================================================================================
 #                                           PAGINA CASES.HTML
 # ====================================================================================================================================================
 
@@ -63,7 +77,7 @@ def sp_ticket_panel_comentarios_consultar(id_ticket) -> list[dict]:
 
 
 def sp_ticket_panel_comentario_insertar(id_ticket, tipo_evento, id_usuario, comentario, es_interno) -> None:
-    """Inserta un comentario manual en el ticket."""
+    """Inserta un comentario en el ticket"""
     db.call_procedure(
         "sp_ticket_panel_comentario_insertar",
         (id_ticket, tipo_evento, id_usuario, comentario, int(es_interno)),
@@ -252,3 +266,36 @@ def sp_admin_toggle_estado_tecnico(id_usuario, nuevo_estado, ejecutor_id, ip, us
         commit=True
     )
     
+
+
+# ====================================================================================================================================================
+#                                           PAGINA HISTORY.HTML
+# ====================================================================================================================================================
+
+def sp_history_listar_auditoria(tipo_evento, fecha_desde, fecha_hasta, pagina, por_pagina) -> list[dict]:
+    """Retorna los registros de auditoría paginados y filtrados"""
+    return (
+        db.call_procedure(
+            "sp_history_listar_auditoria",
+            (tipo_evento, fecha_desde, fecha_hasta, pagina, por_pagina),
+        )
+        or []
+    )
+
+def sp_history_contar_auditoria(tipo_evento, fecha_desde, fecha_hasta) -> int:
+    """Retorna el total de registros que coinciden con los filtros."""
+    resultado = db.call_procedure(
+        "sp_history_contar_auditoria",
+        (tipo_evento, fecha_desde, fecha_hasta),
+    )
+    return resultado[0]["total"] if resultado else 0
+
+def sp_history_exportar_auditoria(tipo_evento, fecha_desde, fecha_hasta) -> list[dict]:
+    """Retorna TODOS los registros sin paginar (para CSV)"""
+    return (
+        db.call_procedure(
+            "sp_history_exportar_auditoria",
+            (tipo_evento, fecha_desde, fecha_hasta),
+        )
+        or []
+    )

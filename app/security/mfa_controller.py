@@ -4,7 +4,7 @@ import io
 import base64
 
 class MFA_Controller:
-    """Maneja la generación y validación de TOTP compatible con Microsoft Authenticator."""
+    """Maneja la generación y validación de TOTP compatible con Microsoft Authenticator"""
 
     ISSUER = "Fortress Educa"
 

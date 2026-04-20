@@ -108,6 +108,12 @@ def sp_documento_ticket_insertar(id_ticket: str, id_tipo_doc: int, archivo: byte
         nombre_original,
     ))
 
+def sp_documento_comentario_insertar(id_ticket, tipo_evento, id_usuario, comentario, es_interno) -> None:
+    """Inserta un comentario manual en el ticket al subir un documento"""
+    db.call_procedure(
+        "sp_ticket_panel_comentario_insertar",
+        (id_ticket, tipo_evento, id_usuario, comentario, int(es_interno)),
+    )
 
 def sp_documento_ticket_descargar(id_doc: int, id_usuario: int):
     """Retorna el binario y metadata de un documento, verificando pertenencia."""

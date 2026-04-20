@@ -2146,6 +2146,85 @@ DELIMITER ;
 -- ====================================================================================================================================================
 
     -- Se usaron los mismo que en login usuario / acudiente
+ 
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE DASHBOARD
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Conteo de datos para metricas del dashboard
+
+DROP PROCEDURE IF EXISTS sp_dashboard_metricas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_dashboard_metricas()
+BEGIN
+    SELECT
+        -- Total de solicitudes activas
+        (SELECT COUNT(*) 
+            FROM TBL_TICKET 
+            WHERE Estado_Ticket = 1) AS total_solicitudes,
+        
+        -- Total de usuarios activos (Acudientes, Técnicos, Administradores)
+        (SELECT COUNT(*) 
+            FROM TBL_USUARIO 
+            WHERE Estado_Usuario = 1 
+            AND FK_ID_Rol IN (2, 3, 4)) AS total_usuarios,
+        
+        -- Cupos asignados (tickets con estado 'Solucionado')
+        (SELECT COUNT(*) 
+            FROM TBL_TICKET t
+            JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+            WHERE t.Estado_Ticket = 1 
+            AND et.Nombre_Estado = 'Solucionado') AS cupos_asignados,
+        
+        -- Cupos disponibles en Engativá (suma de cupos disponibles en colegios de barrios de Engativá)
+        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)
+            FROM TBL_CUPOS c
+            JOIN TBL_COLEGIO co ON c.FK_ID_Colegio = co.ID_Colegio
+            JOIN TBL_BARRIO b ON co.FK_ID_Barrio = b.ID_Barrio
+            JOIN TBL_LOCALIDAD l ON b.FK_ID_Localidad = l.ID_Localidad
+            WHERE c.Estado_Cupos = 1 
+            AND l.ID_Localidad = 1  -- Engativá ID_Localidad = 1
+            AND co.Estado_Colegio = 1
+            AND b.Estado_Barrio = 1
+            AND l.Estado_Localidad = 1) AS cupos_disponibles_engativa;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Conteo de datos para grafica de Actividad de solicitudes (ultimos 7 dias)
+
+DROP PROCEDURE IF EXISTS sp_dashboard_chart_actividad;
+
+DELIMITER $$
+CREATE PROCEDURE sp_dashboard_chart_actividad()
+BEGIN
+    -- Actividad de los últimos 7 días
+    WITH dias AS (
+        SELECT CURDATE() - INTERVAL n DAY AS fecha
+        FROM (
+            SELECT 0 AS n UNION SELECT 1 UNION SELECT 2
+            UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+        ) nums
+    )
+    SELECT
+        DATE_FORMAT(d.fecha, '%a') AS label,
+        d.fecha,
+        COUNT(DISTINCT CASE WHEN DATE(t.Fecha_Creacion) = d.fecha THEN t.ID_Ticket END) AS nuevas_solicitudes,
+        COUNT(DISTINCT CASE WHEN DATE(t.Fecha_Creacion) = d.fecha
+                            AND et.Nombre_Estado = 'Solucionado' THEN t.ID_Ticket END) AS cupos_asignados
+    FROM dias d
+    LEFT JOIN TBL_TICKET t
+        ON DATE(t.Fecha_Creacion) = d.fecha
+        AND t.Estado_Ticket = 1
+    LEFT JOIN TBL_ESTADO_TICKET et
+        ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    GROUP BY d.fecha
+    ORDER BY d.fecha ASC;
+END $$
+DELIMITER ;
 
 
 
@@ -2992,5 +3071,99 @@ BEGIN
          FROM VW_ADMIN_TECNICOS WHERE Estado_Usuario = 0) AS tecnicos_desactivados,
         (SELECT COUNT(*)
          FROM VW_ADMIN_ADMINISTRADORES) AS administradores;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE HISTORY
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Listar registros paginados con filtros opcionales
+
+DROP PROCEDURE IF EXISTS sp_history_listar_auditoria;
+
+DELIMITER $$
+CREATE PROCEDURE sp_history_listar_auditoria(
+    IN p_tipo_evento VARCHAR(30),
+    IN p_fecha_desde DATE,
+    IN p_fecha_hasta DATE,
+    IN p_pagina INT,
+    IN p_por_pagina INT
+)
+BEGIN
+    DECLARE v_offset INT;
+    SET v_offset = (p_pagina - 1) * p_por_pagina;
+
+    SELECT
+        ID_Ticket_Comentario,
+        Tipo_Evento,
+        Comentario,
+        Fecha_Comentario,
+        Es_Interno,
+        FK_ID_Ticket,
+        Nombre_Rol,
+        Nombre_Completo_Usuario
+    FROM vw_auditoria_comentarios
+    WHERE Estado_Comentario_Ticket = 1
+      AND (p_tipo_evento IS NULL OR Tipo_Evento = p_tipo_evento)
+      AND (p_fecha_desde IS NULL OR DATE(Fecha_Comentario) >= p_fecha_desde)
+      AND (p_fecha_hasta IS NULL OR DATE(Fecha_Comentario) <= p_fecha_hasta)
+    ORDER BY Fecha_Comentario DESC
+    LIMIT p_por_pagina OFFSET v_offset;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Contar total de registros (para paginación)
+
+DROP PROCEDURE IF EXISTS sp_history_contar_auditoria;
+
+DELIMITER $$
+CREATE PROCEDURE sp_history_contar_auditoria(
+    IN p_tipo_evento VARCHAR(30),
+    IN p_fecha_desde DATE,
+    IN p_fecha_hasta DATE
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM vw_auditoria_comentarios
+    WHERE Estado_Comentario_Ticket = 1
+      AND (p_tipo_evento IS NULL OR Tipo_Evento = p_tipo_evento)
+      AND (p_fecha_desde IS NULL OR DATE(Fecha_Comentario) >= p_fecha_desde)
+      AND (p_fecha_hasta IS NULL OR DATE(Fecha_Comentario) <= p_fecha_hasta);
+END $$
+DELIMITER ;
+
+-- --------------------------------------------------------
+-- SP: Export completo sin paginación (para CSV)
+
+DROP PROCEDURE IF EXISTS sp_history_exportar_auditoria;
+
+DELIMITER $$
+CREATE PROCEDURE sp_history_exportar_auditoria(
+    IN p_tipo_evento VARCHAR(30),
+    IN p_fecha_desde DATE,
+    IN p_fecha_hasta DATE
+)
+BEGIN
+    SELECT
+        ID_Ticket_Comentario,
+        Tipo_Evento,
+        Comentario,
+        Fecha_Comentario,
+        Es_Interno,
+        FK_ID_Ticket,
+        Nombre_Rol,
+        Nombre_Completo_Usuario
+    FROM vw_auditoria_comentarios
+    WHERE Estado_Comentario_Ticket = 1
+      AND (p_tipo_evento IS NULL OR Tipo_Evento = p_tipo_evento)
+      AND (p_fecha_desde IS NULL OR DATE(Fecha_Comentario) >= p_fecha_desde)
+      AND (p_fecha_hasta IS NULL OR DATE(Fecha_Comentario) <= p_fecha_hasta)
+    ORDER BY Fecha_Comentario DESC;
 END $$
 DELIMITER ;

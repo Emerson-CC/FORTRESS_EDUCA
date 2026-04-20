@@ -372,6 +372,8 @@ FROM TBL_AUDITORIA_SESION sa
 LEFT JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
 LEFT JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
 WHERE sa.Estado_Auditoria_Sesion = 1;
+
+
 -- --------------------------------------------------------
 -- Vista general para listado de acciones sobre los usuarios
 -- USADO EN sp_admin_historial_acciones_listar
@@ -500,3 +502,30 @@ FROM TBL_USUARIO u
 INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
 INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
 WHERE r.Nombre_Rol = 'Admin';
+
+
+
+-- ====================================================================================================================================================
+-- VIEWS PARA LA PAGINA DE HISTORY
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- Desnormaliza los datos de auditoría para los SPs
+-- USADO EN sp_history_listar_auditoria | sp_history_contar_auditoria | sp_history_exportar_auditoria
+
+CREATE OR REPLACE VIEW vw_auditoria_comentarios AS
+SELECT
+    tc.ID_Ticket_Comentario,
+    tc.Tipo_Evento,
+    tc.Comentario,
+    tc.Fecha_Comentario,
+    tc.Es_Interno,
+    tc.FK_ID_Ticket,
+    tc.Estado_Comentario_Ticket,
+    u.ID_Usuario,
+    r.Nombre_Rol,
+    CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo_Usuario
+FROM TBL_TICKET_COMENTARIO tc
+INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
+INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;

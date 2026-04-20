@@ -182,7 +182,7 @@ class Security_Settings_Service:
 
         if not form.validate_on_submit():
             errores = "; ".join(f"{f}: {', '.join(m)}" for f, m in form.errors.items())
-            flash(f"Errores en el formulario: {errores}", "danger")
+            flash(f"{errores}", "danger")
             return redirect(url_for("aplication.security"))
 
         try:

@@ -405,7 +405,7 @@ class FormVerificarMFA(FlaskForm):
 
     codigo_mfa = StringField(
         "Código de verificación",
-        validators=[DataRequired(message="Ingrese el código de 6 dígitos."), Length(min=6, max=6, message="El código debe tener exactamente 6 dígitos.")]
+        validators=[DataRequired(), Length(min=6, max=6, message="El código debe tener exactamente 6 dígitos.")]
     )
     
     def validate_codigo_mfa(self, field):
