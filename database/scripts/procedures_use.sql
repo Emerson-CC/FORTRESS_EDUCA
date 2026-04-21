@@ -2319,19 +2319,6 @@ END $$
 DELIMITER ;
 
 
--- --------------------------------------------------------
--- SP: Tipos de afectación (para el filtro de afectación)
-
-DROP PROCEDURE IF EXISTS sp_catalogo_tipo_afectacion;
-
-DELIMITER $$
-CREATE PROCEDURE sp_catalogo_tipo_afectacion()
-BEGIN
-    SELECT ID_Tipo_Afectacion, Nombre_Afectacion
-    FROM TBL_TIPO_AFECTACION
-    ORDER BY ID_Tipo_Afectacion;
-END $$
-DELIMITER ;
 
 -- ====================================================================================================================================================
 -- SP PARA LA PAGINA DE TICKET_PANEL
@@ -2697,6 +2684,398 @@ BEGIN
           )
       )
     ORDER BY col.Nombre_Colegio, jor.Nombre_Jornada;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA EL SISTEMA DE RESOLUCIÓN DE TICKETS
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Barrios disponibles con Colegios asignados
+
+DROP PROCEDURE IF EXISTS sp_catalogo_barrios_con_colegios;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_barrios_con_colegios()
+BEGIN
+    SELECT ID_Barrio, Nombre_Barrio
+    FROM VW_BARRIOS_CON_COLEGIOS;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Colegios filtrados por barrio
+
+DROP PROCEDURE IF EXISTS sp_catalogo_colegios_por_barrio;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_colegios_por_barrio(IN p_id_barrio INT)
+BEGIN
+    SELECT
+        ID_Colegio,
+        Nombre_Colegio,
+        Direccion_Colegio,
+        IFNULL(Telefono, 'No disponible') AS Telefono,
+        IFNULL(Email, 'No disponible') AS Email
+    FROM TBL_COLEGIO
+    WHERE FK_ID_Barrio = p_id_barrio
+      AND Estado_Colegio = 1
+    ORDER BY Nombre_Colegio;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Valida si existe cupo para grado + colegio + jornada del ticket dado; retorna la fila o vacío.
+
+DROP PROCEDURE IF EXISTS sp_ticket_validar_cupo;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_validar_cupo(
+    IN p_id_ticket VARCHAR(10),
+    IN p_id_colegio INT,
+    IN p_id_jornada TINYINT
+)
+BEGIN
+    SELECT
+        cu.ID_Cupos,
+        cu.Cupos_Disponibles,
+        c.Nombre_Colegio,
+        c.Direccion_Colegio,
+        IFNULL(c.Telefono, 'No disponible') AS Telefono,
+        IFNULL(c.Email, 'No disponible') AS Email,
+        j.Nombre_Jornada,
+        g.Nombre_Grado
+    FROM TBL_TICKET t
+    INNER JOIN TBL_ESTUDIANTE e
+        ON e.ID_Estudiante = t.FK_ID_Estudiante
+    INNER JOIN TBL_CUPOS cu
+        ON  cu.FK_ID_Colegio = p_id_colegio
+        AND cu.FK_ID_Jornada = p_id_jornada
+        AND cu.FK_ID_Grado = e.FK_ID_Grado_Proximo
+        AND cu.Cupos_Disponibles > 0
+        AND cu.Estado_Cupos = 1
+    INNER JOIN TBL_COLEGIO c ON c.ID_Colegio = cu.FK_ID_Colegio
+    INNER JOIN TBL_JORNADA j ON j.ID_Jornada = cu.FK_ID_Jornada
+    INNER JOIN TBL_GRADO g ON g.ID_Grado = cu.FK_ID_Grado
+    WHERE t.ID_Ticket = p_id_ticket
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Se confirma la asignación del cupo:
+--     · Vincula el cupo al ticket
+--     · Cambia estado → 4 (Pendiente Acción de Usuario)
+--     · Inserta comentario público automático con info completa
+
+DROP PROCEDURE IF EXISTS sp_ticket_confirmar_asignacion;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_confirmar_asignacion(
+    IN p_id_ticket VARCHAR(10),
+    IN p_id_cupo INT,
+    IN p_id_tecnico INT
+)
+BEGIN
+    DECLARE v_colegio VARCHAR(100);
+    DECLARE v_dir VARCHAR(100);
+    DECLARE v_tel VARCHAR(45);
+    DECLARE v_email VARCHAR(255);
+    DECLARE v_jornada VARCHAR(20);
+    DECLARE v_grado VARCHAR(30);
+    DECLARE v_msg TEXT;
+
+    SELECT
+        c.Nombre_Colegio,
+        c.Direccion_Colegio,
+        IFNULL(c.Telefono, 'No disponible'),
+        IFNULL(c.Email,'No disponible'),
+        j.Nombre_Jornada,
+        g.Nombre_Grado
+    INTO v_colegio, v_dir, v_tel, v_email, v_jornada, v_grado
+    FROM TBL_CUPOS cu
+    INNER JOIN TBL_COLEGIO c ON c.ID_Colegio = cu.FK_ID_Colegio
+    INNER JOIN TBL_JORNADA j ON j.ID_Jornada = cu.FK_ID_Jornada
+    INNER JOIN TBL_GRADO g ON g.ID_Grado = cu.FK_ID_Grado
+    WHERE cu.ID_Cupos = p_id_cupo;
+
+    SET v_msg = CONCAT(
+        'Estimado usuario, se ha identificado un cupo disponible para su solicitud. '
+        'A continuación encontrará los detalles de la asignación propuesta:\n\n',
+        '  Institución : ', v_colegio,  '\n',
+        '  Dirección   : ', v_dir,      '\n',
+        '  Teléfono    : ', v_tel,      '\n',
+        '  Correo      : ', v_email,    '\n',
+        '  Grado       : ', v_grado,    '\n',
+        '  Jornada     : ', v_jornada,  '\n\n',
+        'Por favor responda este mensaje confirmando o rechazando la asignación.\n\n',
+        'AVISO IMPORTANTE: si no recibimos su respuesta en un plazo de 3 días hábiles, '
+        'el ticket será marcado automáticamente como RECHAZADO por abandono.'
+    );
+
+    -- Actualizar ticket: vincular cupo + cambiar estado
+    UPDATE TBL_TICKET
+    SET FK_ID_Cupo_Asignado = p_id_cupo,
+        FK_ID_Estado_Ticket = 4          -- Pendiente Acción de Usuario
+    WHERE ID_Ticket = p_id_ticket;
+
+    -- Comentario público automático
+    INSERT INTO TBL_TICKET_COMENTARIO
+        (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
+    VALUES
+        ('Cupo Asignado', v_msg, 0, p_id_tecnico, p_id_ticket);
+
+    -- Lógica de reserva: bloquea el cupo para que nadie más lo use
+    UPDATE TBL_CUPOS
+    SET Cupos_Disponibles = Cupos_Disponibles - 1,
+        Cupos_Reservados = Cupos_Reservados + 1
+    WHERE ID_Cupos = p_id_cupo 
+      AND Cupos_Disponibles > 0; -- Validación de seguridad
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Devuelve tickets abandonados (estado 4, sin respuesta del usuario creador en +3 días desde la asignación).
+
+DROP PROCEDURE IF EXISTS sp_ticket_obtener_abandonados;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_obtener_abandonados()
+BEGIN
+    SELECT
+        t.ID_Ticket,
+        t.FK_ID_Cupo_Asignado,
+        IFNULL(t.FK_ID_Usuario_Tecnico,
+               t.FK_ID_Usuario_Creador) AS ID_Responsable
+    FROM TBL_TICKET t
+    WHERE t.FK_ID_Estado_Ticket = 4
+        AND t.Estado_Ticket = 1
+        -- El último comentario del ticket tiene más de 3 días
+        AND (
+            SELECT MAX(tc.Fecha_Comentario)
+            FROM TBL_TICKET_COMENTARIO tc
+            WHERE tc.FK_ID_Ticket = t.ID_Ticket
+        ) < DATE_SUB(NOW(), INTERVAL 3 DAY)
+        -- El usuario creador NO ha respondido tras la asignación del cupo
+        AND NOT EXISTS (
+            SELECT 1
+            FROM TBL_TICKET_COMENTARIO tc2
+            WHERE tc2.FK_ID_Ticket  = t.ID_Ticket
+                AND tc2.FK_ID_Usuario = t.FK_ID_Usuario_Creador
+                AND tc2.Tipo_Evento   IN ('Comentario', 'Documento Subido')
+                AND tc2.Fecha_Comentario > (
+                    SELECT MAX(tc3.Fecha_Comentario)
+                    FROM TBL_TICKET_COMENTARIO tc3
+                    WHERE tc3.FK_ID_Ticket = t.ID_Ticket
+                    AND tc3.Tipo_Evento  = 'Cupo Asignado'
+                )
+        );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Rechaza un ticket abandonado y deja comentario público
+
+DROP PROCEDURE IF EXISTS sp_ticket_rechazar_abandonado;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_rechazar_abandonado(
+    IN p_id_ticket      VARCHAR(10),
+    IN p_id_responsable INT
+)
+BEGIN
+    UPDATE TBL_CUPOS cu
+    INNER JOIN TBL_TICKET t ON cu.ID_Cupos = t.FK_ID_Cupo_Asignado
+    SET cu.Cupos_Reservados = cu.Cupos_Reservados - 1,
+        cu.Cupos_Disponibles = cu.Cupos_Disponibles + 1
+    WHERE t.ID_Ticket = p_id_ticket;
+
+    UPDATE TBL_TICKET
+    SET FK_ID_Estado_Ticket = 6,
+        FK_ID_Cupo_Asignado = NULL,
+        Fecha_Cierre = NOW()
+    WHERE ID_Ticket = p_id_ticket;
+
+    INSERT INTO TBL_TICKET_COMENTARIO
+        (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
+    VALUES (
+        'Cierre Solicitud',
+        'El ticket ha sido RECHAZADO automáticamente por abandono. No se recibió respuesta '
+        'del usuario en el plazo de 3 días hábiles establecido tras la notificación del cupo disponible.',
+        0,
+        p_id_responsable,
+        p_id_ticket
+    );
+END $$
+DELIMITER ;
+
+    -- TAB COMFIRMAR ASIGNACIÓN
+
+-- --------------------------------------------------------
+-- SP: Usuario CONFIRMA el cupo asignado
+-- * Cupos_Disponibles - 1, Cupos_Reservados - 1 (cupo tomado)
+-- * Estado ticket = 8 (Solucionado)
+-- * Comentario público automático
+
+
+DROP PROCEDURE IF EXISTS sp_ticket_usuario_confirmar_cupo;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_usuario_confirmar_cupo(
+    IN p_id_ticket  VARCHAR(10),
+    IN p_id_tecnico INT
+)
+BEGIN
+    DECLARE v_id_cupo INT;
+    DECLARE v_colegio VARCHAR(100);
+    DECLARE v_dir VARCHAR(100);
+    DECLARE v_tel VARCHAR(45);
+    DECLARE v_email VARCHAR(255);
+    DECLARE v_jornada VARCHAR(20);
+    DECLARE v_grado VARCHAR(30);
+
+    -- Obtener cupo asignado al ticket
+    SELECT FK_ID_Cupo_Asignado INTO v_id_cupo
+    FROM TBL_TICKET WHERE ID_Ticket = p_id_ticket;
+
+    -- Datos del cupo para el comentario
+    SELECT
+        c.Nombre_Colegio,
+        c.Direccion_Colegio,
+        IFNULL(c.Telefono, 'No disponible'),
+        IFNULL(c.Email,    'No disponible'),
+        j.Nombre_Jornada,
+        g.Nombre_Grado
+    INTO v_colegio, v_dir, v_tel, v_email, v_jornada, v_grado
+    FROM TBL_CUPOS cu
+    INNER JOIN TBL_COLEGIO c ON c.ID_Colegio = cu.FK_ID_Colegio
+    INNER JOIN TBL_JORNADA j ON j.ID_Jornada = cu.FK_ID_Jornada
+    INNER JOIN TBL_GRADO g ON g.ID_Grado = cu.FK_ID_Grado
+    WHERE cu.ID_Cupos = v_id_cupo;
+
+    -- Descontar cupo reservado (ahora es definitivo)
+    UPDATE TBL_CUPOS
+    SET Cupos_Reservados = Cupos_Reservados - 1
+    WHERE ID_Cupos = v_id_cupo;
+
+    -- Cerrar el ticket como Solucionado
+    UPDATE TBL_TICKET
+    SET FK_ID_Estado_Ticket = 8,
+        Fecha_Cierre = NOW()
+    WHERE ID_Ticket = p_id_ticket;
+
+    -- Comentario público de cierre
+    INSERT INTO TBL_TICKET_COMENTARIO
+        (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
+    VALUES (
+        'Cierre Solicitud',
+        CONCAT(
+            'El usuario ha CONFIRMADO la asignación del cupo. El ticket queda SOLUCIONADO.\n\n',
+            'Resumen del cupo asignado:\n',
+            '  Institución : ', v_colegio, '\n',
+            '  Dirección : ', v_dir,     '\n',
+            '  Teléfono : ', v_tel,     '\n',
+            '  Correo : ', v_email,   '\n',
+            '  Grado : ', v_grado,   '\n',
+            '  Jornada : ', v_jornada
+        ),
+        0,
+        p_id_tecnico,
+        p_id_ticket
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Usuario CANCELA el cupo asignado (Nuevo Comportamiento 2)
+-- * Cupos_Disponibles + 1, Cupos_Reservados - 1 (cupo liberado)
+-- * FK_ID_Cupo_Asignado = NULL
+-- * Estado ticket = 5 (Asignación de Cupo)
+-- * Comentario público ICO
+
+DROP PROCEDURE IF EXISTS sp_ticket_usuario_cancelar_cupo;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_usuario_cancelar_cupo(
+    IN p_id_ticket  VARCHAR(10),
+    IN p_id_tecnico INT
+)
+BEGIN
+    DECLARE v_id_cupo INT;
+
+    SELECT FK_ID_Cupo_Asignado INTO v_id_cupo
+    FROM TBL_TICKET WHERE ID_Ticket = p_id_ticket;
+
+    -- Liberar reserva
+    UPDATE TBL_CUPOS
+    SET Cupos_Disponibles = Cupos_Disponibles + 1,
+        Cupos_Reservados  = Cupos_Reservados  - 1
+    WHERE ID_Cupos = v_id_cupo;
+
+    -- Revertir ticket: sin cupo, volver a Asignación de Cupo
+    UPDATE TBL_TICKET
+    SET FK_ID_Cupo_Asignado = NULL,
+        FK_ID_Estado_Ticket = 5
+    WHERE ID_Ticket = p_id_ticket;
+
+    -- Comentario público
+    INSERT INTO TBL_TICKET_COMENTARIO
+        (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
+    VALUES (
+        'Cupo Cancelado',
+        'El cupo propuesto ha sido CANCELADO. El técnico deberá buscar una nueva opción de asignación.',
+        0,
+        p_id_tecnico,
+        p_id_ticket
+    );
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Consulta detalle completo del cupo asignado a un ticket
+
+DROP PROCEDURE IF EXISTS sp_ticket_cupo_asignado_detalle;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_cupo_asignado_detalle(
+    IN p_id_ticket VARCHAR(10)
+)
+BEGIN
+    SELECT
+        cu.ID_Cupos,
+        cu.Cupos_Disponibles,
+        cu.Cupos_Reservados,
+        cu.Estado_Cupos,
+        g.Nombre_Grado,
+        g.Nivel_Educativo,
+        j.Nombre_Jornada,
+        c.ID_Colegio,
+        c.Nombre_Colegio,
+        c.Codigo_DANE,
+        c.Direccion_Colegio,
+        IFNULL(c.Telefono, 'No disponible') AS Telefono,
+        IFNULL(c.Email,    'No disponible') AS Email,
+        b.Nombre_Barrio,
+        l.Nombre_Localidad
+    FROM TBL_TICKET t
+    INNER JOIN TBL_CUPOS   cu ON cu.ID_Cupos   = t.FK_ID_Cupo_Asignado
+    INNER JOIN TBL_GRADO    g ON g.ID_Grado    = cu.FK_ID_Grado
+    INNER JOIN TBL_JORNADA  j ON j.ID_Jornada  = cu.FK_ID_Jornada
+    INNER JOIN TBL_COLEGIO  c ON c.ID_Colegio  = cu.FK_ID_Colegio
+    INNER JOIN TBL_BARRIO   b ON b.ID_Barrio   = c.FK_ID_Barrio
+    INNER JOIN TBL_LOCALIDAD l ON l.ID_Localidad = b.FK_ID_Localidad
+    WHERE t.ID_Ticket = p_id_ticket
+        AND t.FK_ID_Cupo_Asignado IS NOT NULL;
 END $$
 DELIMITER ;
 

@@ -5,9 +5,6 @@ from dotenv import load_dotenv
 
 from app.settings import Config_Security, Config_JWT, Config_Email, Config_Session, DevelopmentConfig
 
-# Cargar variables de entorno desde .env
-load_dotenv()
-
 # Importación de blueprints
 from app.blueprints.home.routes import home_bp
 from app.blueprints.auth.routes import auth_bp
@@ -21,6 +18,9 @@ from app.security.session_controller import controlar_sesion
 from app.utils.extensions_utils import mail, register_context_processors
 from app.controllers.error_controller import register_error_handlers
 
+
+# Cargar variables de entorno desde .env
+load_dotenv()
 
 def create_app():
 

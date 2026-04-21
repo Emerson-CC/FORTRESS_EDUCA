@@ -173,6 +173,36 @@ END $$
 DELIMITER ;
 
 
+-- --------------------------------------------------------
+-- TRG: Se activa despues de que el usuario creador comenta/sube un documento en un ticket en estado 4 (Pendiente Acción del Usuario)
+-- Al ticket lo avanza al estado 5 (Solicitud Cupo)
+
+DROP TRIGGER IF EXISTS trg_respuesta_usuario_cupo;
+
+DELIMITER $$
+CREATE TRIGGER trg_respuesta_usuario_cupo
+AFTER INSERT ON TBL_TICKET_COMENTARIO
+FOR EACH ROW
+BEGIN
+    DECLARE v_estado  TINYINT;
+    DECLARE v_creador INT;
+
+    IF NEW.Tipo_Evento IN ('Comentario', 'Documento Subido') THEN
+        SELECT FK_ID_Estado_Ticket, FK_ID_Usuario_Creador
+        INTO   v_estado, v_creador
+        FROM   TBL_TICKET
+        WHERE  ID_Ticket = NEW.FK_ID_Ticket;
+
+        IF v_estado = 4 AND NEW.FK_ID_Usuario = v_creador THEN
+            UPDATE TBL_TICKET
+            SET FK_ID_Estado_Ticket = 5   -- Asignación de Cupo
+            WHERE ID_Ticket = NEW.FK_ID_Ticket;
+        END IF;
+    END IF;
+END $$
+DELIMITER ;
+
+
 -- ====================================================================================================================================================
 -- TRG PARA CREACIÓN DE USUARIO (ACUDIENTES) / ESTUDIANTES
 -- ====================================================================================================================================================

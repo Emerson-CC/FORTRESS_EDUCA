@@ -241,27 +241,36 @@
                             </label>
                             <div class="d-flex flex-column gap-2">
                                 {% for id_jornada, nombre_jornada in form_p4.id_jornada.choices %}
-                                {% if id_jornada != 0 %}
-                                <div class="form-check p-3 border rounded-3">
-                                    <input class="form-check-input" type="radio"
-                                        name="{{ form_p4.id_jornada.name }}"
-                                        id="jornada_{{ id_jornada }}"
-                                        value="{{ id_jornada }}"
-                                        {% if form_p4.id_jornada.data == id_jornada %}checked{% endif %}>
-                                    <label class="form-check-label fw-bold" for="jornada_{{ id_jornada }}">
-                                        {% if nombre_jornada == 'Mañana' %}
-                                            <i class="fas fa-sun me-1 text-warning"></i>
-                                            Mañana (6:00 AM - 12:00 M)
-                                        {% elif nombre_jornada == 'Tarde' %}
-                                            <i class="fas fa-cloud-sun me-1 text-primary"></i>
-                                            Tarde (12:00 M - 6:00 PM)
-                                        {% else %}
-                                            <i class="fas fa-moon me-1 text-secondary"></i>
-                                            Nocturna (para mayores de 13 años)
-                                        {% endif %}
-                                    </label>
-                                </div>
-                                {% endif %}
+                                    {% if id_jornada != 0 %}
+                                        <div class="form-check p-3 border rounded-3">
+                                            <input class="form-check-input" type="radio"
+                                                name="{{ form_p4.id_jornada.name }}"
+                                                id="jornada_{{ id_jornada }}"
+                                                value="{{ id_jornada }}"
+                                                {% if form_p4.id_jornada.data == id_jornada %}checked{% endif %}>
+                                            <label class="form-check-label fw-bold" for="jornada_{{ id_jornada }}">
+                                                {% if nombre_jornada == 'Mañana' %}
+                                                    <i class="fas fa-sun me-1 text-warning"></i>
+                                                    Mañana (6:00 AM - 12:00 M)
+                                                {% elif nombre_jornada == 'Tarde' %}
+                                                    <i class="fas fa-cloud-sun me-1 text-primary"></i>
+                                                    Tarde (12:00 M - 6:00 PM)
+                                                {% elif nombre_jornada == 'Nocturna' %}
+                                                    <i class="fas fa-moon me-1 text-secondary"></i>
+                                                    Nocturna (6:00 PM - 9:30 PM) <br> Para mayores de 13 años                                        
+                                                {% elif nombre_jornada == 'Única' %}
+                                                    <i class="fas fa-sun me-1 text-warning"></i>
+                                                    Única (7:00 AM - 3:00 PM)             
+                                                {% elif nombre_jornada == 'Completa' %}
+                                                    <i class="fas fa-cloud-sun-rain me-1 text-primary"></i>
+                                                    Completa (7:00 AM - 4:00 PM)  
+                                                {% else %}
+                                                    <i class="fas fa-calendar-week me-1 text-secondary"></i>
+                                                    Fin de Semana (7:00 PM - 4:00 PM) <br> Para mayores de 13 años
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                             {% for error in form_p4.id_jornada.errors %}

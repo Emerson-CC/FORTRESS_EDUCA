@@ -46,12 +46,9 @@ INSERT INTO TBL_BARRIO (ID_Barrio, Nombre_Barrio, FK_ID_Localidad) VALUES
     (31, 'Villa Clavel', 1), 
     (32, 'Bonanza', 1), 
     (33, 'Quirigua', 1),
-    (34, 'Bonanza', 1),
-    (35, 'Quirigua', 1),
-    (36, 'Gran Granada', 1),
-    (37, 'La Serena', 1),
-    (38, 'El Muelle', 1),
-    (39, 'San Jorge', 1);
+    (34, 'La Serena', 1),
+    (35, 'El Muelle', 1),
+    (36, 'San Jorge', 1);
 
 -- -----------------------------------------------------
 -- TBL_GENERO
@@ -164,18 +161,18 @@ INSERT INTO TBL_COLEGIO (ID_Colegio, Nombre_Colegio, Codigo_DANE, Email, Telefon
     (16, 'IED Las Ferias', '111001014605', 'cedlasferias10@educacionbogota.edu.co', '6012400268', 'Cl 74A No. 69P-38', 11),
     (17, 'IED Rodolfo Llinás', '111001104329', 'cedrodolfollinas10@educacionbogota.edu.co', '6012291625', 'Cl 71 No. 89A-40', 33),
     (18, 'IED Antonio Nariño', '111001006483', 'cedantonionarino10@educacionbogota.edu.co', '6014352125', 'Cl 92 No. 92-30', 33),
-    (19, 'IED Lucila Rubio de Laverde', '111002800155', 'cedlucilarubiode10@educacionbogota.edu.co', NULL, 'Cl 66A No. 120-10', 38),
-    (20, 'IED Nestor Forero Alcala', '111001015181', 'coldinestorforeroa10@educacionbogota.edu.co', '6012245700', 'Kr 70C Bis No. 71-33', 34),
-    (21, 'IED Nidia Quintero de Turbay', '111265000078', 'cednidiaquinterode10@educacionbogota.edu.co', '6014311894', 'Cl 75 No. 90-75', 37),
-    (22, 'IED Nueva Constitucion', '111001093157', 'cednuevaconstituci10@educacionbogota.edu.co', '6014353457', 'Kr 107B No. 74B-31', 38),
+    (19, 'IED Lucila Rubio de Laverde', '111002800155', 'cedlucilarubiode10@educacionbogota.edu.co', NULL, 'Cl 66A No. 120-10', 35),
+    (20, 'IED Nestor Forero Alcala', '111001015181', 'coldinestorforeroa10@educacionbogota.edu.co', '6012245700', 'Kr 70C Bis No. 71-33', 32),
+    (21, 'IED Nidia Quintero de Turbay', '111265000078', 'cednidiaquinterode10@educacionbogota.edu.co', '6014311894', 'Cl 75 No. 90-75', 34),
+    (22, 'IED Nueva Constitucion', '111001093157', 'cednuevaconstituci10@educacionbogota.edu.co', '6014353457', 'Kr 107B No. 74B-31', 36),
     (23, 'IED General Santander', '111001013447', 'cedgeneralsantande10@educacionbogota.edu.co', '6014310575', 'Cl 68B No. 124-20', 1),
-    (24, 'IED Guillermo Leon Valencia', '111001012394', 'cedguillermoleonv10@educacionbogota.edu.co', '6014361066', 'Cl 75 No. 74A-40', 37),
-    (25, 'IED Jorge Gaitan Cortes', '111001012424', 'cedjorgegaitancor10@educacionbogota.edu.co', '6012510255', 'Cl 70 No. 80-45', 39),
+    (24, 'IED Guillermo Leon Valencia', '111001012394', 'cedguillermoleonv10@educacionbogota.edu.co', '6014361066', 'Cl 75 No. 74A-40', 34),
+    (25, 'IED Jorge Gaitan Cortes', '111001012424', 'cedjorgegaitancor10@educacionbogota.edu.co', '6012510255', 'Cl 70 No. 80-45', 36),
     (26, 'IED La Palestina', '111265000051', 'cedlapalestina10@educacionbogota.edu.co', '6014300302', 'Cl 68 No. 77-10', 27),
-    (27, 'IED Republica de China', '111001043818', 'cedrepdechina10@educacionbogota.edu.co', '6012241604', 'Kr 91 No. 82-20', 35),
-    (28, 'IED Jose Asuncion Silva', '111001011771', 'coldijoseasuncions10@educacionbogota.edu.co', '6012512811', 'Kr 91 No. 89-54', 35),
-    (29, 'IED Manuel Cepeda Vargas', '111001103730', 'cedmanuelcepedavar10@educacionbogota.edu.co', '6014339893', 'Cl 78 No. 121A-12', 36),
-    (30, 'IED El Porvenir', '111001109151', 'cedelporvenir10@educacionbogota.edu.co', '6014389025', 'Kr 121 No. 75D-20', 36);
+    (27, 'IED Republica de China', '111001043818', 'cedrepdechina10@educacionbogota.edu.co', '6012241604', 'Kr 91 No. 82-20', 33),
+    (28, 'IED Jose Asuncion Silva', '111001011771', 'coldijoseasuncions10@educacionbogota.edu.co', '6012512811', 'Kr 91 No. 89-54', 33),
+    (29, 'IED Manuel Cepeda Vargas', '111001103730', 'cedmanuelcepedavar10@educacionbogota.edu.co', '6014339893', 'Cl 78 No. 121A-12', 35),
+    (30, 'IED El Porvenir', '111001109151', 'cedelporvenir10@educacionbogota.edu.co', '6014389025', 'Kr 121 No. 75D-20', 35);
 
 
 -- -----------------------------------------------------
@@ -196,19 +193,19 @@ INSERT INTO TBL_JORNADA (ID_Jornada, Nombre_Jornada) VALUES
 -- -----------------------------------------------------
 
 INSERT INTO TBL_CUPOS (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles) VALUES
-    (1, 1, 1, 40), 
-    (2, 1, 2, 35), 
-    (3, 2, 1, 38), 
+    (1, 6, 1, 40), 
+    (2, 9, 2, 35), 
+    (3, 8, 1, 38), 
     (4, 2, 2, 30), 
-    (1, 3, 1, 42), 
+    (7, 3, 1, 42), 
     (2, 4, 2, 33), 
-    (3, 5, 1, 36), 
-    (4, 6, 2, 28), 
+    (7, 5, 1, 36), 
+    (7, 6, 2, 28), 
     (5, 7, 1, 30), 
     (1, 8, 1, 27), 
     (2, 9, 2, 29), 
-    (3, 10, 1, 34), 
-    (4, 11, 2, 26), 
+    (7, 10, 1, 34), 
+    (7, 11, 2, 26), 
     (5, 12, 1, 31);
 
 
@@ -265,11 +262,6 @@ INSERT INTO TBL_TIEMPO_RESIDENCIA (ID_Tiempo_Residencia, Nombre_Tiempo) VALUES
 -- TBL_TIPO_DOCUMENTO
 -- -----------------------------------------------------
 
--- INSERT INTO TBL_TIPO_DOCUMENTO (ID_Tipo_Doc, Nombre_Tipo_Doc) VALUES
---     (1, 'PDF'), 
---     (2, 'PNG'), 
---     (3, 'JPG');
-
 INSERT INTO TBL_TIPO_DOCUMENTO (ID_Tipo_Doc, Nombre_Tipo_Doc) VALUES
     (1, 'Documento Acudiente'), 
     (2, 'Documento Menor'), 
@@ -295,7 +287,7 @@ INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nom
     (2, '000000020000000', 'Unknown', '-', 'User', '-', '2000-01-01', 1);
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, FK_ID_Persona, FK_ID_Rol) VALUES 
-    (2, 'unknown@audit', "$argon2id$v=19$m=65536, t=3, p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgl", 1, 5);
+    (2, 'unknown@audit', "$argon2id$v=19$m=65536, t=3, p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgl", 2, 5);
 
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -309,7 +301,7 @@ INSERT INTO TBL_DATOS_ADICIONALES (ID_Datos_Adicionales, Email, Telefono, FK_ID_
     (3, 'fortress.educa@gmail.com', '3213397085', '15', '1', '3', '1', '1', '1', '16', '1');
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos, Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion, MFA_Secret, MFA_Secret_Temp, Notificaciones_Email, Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona, FK_ID_Rol, Estado_Usuario) VALUES 
-    (3, 'fortress.educa@gmail.com', '$argon2id$v=19$m=65536, t=3, p=4$0U/atEbAItQ7XZWBC0FZZg$LWd6K360PXCfwnmpx2dLrZ2QHHVt2/FJIl1jzWQK40w', NULL, '2026-04-17 02:06:16', '0', '2026-04-17 02:01:41', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '3', '4', '1');
+    (3, 'fortress.educa@gmail.com', '$argon2id$v=19$m=65536,t=3,p=4$CbNaBHYhF5D+Llo3F4gYLQ$EqZN3qrgTsEUQwe7ZpSgTBSBAOijwkUw+M42Gqmkoio', NULL, '2026-04-17 02:06:16', '0', '2026-04-17 02:01:41', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '3', '4', '1');
 
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -323,7 +315,7 @@ INSERT INTO TBL_DATOS_ADICIONALES (ID_Datos_Adicionales, Email, Telefono, FK_ID_
     (4, 'edcaicedoc@sanmateo.edu.co', '3213397584', '13', '1', '4', '1', '3', '3', '18', 1);
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos, Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion, MFA_Secret, MFA_Secret_Temp, Notificaciones_Email, Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona, FK_ID_Rol, Estado_Usuario) VALUES 
-    (4, 'edcaicedoc@sanmateo.edu.co', '$argon2id$v=19$m=65536, t=3, p=4$zrLKUtV7jF6NS1gi5VyvhA$XrhMZLWBgYSjWJGkRMDcIU84dbGNAhmyQGdWsNFQxgU', '2026-04-14 11:44:39', '2026-04-16 06:13:17', '0', '2026-03-30 23:07:59', 'ACTIVE', '2026-04-14 12:43:47', 'PWHFBTGG3SXTCWGBE6QI5GG6KUZKV2O5', NULL, '0', '0', 'ACCEPTED', '4', '3', '1');
+    (4, 'edcaicedoc@sanmateo.edu.co', '$argon2id$v=19$m=65536,t=3,p=4$CbNaBHYhF5D+Llo3F4gYLQ$EqZN3qrgTsEUQwe7ZpSgTBSBAOijwkUw+M42Gqmkoio', '2026-04-14 11:44:39', '2026-04-16 06:13:17', '0', '2026-03-30 23:07:59', 'ACTIVE', '2026-04-14 12:43:47', 'PWHFBTGG3SXTCWGBE6QI5GG6KUZKV2O5', NULL, '0', '0', 'ACCEPTED', '4', '3', '1');
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------------
 -- USUARIO PRUEBA: USUARIO NORMAL N°1
@@ -336,7 +328,7 @@ INSERT INTO TBL_DATOS_ADICIONALES (ID_Datos_Adicionales, Email, Telefono, FK_ID_
     (5, 'danicaicedo2005@gmail.com', '3152512350', '9', '1', '5', '1', '4', '3', '19', 1);
 
 INSERT INTO TBL_USUARIO (ID_Usuario, Nombre_Usuario, Contraseña_Hash, Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos, Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion, MFA_Secret, MFA_Secret_Temp, Notificaciones_Email, Notificaciones_Navegador, Aceptacion_Terminos, FK_ID_Persona, FK_ID_Rol, Estado_Usuario) VALUES 
-    (5, 'danicaicedo2005@gmail.com', '$argon2id$v=19$m=65536, t=3, p=4$O3SKOg6+GyV47LDTUl6EDA$bc+rBVlaChqD6ecoCUrLVhZvN+oS9TW6Z0VAjHc3zuY', '2026-04-15 15:11:51', '2026-04-15 16:56:45', '0', '2026-04-03 17:09:56', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '5', '2', '1');
+    (5, 'danicaicedo2005@gmail.com', '$argon2id$v=19$m=65536,t=3,p=4$CbNaBHYhF5D+Llo3F4gYLQ$EqZN3qrgTsEUQwe7ZpSgTBSBAOijwkUw+M42Gqmkoio', '2026-04-15 15:11:51', '2026-04-15 16:56:45', '0', '2026-04-03 17:09:56', 'INACTIVE', NULL, NULL, NULL, '0', '0', 'ACCEPTED', '5', '2', '1');
 
 -- -----------------------------------------------------
 -- ESTUDIANTE PRUEBA N°1
@@ -359,4 +351,9 @@ INSERT INTO TBL_PERSONA (ID_Persona, Num_Doc_Persona, Primer_Nombre, Segundo_Nom
 INSERT INTO TBL_ESTUDIANTE (ID_Estudiante, FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Grado_Actual, FK_ID_Grado_Proximo, FK_ID_Colegio_Anterior, FK_ID_Genero, FK_ID_Grupo_Preferencial, FK_ID_Acudiente, FK_ID_Parentesco_Es, Estado_Estudiante) VALUES 
     (2, '3', '7', '10', '11', '11', '1', '1', '5', '6', 1);
 
-    
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------------------
+-- TICKET PRUEBA PRUEBA
+-- -----------------------------------------------------
+INSERT INTO tbl_ticket (ID_Ticket, Titulo_Ticket, Descripcion_Ticket, Fecha_Creacion, Fecha_Cierre, Puntaje_Prioridad, FK_ID_Usuario_Creador, FK_ID_Usuario_Tecnico, FK_ID_Estudiante, FK_ID_Tipo_Afectacion, FK_ID_Colegio_Preferencia, FK_ID_Jornada_Preferencia, FK_ID_Cupo_Asignado, FK_ID_Estado_Ticket, FK_ID_Barrio, FK_ID_Tiempo_Residencia, Estado_Ticket) VALUES 
+    ('EDU-000001', 'Solicitud de Cupo — Marialis Vargas — Octavo', 'Por el conflicto armado en el departamento del Meta tubimos que abandonar nuestro hogar. No reubicaron en Bogotá en la localidad de Engativa y actualmente ya contamos con recursos para continuar con la educacion de nuestro hijo.', '2026-04-19 03:13:38', NULL, '40', '5', '4', '2', '1', NULL, '1', NULL, '4', '4', '4', '1');

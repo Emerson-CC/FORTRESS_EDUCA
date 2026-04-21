@@ -237,6 +237,7 @@ SELECT
     t.Fecha_Creacion,
     t.Fecha_Cierre,
     t.Puntaje_Prioridad,
+    t.FK_ID_Cupo_Asignado,
 
     -- Estado
     et.ID_Estado_Ticket,
@@ -333,6 +334,22 @@ LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
 LEFT JOIN TBL_COLEGIO col_asig ON cu.FK_ID_Colegio = col_asig.ID_Colegio
 
 WHERE t.Estado_Ticket = 1;
+
+
+-- --------------------------------------------------------
+-- Barrios que tienen al menos un colegio activo
+-- USADO EN sp_ticket_panel_acudiente_consultar
+
+CREATE OR REPLACE VIEW vw_barrios_con_colegios AS
+SELECT DISTINCT
+    b.ID_Barrio,
+    b.Nombre_Barrio
+FROM TBL_BARRIO b
+INNER JOIN TBL_COLEGIO c
+    ON c.FK_ID_Barrio = b.ID_Barrio
+    AND c.Estado_Colegio = 1
+WHERE b.Estado_Barrio = 1
+ORDER BY b.Nombre_Barrio;
 
 
 

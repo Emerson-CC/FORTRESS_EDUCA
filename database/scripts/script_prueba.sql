@@ -150,3 +150,107 @@ INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo
 INNER JOIN TBL_GRADO gr_a ON e.FK_ID_Grado_Actual = gr_a.ID_Grado
 LEFT JOIN TBL_GRADO gr_p ON e.FK_ID_Grado_Proximo = gr_p.ID_Grado
 LEFT JOIN TBL_COLEGIO c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio;
+
+
+
+DROP PROCEDURE IF EXISTS sp_ticket_procesar_abandonos;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_procesar_abandonos()
+BEGIN
+    -- 1. CREAR UNA TABLA TEMPORAL CON LOS IDS QUE CUMPLEN TUS CRITERIOS EXACTOS
+    -- Esto conserva tu lógica de "No hay respuesta posterior al cupo asignado"
+    CREATE TEMPORARY TABLE IF NOT EXISTS tmp_tickets_abandonados AS
+    SELECT t.ID_Ticket, t.FK_ID_Cupo_Asignado
+    FROM TBL_TICKET t
+    WHERE t.FK_ID_Estado_Ticket = 4
+        AND t.Estado_Ticket = 1
+        -- Criterio 1: El último movimiento general fue hace más de 3 días
+        AND (
+            SELECT MAX(tc.Fecha_Comentario)
+            FROM TBL_TICKET_COMENTARIO tc
+            WHERE tc.FK_ID_Ticket = t.ID_Ticket
+        ) < DATE_SUB(NOW(), INTERVAL 3 DAY)
+        -- Criterio 2: Tu lógica original (El usuario NO ha respondido tras la asignación)
+        AND NOT EXISTS (
+            SELECT 1
+            FROM TBL_TICKET_COMENTARIO tc2
+            WHERE tc2.FK_ID_Ticket  = t.ID_Ticket
+                AND tc2.FK_ID_Usuario = t.FK_ID_Usuario_Creador
+                AND tc2.Tipo_Evento IN ('Comentario', 'Documento Subido')
+                AND tc2.Fecha_Comentario > (
+                    SELECT MAX(tc3.Fecha_Comentario)
+                    FROM TBL_TICKET_COMENTARIO tc3
+                    WHERE tc3.FK_ID_Ticket = t.ID_Ticket
+                    AND tc3.Tipo_Evento = 'Cupo Asignado'
+                )
+        );
+
+    -- 2. RECUPERAR LOS CUPOS (Solo para los tickets identificados)
+    UPDATE TBL_CUPOS cu
+    INNER JOIN tmp_tickets_abandonados tmp ON cu.ID_Cupos = tmp.FK_ID_Cupo_Asignado
+    SET cu.Cupos_Reservados = cu.Cupos_Reservados - 1,
+        cu.Cupos_Disponibles = cu.Cupos_Disponibles + 1;
+
+    -- 3. REGISTRAR EL COMENTARIO DE CIERRE
+    INSERT INTO TBL_TICKET_COMENTARIO (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
+    SELECT 'Cierre Automático', 'Cupo liberado y ticket rechazado por falta de respuesta del usuario (3 días).', 0, 1, ID_Ticket
+    FROM tmp_tickets_abandonados;
+
+    -- 4. ACTUALIZAR EL TICKET (Desvincular cupo y cambiar estado)
+    UPDATE TBL_TICKET t
+    INNER JOIN tmp_tickets_abandonados tmp ON t.ID_Ticket = tmp.ID_Ticket
+    SET t.FK_ID_Cupo_Asignado = NULL,
+        t.FK_ID_Estado_Ticket = 5; -- 5 = Rechazado
+
+    -- 5. LIMPIEZA
+    DROP TEMPORARY TABLE IF EXISTS tmp_tickets_abandonados;
+
+END $$
+DELIMITER ;
+
+
+
+
+
+
+-- --------------------------------------------------------
+-- SP: Rechaza un ticket abandonado y libera el cupo reservado
+
+DROP PROCEDURE IF EXISTS sp_ticket_rechazar_abandonado;
+
+DELIMITER $$
+CREATE PROCEDURE sp_ticket_rechazar_abandonado(
+    IN p_id_ticket      VARCHAR(10),
+    IN p_id_responsable INT
+)
+BEGIN
+    -- 1. Liberar el cupo en la tabla de inventario si el ticket tiene uno asignado
+    UPDATE TBL_CUPOS cu
+    INNER JOIN TBL_TICKET t ON cu.ID_Cupos = t.FK_ID_Cupo_Asignado
+    SET cu.Cupos_Reservados = cu.Cupos_Reservados - 1,
+        cu.Cupos_Disponibles = cu.Cupos_Disponibles + 1
+    WHERE t.ID_Ticket = p_id_ticket;
+
+    -- 2. Actualizar el ticket: cambiar estado y desvincular el cupo
+    UPDATE TBL_TICKET
+    SET FK_ID_Estado_Ticket = 6,
+        FK_ID_Cupo_Asignado = NULL,
+        Fecha_Cierre = NOW()
+    WHERE ID_Ticket = p_id_ticket;
+
+    -- 3. Registrar el comentario público del cierre
+    INSERT INTO TBL_TICKET_COMENTARIO
+        (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
+    VALUES (
+        'Cierre Solicitud',
+        'El ticket ha sido RECHAZADO automáticamente por abandono. No se recibió respuesta '
+        'del usuario en el plazo de 3 días hábiles establecido tras la notificación del cupo disponible. '
+        'El cupo reservado ha sido liberado para otros solicitantes.',
+        0,
+        p_id_responsable,
+        p_id_ticket
+    );
+END $$
+DELIMITER ;
+

@@ -66,39 +66,10 @@ class FormAgregarComentario(FlaskForm):
     )
 
 
-# Asignación de cupo
-class FormAsignarCupo(FlaskForm):
-    """Permite al técnico seleccionar los campos de asignación del cupo"""
-
-    colegio_asignado = SelectField(
-        "Colegio Asignado",
-        validators=[DataRequired(), seleccion_valida],
-        coerce=int,
-        choices=[],
-    )
-
-    jornada_asignada = SelectField(
-        "Jornada Asignada",
-        validators=[DataRequired(), seleccion_valida],
-        coerce=int,
-        choices=[],
-    )
-
-    barrio = SelectField(
-        "Barrio",
-        validators=[DataRequired(), seleccion_valida],
-        coerce=int,
-        choices=[],
-    )
-
-    cupo = SelectField(
-        "Cupo Asignado",
-        validators=[DataRequired(), seleccion_valida],
-        coerce=int,
-        choices=[],
-    )
-
-
+class FormConfirmarCupo(FlaskForm):
+    """Formulario vacío: solo sirve para validar el token CSRF."""
+    pass
+    
 # Subir documento
 class FormSubirDocumentoTecnico(FlaskForm):
     """Formulario para subir documentos adicionales al ticket desde el rol técnico."""

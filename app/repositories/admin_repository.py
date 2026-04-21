@@ -55,12 +55,6 @@ def sp_catalogo_tipo_afectacion() -> list[dict]:
 #                                           PAGINA TICKET_PANEL.HTML
 # ====================================================================================================================================================
 
-# LISTADO GENERAL
-
-def sp_ticket_panel_listar_todos(id_tecnico: int | None = None) -> list[dict]:
-    """Retorna todos los tickets activos"""
-    return db.call_procedure("sp_ticket_panel_listar_todos", (id_tecnico,)) or []
-
 # DETALLE DEL TICKET
 
 def sp_ticket_panel_consultar_detalle(id_ticket) -> dict | None:
@@ -84,6 +78,34 @@ def sp_ticket_panel_comentario_insertar(id_ticket, tipo_evento, id_usuario, come
     )
 
 
+# ASIGNACIÓN DE CUPO
+def sp_ticket_validar_cupo(id_ticket: str, id_colegio: int, id_jornada: int) -> dict | None:
+    """Verifica si existe cupo disponible para la combinación grado (del estudiante) + colegio + jornada"""
+    resultado = db.call_procedure(
+        "sp_ticket_validar_cupo", (id_ticket, id_colegio, id_jornada)
+    )
+    return resultado[0] if resultado else None
+
+
+def sp_ticket_confirmar_asignacion(id_ticket: str, id_cupo: int, id_tecnico: int) -> None:
+    """Asigna el cupo al ticket, cambia estado a 4 e inserta el comentario público automático"""
+    db.call_procedure(
+        "sp_ticket_confirmar_asignacion", (id_ticket, id_cupo, id_tecnico)
+    )
+
+    # GESTIÓN DE DTICKET ABANDONADOS
+def sp_ticket_obtener_abandonados() -> list[dict]:
+    """Retorna tickets en estado 4 sin respuesta del usuario en +3 días"""
+    return db.call_procedure("sp_ticket_obtener_abandonados", ()) or []
+
+
+def sp_ticket_rechazar_abandonado(id_ticket: str, id_responsable: int) -> None:
+    """Cierra el ticket como Rechazado y registra el comentario automático"""
+    db.call_procedure(
+        "sp_ticket_rechazar_abandonado", (id_ticket, id_responsable)
+    )
+
+
 # CAMBIO DE ESTADO
 
 def sp_ticket_panel_estado_actualizar(id_ticket, id_estado_nuevo, fecha_cierre, resolucion, id_tecnico,) -> None:
@@ -91,16 +113,6 @@ def sp_ticket_panel_estado_actualizar(id_ticket, id_estado_nuevo, fecha_cierre, 
     db.call_procedure(
         "sp_ticket_panel_estado_actualizar",
         (id_ticket, id_estado_nuevo, fecha_cierre, resolucion, id_tecnico),
-    )
-
-
-# ASIGNACIÓN DE CUPO
-
-def sp_ticket_panel_asignar_cupo(id_ticket, id_cupo, id_tecnico) -> None:
-    """Asigna el cupo seleccionado al ticket y registra el cambio como comentario interno de auditoría"""
-    db.call_procedure(
-        "sp_ticket_panel_asignar_cupo",
-        (id_ticket, id_cupo, id_tecnico),
     )
 
 
@@ -146,36 +158,42 @@ def sp_catalogo_estados_ticket() -> list[dict]:
     return db.call_procedure("sp_catalogo_estados_ticket", ()) or []
 
 
-def sp_catalogo_colegios() -> list[dict]:
-    """Retorna todos los colegios activos."""
-    return db.call_procedure("sp_catalogo_colegios", ()) or []
-
-
 def sp_catalogo_jornadas() -> list[dict]:
     """Retorna todas las jornadas disponibles."""
     return db.call_procedure("sp_catalogo_jornadas", ()) or []
-
-
-def sp_catalogo_tipo_afectacion() -> list[dict]:
-    """Retorna todos los tipos de afectación."""
-    return db.call_procedure("sp_catalogo_tipo_afectacion", ()) or []
-
-
-def sp_catalogo_cupos_disponibles(id_ticket: str) -> list[dict]:
-    """Retorna los cupos disponibles para asignar al ticket indicado."""
-    return db.call_procedure("sp_catalogo_cupos_disponibles", (id_ticket,)) or []
 
 
 def sp_tipo_documento_consultar() -> list[dict]:
     """Retorna los tipos de documento activos (reutilizado del módulo acudiente)."""
     return db.call_procedure("sp_tbl_tipo_documento_consultar", ()) or []
 
+    # ASIGNACIÓN DE CUPO
 
-def sp_catalogo_barrios() -> list[dict]:
-    """Retorna todos los barrios activos para el SelectField de asignación."""
-    return db.call_procedure("sp_tbl_barrio_consultar", ()) or []
+def sp_catalogo_barrios_con_colegios() -> list[dict]:
+    """Barrios que tienen al menos un colegio activo (usa VW_BARRIOS_CON_COLEGIOS)."""
+    return db.call_procedure("sp_catalogo_barrios_con_colegios", ()) or []
+
+def sp_catalogo_colegios_por_barrio(id_barrio: int) -> list[dict]:
+    """Colegios activos dentro del barrio indicado."""
+    return db.call_procedure("sp_catalogo_colegios_por_barrio", (id_barrio,)) or []
 
 
+    # 
+    
+def sp_ticket_cupo_asignado_detalle(id_ticket: str) -> dict | None:
+    """Retorna toda la info del cupo actualmente asignado al ticket."""
+    resultado = db.call_procedure("sp_ticket_cupo_asignado_detalle", (id_ticket,))
+    return resultado[0] if resultado else None
+
+
+def sp_ticket_usuario_confirmar_cupo(id_ticket: str, id_tecnico: int) -> None:
+    """Confirma el cupo: descuenta disponible+reservado, cierra ticket como Solucionado."""
+    db.call_procedure("sp_ticket_usuario_confirmar_cupo", (id_ticket, id_tecnico))
+
+
+def sp_ticket_usuario_cancelar_cupo(id_ticket: str, id_tecnico: int) -> None:
+    """Cancela el cupo: libera reserva, quita FK_ID_Cupo_Asignado, vuelve a estado 5."""
+    db.call_procedure("sp_ticket_usuario_cancelar_cupo", (id_ticket, id_tecnico))
 
 # ====================================================================================================================================================
 #                                           PAGINA ACCOUNTS.HTML

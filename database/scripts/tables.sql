@@ -196,6 +196,7 @@ CREATE TABLE TBL_CUPOS (
     FK_ID_Colegio INT NOT NULL,
     FK_ID_Jornada TINYINT NOT NULL,
     Cupos_Disponibles TINYINT(3),
+    Cupos_Reservados TINYINT(3) DEFAULT 0,
     Estado_Cupos TINYINT(1) NOT NULL DEFAULT 1,
 
     CONSTRAINT FK_Cupos_Grado FOREIGN KEY (FK_ID_Grado) REFERENCES TBL_GRADO(ID_Grado) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -404,7 +405,7 @@ CREATE TABLE TBL_TICKET (
     FK_ID_Colegio_Preferencia INT NULL,
     FK_ID_Jornada_Preferencia TINYINT NOT NULL,
 
-    FK_ID_Cupo_Asignado INT,
+    FK_ID_Cupo_Asignado INT NULL,
 
     FK_ID_Estado_Ticket TINYINT NOT NULL,
     FK_ID_Barrio INT NOT NULL,
