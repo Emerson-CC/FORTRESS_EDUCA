@@ -36,17 +36,17 @@ def sp_cases_metricas() -> dict | None:
 # Catálogos para los filtros
  
 def sp_catalogo_estados_ticket() -> list[dict]:
-    """Estados del ticket activos (para el <select> de filtro de estado)."""
+    """Estados del ticket activos (para el <select> de filtro de estado)"""
     return db.call_procedure("sp_catalogo_estados_ticket", ()) or []
  
  
 def sp_catalogo_grados() -> list[dict]:
-    """Grados disponibles (para el <select> de filtro de grado)."""
+    """Grados disponibles (para el <select> de filtro de grado)"""
     return db.call_procedure("sp_catalogo_grados", ()) or []
  
  
 def sp_catalogo_tipo_afectacion() -> list[dict]:
-    """Tipos de afectación (para el <select> de filtro de afectación)."""
+    """Tipos de afectación (para el <select> de filtro de afectación)"""
     return db.call_procedure("sp_catalogo_tipo_afectacion", ()) or []
 
 
@@ -58,7 +58,7 @@ def sp_catalogo_tipo_afectacion() -> list[dict]:
 # DETALLE DEL TICKET
 
 def sp_ticket_panel_consultar_detalle(id_ticket) -> dict | None:
-    """Retorna todos los datos del ticket para el panel del técnico."""
+    """Retorna todos los datos del ticket para el panel del técnico"""
     resultado = db.call_procedure("sp_ticket_panel_consultar_detalle", (id_ticket,))
     return resultado[0] if resultado else None
 
@@ -130,7 +130,7 @@ def sp_ticket_panel_documento_descargar(id_doc) -> dict | None:
 
 
 def sp_ticket_panel_documento_insertar(id_ticket, id_tipo_doc, archivo, nombre_original) -> None:
-    """Inserta un documento subido por el técnico al ticket."""
+    """Inserta un documento subido por el técnico al ticket"""
     db.call_procedure(
         "sp_documento_ticket_insertar",
         (id_ticket, id_tipo_doc, archivo, nombre_original),
@@ -140,13 +140,13 @@ def sp_ticket_panel_documento_insertar(id_ticket, id_tipo_doc, archivo, nombre_o
 # DATOS DEL ACUDIENTE Y ESTUDIANTE (solo lectura)
 
 def sp_ticket_panel_acudiente_consultar(id_ticket) -> dict | None:
-    """Retorna los datos del acudiente creador del ticket."""
+    """Retorna los datos del acudiente creador del ticket"""
     resultado = db.call_procedure("sp_ticket_panel_acudiente_consultar", (id_ticket,))
     return resultado[0] if resultado else None
 
 
 def sp_ticket_panel_estudiante_consultar(id_ticket) -> dict | None:
-    """Retorna los datos del estudiante asociado al ticket."""
+    """Retorna los datos del estudiante asociado al ticket"""
     resultado = db.call_procedure("sp_ticket_panel_estudiante_consultar", (id_ticket,))
     return resultado[0] if resultado else None
 
@@ -154,45 +154,45 @@ def sp_ticket_panel_estudiante_consultar(id_ticket) -> dict | None:
 # CATÁLOGOS PARA SELECTFIELDS
 
 def sp_catalogo_estados_ticket() -> list[dict]:
-    """Retorna todos los estados del ticket para poblar el SelectField."""
+    """Retorna todos los estados del ticket para poblar el SelectField"""
     return db.call_procedure("sp_catalogo_estados_ticket", ()) or []
 
 
 def sp_catalogo_jornadas() -> list[dict]:
-    """Retorna todas las jornadas disponibles."""
+    """Retorna todas las jornadas disponibles"""
     return db.call_procedure("sp_catalogo_jornadas", ()) or []
 
 
 def sp_tipo_documento_consultar() -> list[dict]:
-    """Retorna los tipos de documento activos (reutilizado del módulo acudiente)."""
+    """Retorna los tipos de documento activos (reutilizado del módulo acudiente)"""
     return db.call_procedure("sp_tbl_tipo_documento_consultar", ()) or []
 
     # ASIGNACIÓN DE CUPO
 
 def sp_catalogo_barrios_con_colegios() -> list[dict]:
-    """Barrios que tienen al menos un colegio activo (usa VW_BARRIOS_CON_COLEGIOS)."""
+    """Barrios que tienen al menos un colegio activo (usa VW_BARRIOS_CON_COLEGIOS)"""
     return db.call_procedure("sp_catalogo_barrios_con_colegios", ()) or []
 
 def sp_catalogo_colegios_por_barrio(id_barrio: int) -> list[dict]:
-    """Colegios activos dentro del barrio indicado."""
+    """Colegios activos dentro del barrio indicado"""
     return db.call_procedure("sp_catalogo_colegios_por_barrio", (id_barrio,)) or []
 
 
     # 
     
 def sp_ticket_cupo_asignado_detalle(id_ticket: str) -> dict | None:
-    """Retorna toda la info del cupo actualmente asignado al ticket."""
+    """Retorna toda la info del cupo actualmente asignado al ticket"""
     resultado = db.call_procedure("sp_ticket_cupo_asignado_detalle", (id_ticket,))
     return resultado[0] if resultado else None
 
 
 def sp_ticket_usuario_confirmar_cupo(id_ticket: str, id_tecnico: int) -> None:
-    """Confirma el cupo: descuenta disponible+reservado, cierra ticket como Solucionado."""
+    """Confirma el cupo: descuenta disponible+reservado, cierra ticket como Solucionado"""
     db.call_procedure("sp_ticket_usuario_confirmar_cupo", (id_ticket, id_tecnico))
 
 
 def sp_ticket_usuario_cancelar_cupo(id_ticket: str, id_tecnico: int) -> None:
-    """Cancela el cupo: libera reserva, quita FK_ID_Cupo_Asignado, vuelve a estado 5."""
+    """Cancela el cupo: libera reserva, quita FK_ID_Cupo_Asignado, vuelve a estado 5"""
     db.call_procedure("sp_ticket_usuario_cancelar_cupo", (id_ticket, id_tecnico))
 
 # ====================================================================================================================================================
@@ -277,7 +277,7 @@ def sp_admin_administradores_listar():
     return db.call_procedure("sp_admin_administradores_listar", ()) or []
 
 def sp_admin_toggle_estado_tecnico(id_usuario, nuevo_estado, ejecutor_id, ip, user_agent):
-    """Reutiliza el mismo SP que toggle_estado_usuario."""
+    """Reutiliza el mismo SP que toggle_estado_usuario"""
     return db.call_procedure(
         "sp_admin_toggle_estado_usuario",
         (id_usuario, nuevo_estado, ejecutor_id, ip, user_agent),
@@ -301,7 +301,7 @@ def sp_history_listar_auditoria(tipo_evento, fecha_desde, fecha_hasta, pagina, p
     )
 
 def sp_history_contar_auditoria(tipo_evento, fecha_desde, fecha_hasta) -> int:
-    """Retorna el total de registros que coinciden con los filtros."""
+    """Retorna el total de registros que coinciden con los filtros"""
     resultado = db.call_procedure(
         "sp_history_contar_auditoria",
         (tipo_evento, fecha_desde, fecha_hasta),
@@ -316,4 +316,120 @@ def sp_history_exportar_auditoria(tipo_evento, fecha_desde, fecha_hasta) -> list
             (tipo_evento, fecha_desde, fecha_hasta),
         )
         or []
+    )
+    
+    
+
+# ====================================================================================================================================================
+#                                           PAGINA SCHOOL_STATUS.HTML
+# ====================================================================================================================================================
+
+
+# CATÁLOGOS (datos de apoyo para formularios y filtros)
+
+def sp_catalogo_barrios_activos() -> list[dict]:
+    """Barrios activos para poblar SelectField de formularios"""
+    return db.call_procedure("sp_catalogo_barrios_activos", ()) or []
+
+
+def sp_catalogo_jornadas_activas() -> list[dict]:
+    """Jornadas activas para filtros y gestión de jornadas"""
+    return db.call_procedure("sp_catalogo_jornadas_activas", ()) or []
+
+
+def sp_catalogo_grados_activos() -> list[dict]:
+    """Grados activos para construir la tabla de cupos"""
+    return db.call_procedure("sp_catalogo_grados_activos", ()) or []
+
+
+# LISTADO Y ESTADÍSTICAS (school_status.html)
+
+def sp_admin_colegios_estadisticas() -> dict:
+    """Métricas globales para las tarjetas de resumen"""
+    resultado = db.call_procedure("sp_admin_colegios_estadisticas", ()) or []
+    return resultado[0] if resultado else {}
+
+
+def sp_admin_colegios_listar() -> list[dict]:
+    """Todos los colegios con datos"""
+    return db.call_procedure("sp_admin_colegios_listar", ()) or []
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA SCHOOL_CONFIG.HTML
+# ====================================================================================================================================================
+
+
+def sp_admin_colegio_detalle(id_colegio: int) -> dict | None:
+    """Datos completos de un colegio para la página de gestión"""
+    resultado = db.call_procedure("sp_admin_colegio_detalle", (id_colegio,)) or []
+    return resultado[0] if resultado else None
+
+
+# CRUD DE COLEGIO
+
+def sp_admin_colegio_insertar( nombre: str, dane: str, email: str, telefono: str, direccion: str, id_barrio: int) -> int | None:
+    """Inserta un nuevo colegio. Retorna el ID generado o None si falla"""
+    resultado = db.call_procedure(
+        "sp_admin_colegio_insertar",
+        (nombre, dane, email, telefono, direccion, id_barrio),
+        out_params=1,   # p_nuevo_id es parámetro OUT
+    ) or []
+    return resultado[0].get("p_nuevo_id") if resultado else None
+
+
+def sp_admin_colegio_actualizar(id_colegio: int, nombre: str, dane: str, email: str, telefono: str, direccion: str, id_barrio: int) -> None:
+    """Actualiza los datos institucionales de un colegio"""
+    db.call_procedure(
+        "sp_admin_colegio_actualizar",
+        (id_colegio, nombre, dane, email, telefono, direccion, id_barrio),
+    )
+
+
+def sp_admin_colegio_estado_cambiar(id_colegio: int) -> int | None:
+    """Alterna Estado_Colegio entre 1 y 0. Retorna el nuevo estado (1 = activo, 0 = inactivo)"""
+    resultado = db.call_procedure(
+        "sp_admin_colegio_estado_cambiar", (id_colegio,)
+    ) or []
+    return resultado[0].get("Nuevo_Estado") if resultado else None
+
+
+# GESTIÓN DE JORNADAS
+
+def sp_admin_colegio_jornadas_activas(id_colegio: int) -> list[dict]:
+    """Jornadas activas del colegio con conteo de grados configurados"""
+    return db.call_procedure(
+        "sp_admin_colegio_jornadas_activas", (id_colegio,)
+    ) or []
+
+
+def sp_admin_colegio_jornada_agregar(id_colegio: int, id_jornada: int) -> None:
+    """Activa una jornada para el colegio creando/reactivando cupos"""
+    db.call_procedure(
+        "sp_admin_colegio_jornada_agregar", (id_colegio, id_jornada)
+    )
+
+
+def sp_admin_colegio_jornada_quitar(id_colegio: int, id_jornada: int) -> None:
+    """Desactiva todos los cupos de la jornada para el colegio"""
+    db.call_procedure(
+        "sp_admin_colegio_jornada_quitar", (id_colegio, id_jornada)
+    )
+
+
+# GESTIÓN DE CUPOS
+
+def sp_admin_colegio_cupos_obtener(id_colegio: int) -> list[dict]:
+    """Matriz de cupos (grado jornada activa) para la tabla de configuración"""
+    return db.call_procedure(
+        "sp_admin_colegio_cupos_obtener", (id_colegio,)
+    ) or []
+
+
+def sp_admin_colegio_cupo_guardar(id_colegio: int,id_grado: int,id_jornada: int, cupos_disponibles: int,) -> None:
+    """Upsert de una celda individual de la tabla de cupos"""
+    db.call_procedure(
+        "sp_admin_colegio_cupo_guardar",
+        (id_colegio, id_grado, id_jornada, cupos_disponibles),
     )

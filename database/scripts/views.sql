@@ -546,3 +546,41 @@ FROM TBL_TICKET_COMENTARIO tc
 INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
 INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
 INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;
+
+
+
+-- ====================================================================================================================================================
+-- VIEWS PARA LA PAGINA DE SCHOOL_STATUS
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- Agrega totales de cupos y jornadas activas por colegio.
+-- USADO EN sp_admin_colegios_estadisticas
+
+CREATE OR REPLACE VIEW vw_colegios_resumen AS
+SELECT
+    c.ID_Colegio,
+    c.Nombre_Colegio,
+    c.Codigo_DANE,
+    COALESCE(c.Email, '') AS Email,
+    COALESCE(c.Telefono, '') AS Telefono,
+    c.Direccion_Colegio,
+    b.ID_Barrio,
+    b.Nombre_Barrio,
+    c.Estado_Colegio,
+    COALESCE(SUM(CASE WHEN cu.Estado_Cupos = 1 THEN cu.Cupos_Disponibles ELSE 0 END), 0) AS Total_Cupos,
+    COALESCE(
+        GROUP_CONCAT(
+            DISTINCT CASE WHEN cu.Estado_Cupos = 1 THEN j.Nombre_Jornada END
+            ORDER BY j.ID_Jornada
+            SEPARATOR ','
+        ), ''
+    ) AS Jornadas_Activas
+FROM TBL_COLEGIO c
+INNER JOIN TBL_BARRIO b ON c.FK_ID_Barrio = b.ID_Barrio
+LEFT JOIN TBL_CUPOS cu ON c.ID_Colegio = cu.FK_ID_Colegio
+LEFT JOIN TBL_JORNADA j ON cu.FK_ID_Jornada = j.ID_Jornada
+GROUP BY
+    c.ID_Colegio, c.Nombre_Colegio, c.Codigo_DANE,
+    c.Email, c.Telefono, c.Direccion_Colegio,
+    b.ID_Barrio, b.Nombre_Barrio, c.Estado_Colegio;

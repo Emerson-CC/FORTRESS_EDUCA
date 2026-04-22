@@ -5,6 +5,8 @@ from app.services.admin.accounts import Accounts_Service
 from app.services.admin.accounts_user import Accounts_User_Service
 from app.services.admin.accounts_func import Accounts_Func_Service
 from app.services.admin.history import History_Service
+from app.services.admin.school_status import School_Status_Service
+from app.services.admin.school_config import School_Config_Service
 
 class AdminController:
     """Controlador de funciones para la parte de admin"""
@@ -17,6 +19,8 @@ class AdminController:
         self.accounts_user_service = Accounts_User_Service()
         self.accounts_func_service = Accounts_Func_Service()
         self.history_service = History_Service()
+        self.school_status_service = School_Status_Service()
+        self.school_config_service = School_Config_Service()
         
     # DASHBOARD
     def dashboard(self):
@@ -86,3 +90,27 @@ class AdminController:
 
     def history_export(self):
         return self.history_service.exportar_csv()    
+    
+    # SCHOOL
+        # STATUS
+    def school_status(self):
+        return self.school_status_service.listar_colegios()
+
+    def school_agregar(self):
+        return self.school_status_service.agregar_colegio()
+
+        # CONFIG
+    def school_config(self, id_colegio: int):
+        return self.school_config_service.cargar_config(id_colegio)
+
+    def school_config_datos(self, id_colegio: int):
+        return self.school_config_service.guardar_datos(id_colegio)
+
+    def school_config_jornadas(self, id_colegio: int):
+        return self.school_config_service.guardar_jornadas(id_colegio)
+
+    def school_config_cupos(self, id_colegio: int):
+        return self.school_config_service.guardar_cupos(id_colegio)
+
+    def school_config_estado(self, id_colegio: int):
+        return self.school_config_service.cambiar_estado(id_colegio)    

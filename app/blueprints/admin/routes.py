@@ -131,7 +131,57 @@ def history():
 def history_export():
     return controller.history_export()
 
+# COLEGIOS
+@admin_bp.route("/colegios")
+# @login_required
+# @admin_required
+def school_status():
+    return controller.school_status()
 
+
+@admin_bp.route("/colegios/agregar", methods=["POST"])
+# @login_required
+# @admin_required
+def school_agregar():
+    return controller.school_agregar()
+
+
+@admin_bp.route("/colegios/<int:id_colegio>")
+# @login_required
+# @admin_required
+def school_config(id_colegio):
+    return controller.school_config(id_colegio)
+
+
+@admin_bp.route("/colegios/<int:id_colegio>/datos", methods=["POST"])
+# @login_required
+# @admin_required
+def school_config_datos(id_colegio):
+    return controller.school_config_datos(id_colegio)
+
+
+@admin_bp.route("/colegios/<int:id_colegio>/jornadas", methods=["POST"])
+# @login_required
+# @admin_required
+def school_config_jornadas(id_colegio):
+    return controller.school_config_jornadas(id_colegio)
+
+
+@admin_bp.route("/colegios/<int:id_colegio>/cupos", methods=["POST"])
+# @login_required
+# @admin_required
+def school_config_cupos(id_colegio):
+    return controller.school_config_cupos(id_colegio)
+
+
+@admin_bp.route("/colegios/<int:id_colegio>/estado", methods=["POST"])
+# @login_required
+# @admin_required
+def school_config_estado(id_colegio):
+    return controller.school_config_estado(id_colegio)
+
+
+# CONFIGURACIONES
 @admin_bp.route("/settings")
 #@login_required
 #@admin_required

@@ -3546,3 +3546,338 @@ BEGIN
     ORDER BY Fecha_Comentario DESC;
 END $$
 DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE SCHOOL_STATUS
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Métricas para las tarjetas del encabezado de school_status.html
+
+DROP PROCEDURE IF EXISTS sp_admin_colegios_estadisticas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegios_estadisticas()
+BEGIN
+    SELECT
+        COUNT(*) AS Total_Colegios,
+        SUM(Estado_Colegio) AS Total_Activos,
+        SUM(CASE WHEN Total_Cupos > 0 THEN 1 ELSE 0 END) AS Total_Configurados,
+        COALESCE(SUM(Total_Cupos), 0) AS Total_Cupos
+    FROM VW_COLEGIOS_RESUMEN;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Devuelve todos los colegios con sus datos de resumen
+
+DROP PROCEDURE IF EXISTS sp_admin_colegios_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegios_listar()
+BEGIN
+    SELECT
+        ID_Colegio,
+        Nombre_Colegio,
+        Codigo_DANE,
+        Email,
+        Telefono,
+        Direccion_Colegio,
+        ID_Barrio,
+        Nombre_Barrio,
+        Estado_Colegio,
+        Total_Cupos,
+        Jornadas_Activas
+    FROM VW_COLEGIOS_RESUMEN
+    WHERE ID_Colegio <> 1    
+    ORDER BY ID_Colegio;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE SCHOOL_STATUS
+-- ====================================================================================================================================================
+
+
+-- --------------------------------------------------------
+-- SP: Devuelve todos los colegios con sus datos de resumen
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_detalle;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_detalle(IN p_id_colegio INT)
+BEGIN
+    SELECT
+        ID_Colegio,
+        Nombre_Colegio,
+        Codigo_DANE,
+        Email,
+        Telefono,
+        Direccion_Colegio,
+        ID_Barrio,
+        Nombre_Barrio,
+        Estado_Colegio,
+        Total_Cupos,
+        Jornadas_Activas
+    FROM VW_COLEGIOS_RESUMEN
+    WHERE ID_Colegio = p_id_colegio;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Registra un nuevo colegio. Retorna el ID generado
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_insertar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_insertar(
+    IN p_nombre VARCHAR(100),
+    IN p_dane VARCHAR(15),
+    IN p_email VARCHAR(255),
+    IN p_telefono VARCHAR(45),
+    IN p_direccion VARCHAR(100),
+    IN p_id_barrio INT,
+    OUT p_nuevo_id INT
+)
+BEGIN
+    INSERT INTO TBL_COLEGIO (
+        Nombre_Colegio, Codigo_DANE, Email, Telefono,
+        Direccion_Colegio, FK_ID_Barrio, Estado_Colegio
+    )
+    VALUES (
+        p_nombre, p_dane, NULLIF(p_email, ''), NULLIF(p_telefono, ''),
+        p_direccion, p_id_barrio, 1
+    );
+    SET p_nuevo_id = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Actualiza los datos institucionales de un colegio existente
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_actualizar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_actualizar(
+    IN p_id_colegio INT,
+    IN p_nombre VARCHAR(100),
+    IN p_dane VARCHAR(15),
+    IN p_email VARCHAR(255),
+    IN p_telefono VARCHAR(45),
+    IN p_direccion VARCHAR(100),
+    IN p_id_barrio INT
+)
+BEGIN
+    UPDATE TBL_COLEGIO
+    SET
+        Nombre_Colegio = p_nombre,
+        Codigo_DANE = p_dane,
+        Email = NULLIF(p_email, ''),
+        Telefono = NULLIF(p_telefono, ''),
+        Direccion_Colegio = p_direccion,
+        FK_ID_Barrio = p_id_barrio
+    WHERE ID_Colegio = p_id_colegio;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Activa o desactiva un colegio
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_estado_cambiar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_estado_cambiar(IN p_id_colegio INT)
+BEGIN
+    UPDATE TBL_COLEGIO
+    SET Estado_Colegio = CASE WHEN Estado_Colegio = 1 THEN 0 ELSE 1 END
+    WHERE ID_Colegio = p_id_colegio;
+
+    -- Retorna el nuevo estado para que el servicio pueda armar el mensaje
+    SELECT Estado_Colegio AS Nuevo_Estado
+    FROM   TBL_COLEGIO
+    WHERE  ID_Colegio = p_id_colegio;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Jornadas que el colegio tiene actualmente con cupos activos
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_jornadas_activas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_jornadas_activas(IN p_id_colegio INT)
+BEGIN
+    SELECT DISTINCT
+        j.ID_Jornada,
+        j.Nombre_Jornada,
+        COUNT(cu.ID_Cupos) AS Grados_Configurados
+    FROM TBL_JORNADA j
+    INNER JOIN TBL_CUPOS cu
+           ON j.ID_Jornada = cu.FK_ID_Jornada
+          AND cu.FK_ID_Colegio = p_id_colegio
+          AND cu.Estado_Cupos  = 1
+    WHERE j.Estado_Jornada = 1
+    GROUP BY j.ID_Jornada, j.Nombre_Jornada
+    ORDER BY j.ID_Jornada;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Agrega una jornada al colegio insertando filas vacías en TBL_CUPOS
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_jornada_agregar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_jornada_agregar(
+    IN p_id_colegio INT,
+    IN p_id_jornada TINYINT
+)
+BEGIN
+    INSERT IGNORE INTO TBL_CUPOS (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles, Estado_Cupos)
+    SELECT g.ID_Grado, p_id_colegio, p_id_jornada, 0, 1
+    FROM TBL_GRADO g
+    WHERE g.Estado_Grado = 1;
+    
+    -- Si el registro ya existía pero estaba inactivo, reactivarlo
+    UPDATE TBL_CUPOS
+    SET Estado_Cupos = 1
+    WHERE FK_ID_Colegio = p_id_colegio
+      AND FK_ID_Jornada = p_id_jornada;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Desactiva todos los cupos de una jornada para el colegio
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_jornada_quitar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_jornada_quitar(
+    IN p_id_colegio INT,
+    IN p_id_jornada TINYINT
+)
+BEGIN
+    UPDATE TBL_CUPOS
+    SET Estado_Cupos = 0
+    WHERE FK_ID_Colegio = p_id_colegio
+      AND FK_ID_Jornada = p_id_jornada;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Matriz completa de cupos para la tabla de school_config.html.
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_cupos_obtener;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_cupos_obtener(IN p_id_colegio INT)
+BEGIN
+    SELECT
+        g.ID_Grado,
+        g.Nombre_Grado,
+        g.Nivel_Educativo,
+        j.ID_Jornada,
+        j.Nombre_Jornada,
+        COALESCE(cu.Cupos_Disponibles, 0) AS Cupos_Disponibles,
+        COALESCE(cu.Cupos_Reservados,  0) AS Cupos_Reservados
+    FROM TBL_GRADO g
+    CROSS JOIN TBL_JORNADA j
+    LEFT JOIN TBL_CUPOS cu
+           ON cu.FK_ID_Grado = g.ID_Grado
+          AND cu.FK_ID_Colegio = p_id_colegio
+          AND cu.FK_ID_Jornada = j.ID_Jornada
+          AND cu.Estado_Cupos = 1
+    WHERE g.Estado_Grado = 1
+      AND j.Estado_Jornada = 1
+      -- Solo jornadas activas del colegio
+      AND j.ID_Jornada IN (
+          SELECT DISTINCT FK_ID_Jornada
+          FROM TBL_CUPOS
+          WHERE FK_ID_Colegio = p_id_colegio
+            AND Estado_Cupos = 1
+      )
+    ORDER BY g.ID_Grado, j.ID_Jornada;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Upsert de un cupo individual (grado × jornada × colegio).
+
+DROP PROCEDURE IF EXISTS sp_admin_colegio_cupo_guardar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_colegio_cupo_guardar(
+    IN p_id_colegio INT,
+    IN p_id_grado TINYINT,
+    IN p_id_jornada TINYINT,
+    IN p_cupos_disponibles TINYINT
+)
+BEGIN
+    INSERT INTO TBL_CUPOS (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles, Estado_Cupos)
+    VALUES (p_id_grado, p_id_colegio, p_id_jornada, p_cupos_disponibles, 1)
+    ON DUPLICATE KEY UPDATE
+        Cupos_Disponibles = p_cupos_disponibles,
+        Estado_Cupos = 1;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Lista de barrios activos para poblar SelectField en formularios.
+
+DROP PROCEDURE IF EXISTS sp_catalogo_barrios_activos;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_barrios_activos()
+BEGIN
+    SELECT ID_Barrio, Nombre_Barrio
+    FROM TBL_BARRIO
+    WHERE Estado_Barrio = 1
+    ORDER BY Nombre_Barrio;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Lista de jornadas activas para poblar SelectField y filtros
+
+DROP PROCEDURE IF EXISTS sp_catalogo_jornadas_activas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_jornadas_activas()
+BEGIN
+    SELECT ID_Jornada, Nombre_Jornada
+    FROM TBL_JORNADA
+    WHERE Estado_Jornada = 1
+    ORDER BY ID_Jornada;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Lista de grados activos ordenados por ID
+
+DROP PROCEDURE IF EXISTS sp_catalogo_grados_activos;
+
+DELIMITER $$
+CREATE PROCEDURE sp_catalogo_grados_activos()
+BEGIN
+    SELECT ID_Grado, Nombre_Grado, Nivel_Educativo
+    FROM TBL_GRADO
+    WHERE Estado_Grado = 1
+    ORDER BY ID_Grado;
+END $$
+DELIMITER ;

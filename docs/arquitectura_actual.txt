@@ -1,132 +1,128 @@
 Proyecto actual - estructura de carpetas y archivos
 
 root/
-    .env
+    requirements.txt
+    run.py
     app/
         __init__.py
         settings.py
-        core/
+        archive/
+            BLUEPRINTS_PAGINAS.md
+            PENDIENTE.md
+            README.md
+        blueprints/
             __init__.py
-            decorators.py
-            error_config.py
-            error_handlers.py
-            extensions.py
-            regexs.py
-            utils.py
-        database/
-            __init__.py
-            connection_db.py
-            connection_db_v2.py
-            fortress_educa_db_backup.sql
-            FORTRESS_EDUCA_DB_BACKUP_2.sql
-        modules/
             admin/
                 __init__.py
-                forms.py
-                models.py
                 routes.py
-                service.py
-            dashboard_user/
+            aplication/
                 __init__.py
-                forms.py
-                models.py
                 routes.py
-                services.py
+            auth/
+                __init__.py
+                routes.py
             home/
                 __init__.py
-                forms.py
-                models.py
                 routes.py
-                services.py
+        controllers/
+            __init__.py
+            admin.py
+            aplication.py
+            auth.py
+            error_controller.py
+            home.py
+        data_structures/
+            admin_structures.py
+            aplicacion_structures.py
+            auth_structures.py
+            pagina_structures.py
+        forms/
+            __init__.py
+            admin_forms.py
+            aplication_forms.py
+            auth_forms.py
+            home_forms.py
+        models/
+        repositories/
+            __init__.py
+            admin_repository.py
+            aplication_repository.py
+            auth_repository.py
+            home_repository.py
+            utils_repository.py
+        scripts/
+            inicializar_proyecto.py
+            install_requirements.py
         security/
             __init__.py
-            hash.py
-            jwt_handler.py
-            mfa_handler.py
-            models.py
-            recaptcha.py
-            session.py
+            jwt_controller.py
+            mfa_controller.py
+            recaptcha_controller.py
+            redirect_controller.py
+            session_controller.py
+        services/
+            __init__.py
+            admin_service.py
+            aplication_service.py
+            admin/
+                accounts_func.py
+                accounts_user.py
+                accounts.py
+                cases.py
+                dashboard.py
+                history.py
+                ...
+            aplication/
+            auth/
+            home/
         static/
             css/
-                admin.css
-                dashboard_home.css
-                dashboard_users.css
-                error_handler.css
-                home.css
-                modal.css
-                style.css
-            js/
-                admin.js
-                dashboard_users.js
-                home.js
-                main.js
-                profile.js
-                security.js
             img/
-                shield.ico
-                shield.png
-                shield_gear.ico
-                shield_user.ico
+            js/
+            lib/
         templates/
             layout_admin.html
             layout_dashboard.html
             layout_public.html
             admin/
-                cases.html
-                dashboard.html
-                history.html
-                settings.html
-                users.html
-            components/
-                admin_header.html
-                admin_sidebar.html
-                home_fotter.html
-                home_navbar_1.html
-                home_navbar_2.html
-                logout_modal.html
-                modal_global.html
-                modal_informative.html
-                modal_mandatory.html
-                user_header.html
-                user_sidebar.html
-            dashboard_users/
-                index.html
-                profile.html
-                register_student.html
-                security.html
-                settings.html
-                ticket_detail.html
-                ticket_request.html
-                ticket_status.html
+            aplication/
+            auth/
             errors/
-                error.html
             home/
-                home.html
-                login.html
-                login_admin.html
-                privacy_policy.html
-                recover_password.html
-                registro.html
-                terms_of_use.html
-                verify_mfa.html
+            includes/
         utils/
-            dataframe_manager.py
-            PRUEBA.PY
-    run.py
-    requirements.txt
+            __init__.py
+            audit_utils.py
+            database_utils.py
+            dataframe_utils.py
+            extensions_utils.py
+            password_utils.py
+            response_utils.py
+            validation_utils.py
+            decorators/
     aws/
-    docs/
-        Agregar_Codigo.txt
-        arquitectura.md
-        Cambios realizados.md
-        commands.md
-        db/
-        fuetes.md
-        migracion_estructura.md
+    database/
+        backups/
+            fortress_educa_db_backup_17-04-2026.sql
+            fortress_educa_db_backup_19-04-2026.sql
+        scripts/
+            data.sql
+            functions.sql
+            index.sql
+            procedures_all.sql
+            procedures_use.sql
+            script_prueba.sql
+            tables.sql
+            triggers.sql
+            views.sql
+    test/
     env/
-    tests/
-        __init__.py
-        connection_db_test.py
-        test_procedures.py
-        test_validaciones.py
-        test_validar_env.py
+        pyvenv.cfg
+        Include/
+        Lib/
+            site-packages/
+        Scripts/
+            activate
+            activate.bat
+            Activate.ps1
+            deactivate.bat
