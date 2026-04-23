@@ -1,20 +1,19 @@
 {% extends 'layout_admin.html' %}
 
 {% block titulo %}Fortress Educa - Gestión de Colegio{% endblock %}
+
+<!-- Titulo del Header -->
 {% set admin_header_title = colegio.Nombre_Colegio %}
 
+<!-- invocar el bloque -->
 {% block Contenido_Pagina %}
-<!--
-    FORTRESS EDUCA — school_config.html
-    Datos inyectados por School_Config_Service.cargar_config():
-      · colegio          → dict con datos del colegio (sp_admin_colegio_detalle)
-      · form_datos       → FormEditarColegio (POST Sección 1)
-      · form_jornadas    → FormGuardarJornadas (POST Sección 2)
-      · form_estado      → FormCambiarEstadoColegio (POST Sección 4)
-      · jornadas_activas → lista [{ID_Jornada, Nombre_Jornada, Grados_Configurados}]
-      · matriz_cupos     → dict construido por _construir_matriz_cupos()
-      · total_cupos      → int
--->
+
+    <!--
+        FORTRESS EDUCA - PLATAFORMA DE CUPOS EDUCATIVOS
+        Función: Pagina para la configuración de paremtros/información y cupos de los colegios
+    -->
+
+
 <main class="page-content">
 
     <!-- Mensajes flash -->
@@ -27,7 +26,7 @@
         {% endfor %}
     {% endwith %}
 
-    <!-- ===== NAVEGACIÓN DE REGRESO ===== -->
+    <!-- NAVEGACIÓN DE REGRESO -->
     <div class="mb-3">
         <a href="{{ url_for('admin.school_status') }}"
            class="btn btn-sm btn-outline-secondary">
@@ -35,7 +34,7 @@
         </a>
     </div>
 
-    <!-- ===== CABECERA DEL COLEGIO ===== -->
+    <!-- CABECERA DEL COLEGIO -->
     <!-- DATA: colegio → sp_admin_colegio_detalle(id_colegio) -->
     <div class="card border-0 shadow-sm mb-4"
          style="border-left: 4px solid var(--color-primary) !important;">
@@ -128,7 +127,7 @@
         </div>
     </div>
 
-    <!-- ===== NAVEGACIÓN POR SECCIONES ===== -->
+    <!-- NAVEGACIÓN POR SECCIONES -->
     <div class="mb-4">
         <ul class="nav nav-pills gap-1 flex-wrap">
             <li class="nav-item">
@@ -155,14 +154,7 @@
     </div>
 
 
-    <!-- ╔══════════════════════════════════════════════════════╗ -->
-    <!-- ║  SECCIÓN 1 — EDITAR DATOS DEL COLEGIO               ║ -->
-    <!-- ╚══════════════════════════════════════════════════════╝ -->
-    <!--
-        FormEditarColegio — POST admin.school_config_datos
-        Procesado por School_Config_Service.guardar_datos()
-        FUTURA INTEGRACIÓN: PUT /api/admin/colegios/{id}
-    -->
+    <!-- SECCIÓN 1 — EDITAR DATOS DEL COLEGIO -->
     <div class="card border-0 shadow-sm mb-4" id="seccion-datos">
         <div class="card-header bg-white border-bottom py-3">
             <h6 class="fw-bold mb-0">
@@ -226,15 +218,7 @@
     </div>
 
 
-    <!-- ╔══════════════════════════════════════════════════════╗ -->
-    <!-- ║  SECCIÓN 2 — JORNADAS DEL COLEGIO                   ║ -->
-    <!-- ╚══════════════════════════════════════════════════════╝ -->
-    <!--
-        FormGuardarJornadas — POST admin.school_config_jornadas
-        Procesado por School_Config_Service.guardar_jornadas()
-        Compara nuevas vs actuales → agrega/quita con SPs específicos.
-        DATA: jornadas_activas → sp_admin_colegio_jornadas_activas()
-    -->
+    <!-- SECCIÓN 2 — JORNADAS DEL COLEGIO -->
     <div class="card border-0 shadow-sm mb-4" id="seccion-jornadas">
         <div class="card-header bg-white border-bottom py-3">
             <h6 class="fw-bold mb-0">
@@ -255,12 +239,6 @@
                     Active o desactive jornadas. Al menos una debe permanecer activa.
                 </p>
 
-                <!--
-                    MultiCheckboxField: form_jornadas.jornadas_activas
-                    Renderizado como cards con icono y conteo de grados configurados.
-                    Los choices vienen de sp_catalogo_jornadas_activas().
-                    Los IDs activos se precargan desde jornadas_activas.
-                -->
                 <div class="row g-3">
                     {% set iconos_jornada = {
                         'Mañana':        ('fa-sun',           'primary'),
@@ -340,22 +318,7 @@
     </div>
 
 
-    <!-- ╔══════════════════════════════════════════════════════╗ -->
-    <!-- ║  SECCIÓN 3 — CUPOS POR GRADO Y JORNADA              ║ -->
-    <!-- ╚══════════════════════════════════════════════════════╝ -->
-    <!--
-        Formulario sin WTForms (campos dinámicos).
-        Nombres: cupo_g{ID_Grado}_j{ID_Jornada}
-        Procesado por School_Config_Service.guardar_cupos() vía request.form
-        DATA: matriz_cupos → _construir_matriz_cupos(sp_admin_colegio_cupos_obtener())
-
-        La tabla se renderiza completamente en Jinja2 (sin JS),
-        usando la estructura:
-          matriz_cupos.niveles_ordenados  → lista de niveles
-          matriz_cupos.grados_por_nivel   → { nivel: [ {ID_Grado, Nombre_Grado} ] }
-          matriz_cupos.jornadas           → [ {ID_Jornada, Nombre_Jornada} ]
-          matriz_cupos.cupos              → { (id_grado, id_jornada): cupos_disponibles }
-    -->
+    <!-- SECCIÓN 3 — CUPOS POR GRADO Y JORNADA -->
     <div class="card border-0 shadow-sm mb-4" id="seccion-cupos">
         <div class="card-header bg-white border-bottom py-3">
             <div class="d-flex justify-content-between align-items-start">

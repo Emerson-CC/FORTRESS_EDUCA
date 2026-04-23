@@ -1,10 +1,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 
-from wtforms import SelectField, TextAreaField, BooleanField, DateTimeLocalField, HiddenField, StringField, SelectMultipleField, EmailField, TelField
-from wtforms.validators import DataRequired, Optional, Length, Email, Regexp
+from wtforms import SelectField, TextAreaField, BooleanField, DateTimeLocalField, HiddenField, StringField, SelectMultipleField, EmailField, TelField, IntegerField
+from wtforms.validators import DataRequired, Optional, Length, Email, Regexp, InputRequired, NumberRange
 from wtforms.widgets import CheckboxInput, ListWidget
-
 
 # Validador reutilizable: asegura que el SelectField no quede en "-- Seleccione --"
 def seleccion_valida(form, field):
@@ -296,5 +295,87 @@ class FormCambiarEstadoColegio(FlaskForm):
     confirmar = HiddenField(default="1")
     
     
+
+# ====================================================================================================================================================
+#                                           PAGINA SETTINGS.HTML
+# ====================================================================================================================================================
+
+
+class FormPrioridadAfectacion(FlaskForm):
+    """Crear o editar un Tipo de Afectación"""
+
+    nombre = StringField(
+        "Nombre",
+        validators=[
+            DataRequired(message="El nombre es obligatorio."),
+            Length(max=60, message="Máximo 60 caracteres."),
+        ],
+    )
+    descripcion = StringField(
+        "Descripción",
+        validators=[
+            DataRequired(message="La descripción es obligatoria."),
+            Length(max=150, message="Máximo 150 caracteres."),
+        ],
+    )
+    nivel_prioridad = IntegerField(
+        "Nivel de Prioridad",
+        validators=[
+            InputRequired(message="El nivel es obligatorio."),
+            NumberRange(min=0, max=99, message="Debe estar entre 0 y 99."),
+        ],
+    )
+
+
+class FormPrioridadGrupo(FlaskForm):
+    """Crear o editar un Grupo Preferencial"""
+
+    nombre = StringField(
+        "Nombre",
+        validators=[
+            DataRequired(message="El nombre es obligatorio."),
+            Length(max=30, message="Máximo 30 caracteres."),
+        ],
+    )
+    descripcion = StringField(
+        "Descripción",
+        validators=[
+            DataRequired(message="La descripción es obligatoria."),
+            Length(max=150, message="Máximo 150 caracteres."),
+        ],
+    )
+    nivel_prioridad = IntegerField(
+        "Nivel de Prioridad",
+        validators=[
+            InputRequired(message="El nivel es obligatorio."),
+            NumberRange(min=0, max=99, message="Debe estar entre 0 y 99."),
+        ],
+    )
+
+
+class FormPrioridadEstrato(FlaskForm):
+    """Crear o editar un Estrato Socioeconómico"""
+
+    nombre = StringField(
+        "Nombre",
+        validators=[
+            DataRequired(message="El nombre es obligatorio."),
+            Length(max=10, message="Máximo 10 caracteres."),
+        ],
+    )
     
+    descripcion = StringField(
+        "Descripción",
+        validators=[
+            DataRequired(message="La descripción es obligatoria."),
+            Length(max=150, message="Máximo 150 caracteres."),
+        ],
+    )
     
+    nivel_prioridad = IntegerField(
+        "Nivel de Prioridad",
+        validators=[
+            InputRequired(message="El nivel es obligatorio."),
+            NumberRange(min=0, max=99, message="Debe estar entre 0 y 99."),
+        ],
+    )

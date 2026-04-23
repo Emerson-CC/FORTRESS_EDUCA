@@ -15,6 +15,23 @@ from app.utils.extensions_utils import mail
 # UTILIDADES
 from app.utils.password_utils import hashear_contraseña
 
+# Permitir solo endpoints válidos para la redirección final de recuperación
+_VALID_LOGIN_RECOVERY_ENDPOINTS = {"auth.login_user", "auth.login_admin"}
+
+
+def _obtener_url_login_recovery():
+    endpoint = session.get("password_recovery_login_endpoint", "auth.login_user")
+    if endpoint not in _VALID_LOGIN_RECOVERY_ENDPOINTS:
+        endpoint = "auth.login_user"
+    return url_for(endpoint)
+
+
+def _set_password_recovery_login_endpoint_from_request():
+    endpoint = request.args.get("next", "")
+    if endpoint in _VALID_LOGIN_RECOVERY_ENDPOINTS:
+        session["password_recovery_login_endpoint"] = endpoint
+
+
 # ====================================================================================================================================================
 #                                           PAGINA RECOVER_PASSWORD.HTML
 # ====================================================================================================================================================
@@ -27,20 +44,22 @@ class Password_Recovery_Service:
     def Password_Recovery(self):
         
         """GET / POST — el usuario ingresa su correo y recibe el código."""
+        _set_password_recovery_login_endpoint_from_request()
+        login_url = _obtener_url_login_recovery()
         form = RecuperarcontraseñaForm()
 
         # =====================================================
         # SOLICITUD GET
         
         if request.method == "GET":
-            return render_template("auth/recover_password.html", form=form, paso=1)
+            return render_template("auth/recover_password.html", form=form, paso=1, login_url=login_url)
 
         # =====================================================
         # SOLICITUD POST
         
         if not form.validate_on_submit():
             flash("Por favor ingrese un correo válido.", "danger")
-            return render_template("auth/recover_password.html", form=form, paso=1)
+            return render_template("auth/recover_password.html", form=form, paso=1, login_url=login_url)
 
         username = form.username.data.strip().lower()
 
@@ -49,7 +68,7 @@ class Password_Recovery_Service:
         if not email:
             # Mensaje genérico para no revelar si el usuario existe
             flash("Si el correo está registrado, recibirá un código en breve.", "info")
-            return render_template("auth/recover_password.html", form=form, paso=1)
+            return render_template("auth/recover_password.html", form=form, paso=1, login_url=login_url)
 
         # Generar código aleatorio de 6 dígitos
         codigo = str(random.randint(100000, 999999))
@@ -69,7 +88,7 @@ class Password_Recovery_Service:
         except Exception as e:
             current_app.logger.error(f"Error enviando correo de recuperación: {e}")
             flash("No se pudo enviar el correo. Intente más tarde.", "danger")
-            return render_template("auth/recover_password.html", form=form, paso=1)
+            return render_template("auth/recover_password.html", form=form, paso=1, login_url=login_url)
 
         flash("Código enviado. Revise su bandeja de entrada.", "success")
         return redirect(url_for("auth.recover_password_verify"))
@@ -77,6 +96,8 @@ class Password_Recovery_Service:
     #  Verificar código
     def Verify_Code(self):
         """GET / POST — el usuario ingresa el código recibido."""
+        _set_password_recovery_login_endpoint_from_request()
+        login_url = _obtener_url_login_recovery()
         form = VerificarCodigoForm()
 
         # Redirigir si no hay sesión de recuperación activa
@@ -88,14 +109,14 @@ class Password_Recovery_Service:
         # SOLICITUD GET
         
         if request.method == "GET":
-            return render_template("auth/recover_password.html", form=form, paso=2)
+            return render_template("auth/recover_password.html", form=form, paso=2, login_url=login_url)
 
         # =====================================================
         # SOLICITUD POST
         
         if not form.validate_on_submit():
             flash("Ingrese el código de 6 dígitos.", "danger")
-            return render_template("auth/recover_password.html", form=form, paso=2)
+            return render_template("auth/recover_password.html", form=form, paso=2, login_url=login_url)
 
         datos = session["recuperacion"]
 
@@ -108,7 +129,7 @@ class Password_Recovery_Service:
         # Comparar código
         if form.codigo.data.strip() != datos["codigo"]:
             flash("Código incorrecto. Verifique e intente de nuevo.", "danger")
-            return render_template("auth/recover_password.html", form=form, paso=2)
+            return render_template("auth/recover_password.html", form=form, paso=2, login_url=login_url)
 
         # Marcar como verificado en sesión
         session["recuperacion"]["verificado"] = True
@@ -118,46 +139,42 @@ class Password_Recovery_Service:
 
     #  Nueva contraseña
     def New_Password(self):
-        """GET / POST — el usuario define su nueva contraseña."""
+        _set_password_recovery_login_endpoint_from_request()
+        login_url = _obtener_url_login_recovery()  
         form = NuevacontraseñaForm()
 
         datos = session.get("recuperacion")
 
-        # Validar que haya pasado por el paso 2
         if not datos or not datos.get("verificado"):
             flash("Acceso no autorizado. Complete el proceso de verificación.", "warning")
             return redirect(url_for("auth.recover_password_code"))
 
-        # =====================================================
-        # SOLICITUD GET
-        
         if request.method == "GET":
-            return render_template("auth/recover_password.html", form=form, paso=3)
+            return render_template("auth/recover_password.html", form=form, paso=3, login_url=login_url)
 
         if not form.validate_on_submit():
             flash("Por favor revise los campos.", "danger")
-            return render_template("auth/recover_password.html", form=form, paso=3)
+            return render_template("auth/recover_password.html", form=form, paso=3, login_url=login_url)
 
         username = datos["username"]
-
-        # Generar nuevo hash con pepper
         nuevo_hash = hashear_contraseña(form.password.data)
-        # Datos para auditoria
         ip = request.remote_addr
         user_agent = request.headers.get("User-Agent")
-        
+
         try:
             sp_actualizar_contraseña(username, nuevo_hash, ip, user_agent)
         except Exception as e:
             current_app.logger.error(f"Error actualizando contraseña: {e}")
             flash("Error al actualizar la contraseña. Intente más tarde.", "danger")
-            return render_template("auth/recover_password.html", form=form, paso=3)
+            return render_template("auth/recover_password.html", form=form, paso=3, login_url=login_url)
 
-        # Limpiar sesión de recuperación
+        # limpiar sesión después de haber resuelto login_url
         session.pop("recuperacion", None)
+        session.pop("password_recovery_login_endpoint", None)
 
         flash("¡Contraseña actualizada exitosamente! Ya puede iniciar sesión.", "success")
-        return redirect(url_for("auth.login_user"))
+        return redirect(login_url)  # usar la URL ya resuelta
+
 
     #  Envio Correo
     def _enviar_correo_codigo(self, destinatario: str, codigo: str):

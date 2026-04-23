@@ -55,22 +55,6 @@
             <i class="fas fa-cog"></i> <span>Configuración</span>
         </a>
 
-        <hr>
-
-        <!-- Sección para datos de la cuenta  -->
-
-        <a href="{{ url_for('admin.settings') }}" class="nav-link{% if active_page == 'profile' %} active{% endif %}">
-            <i class="fas fa-user"></i> <span>Mi Perfil</span>
-        </a>
-
-        <a href="{{ url_for('admin.settings') }}" class="nav-link{% if active_page == 'security' %} active{% endif %}">
-            <i class="fas fa-lock"></i> <span>Seguridad</span>
-        </a>
-
-        <a href="{{ url_for('admin.settings') }}" class="nav-link{% if active_page == 'settings' %} active{% endif %}">
-            <i class="fas fa-cog"></i> <span>Ajustes</span>
-        </a>
-
     </div>
 
     <div class="sidebar-footer">

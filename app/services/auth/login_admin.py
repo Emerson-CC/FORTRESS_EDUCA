@@ -37,6 +37,9 @@ class Login_Admin_Service:
         mostrar_recaptcha = intentos_fallidos >= INTENTOS_PARA_RECAPTCHA
         site_key = current_app.config.get("RECAPTCHA_SITE_KEY", "")
 
+        # Indicar que la recuperación de contraseña debe volver a la página de login de administrador
+        session["password_recovery_login_endpoint"] = "auth.login_admin"
+
         ctx = dict(form=form, mostrar_recaptcha=mostrar_recaptcha,
                    recaptcha_site_key=site_key)
 

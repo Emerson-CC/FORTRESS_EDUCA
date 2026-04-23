@@ -3,14 +3,28 @@ from mysql.connector import Error
 
 from app.settings import Config_DB
 
+Config_DB.validate()
+
 class ConnectionDB:
     def __init__(self):
+        ssl_args = {}
+
+        if Config_DB.DB_SSL:
+            ssl_args = {
+                "ssl_disabled": False, # Fuerza SSL
+                "ssl_verify_cert": False, # True si tienes certificado propio
+            }
+
         self.config = {
             "host": Config_DB.DB_HOST,
             "port": Config_DB.DB_PORT,
             "user": Config_DB.DB_USER,
             "password": Config_DB.DB_PASSWORD,
             "database": Config_DB.DB_NAME,
+            "connection_timeout": 10, # Timeout de conexión
+            "autocommit": False, # Control explícito de transacciones
+            **ssl_args,
+            
         }
         self.connection = None
         self.connect()
@@ -26,6 +40,7 @@ class ConnectionDB:
 
     def ensure_connection(self):
         if self.connection is None or not self.connection.is_connected():
+            print("[WARN] Reconectando a MySQL...")            
             self.connect()
 
     def call_procedure(self, nombre_sp, params=None, commit=False):
@@ -43,8 +58,17 @@ class ConnectionDB:
             cursor.close()
             return resultados if resultados else None
         except Error as e:
+            self.rollback() # Rollback automático ante error            
             print(f"[ERROR] Fallo ejecutando SP '{nombre_sp}': {e}")
             return None
+
+    def registrar_auditoria(self, evento: str, ip_origen: str = "127.0.0.1", tabla: str = None, detalle: str = None):
+        """Registra un evento en la tabla audit_log vía procedimiento almacenado"""
+        self.call_procedure(
+            "sp_registrar_auditoria",
+            params=(evento, ip_origen, tabla, detalle),
+            commit=True
+        )
 
     def rollback(self):
         try:

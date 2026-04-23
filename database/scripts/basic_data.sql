@@ -64,24 +64,24 @@ INSERT INTO TBL_GENERO (ID_Genero, Nombre_Genero) VALUES
 -- TBL_GRUPO_PREFERENCIAL
 -- -----------------------------------------------------
 
-INSERT INTO TBL_GRUPO_PREFERENCIAL (ID_Grupo_Preferencial, Nombre_Grupo_Preferencial, Nivel_Prioridad_GP) VALUES
-    (1, 'Ninguno', 0), 
-    (2, 'Comunidad Indígena', 30), 
-    (3, 'Afrocolombiano', 25), 
-    (4, 'Refugiado', 25), 
-    (5, 'LGBTQ+', 20), 
-    (6, 'Pobreza Extrema', 20);
+INSERT INTO TBL_GRUPO_PREFERENCIAL (ID_Grupo_Preferencial, Nombre_Grupo_Preferencial, Descripcion_Grupo_Preferencial, Nivel_Prioridad_GP) VALUES
+    (1, 'Ninguno', 'Persona que no pertenece a ningún grupo poblacional con enfoque diferencial específico.', 0), 
+    (2, 'Comunidad Indígena', 'Pertenencia a pueblos originarios con reconocimiento étnico y cultural.', 30), 
+    (3, 'Afrocolombiano', 'Persona que se reconoce como parte de comunidades negras, mulatas o afrodescendientes.', 25), 
+    (4, 'Refugiado', 'Persona que busca protección internacional debido a temores fundados de persecución en su país.', 25), 
+    (5, 'LGBTQ+', 'Pertenencia a sectores sociales con orientaciones sexuales e identidades de género diversas.', 20), 
+    (6, 'Pobreza Extrema', 'Situación en la cual los ingresos no son suficientes para cubrir la canasta básica de alimentos.', 20);
 
 
 -- -----------------------------------------------------
 -- TBL_ESTRATO
 -- -----------------------------------------------------
 
-INSERT INTO TBL_ESTRATO (ID_Estrato, Nombre_Estrato, Nivel_Prioridad_E) VALUES
-    (1, 'Estrato 1', 60), 
-    (2, 'Estrato 2', 50), 
-    (3, 'Estrato 3', 40), 
-    (4, 'Estrato 4', 30);
+INSERT INTO TBL_ESTRATO (ID_Estrato, Nombre_Estrato, Descripcion_Estrato, Nivel_Prioridad_E) VALUES
+    (1, 'Estrato 1', 'Nivel socioeconómico bajo-bajo, correspondiente a usuarios con menores recursos.', 60), 
+    (2, 'Estrato 2', 'Nivel socioeconómico bajo, asignado a viviendas con recursos limitados.', 50), 
+    (3, 'Estrato 3', 'Nivel socioeconómico medio-bajo, con acceso básico a servicios y condiciones estables.', 40), 
+    (4, 'Estrato 4', 'Nivel socioeconómico medio, correspondiente a zonas con capacidad de pago estándar.', 30);
 
 
 -- -----------------------------------------------------
@@ -220,16 +220,18 @@ INSERT INTO TBL_ROL (ID_Rol, Nombre_Rol, Descripcion_Rol) VALUES
     (4, 'Admin', 'Encargado de la pagina'), 
     (5, 'Desconocido', 'Usuario generico para exepciones en la auditoria');
 
+
 -- -----------------------------------------------------
 -- TBL_TIPO_AFECTACION
 -- -----------------------------------------------------
 
-INSERT INTO TBL_TIPO_AFECTACION (ID_Tipo_Afectacion, Nombre_Afectacion, Nivel_Prioridad_TC) VALUES
-    (1, 'Desplazamiento Forzado', 40), 
-    (2, 'Víctima del Conflicto Armado', 35), 
-    (3, 'Vulnerabilidad Económica', 20), 
-    (4, 'No Escolarizado', 15), 
-    (5, 'Otro', 5);
+INSERT INTO TBL_TIPO_AFECTACION (ID_Tipo_Afectacion, Nombre_Afectacion, Descripcion_Afectacion, Nivel_Prioridad_TC) VALUES
+    (1, 'Desplazamiento Forzado', 'Persona obligada a abandonar su hogar debido a situaciones de violencia o conflicto.', 40), 
+    (2, 'Víctima del Conflicto Armado', 'Individuo que ha sufrido daños por infracciones al Derecho Internacional Humanitario.', 35), 
+    (3, 'Vulnerabilidad Económica', 'Situación de precariedad financiera que limita el acceso a necesidades básicas.', 20), 
+    (4, 'No Escolarizado', 'Persona que no se encuentra vinculada formalmente al sistema educativo.', 15), 
+    (5, 'Otro', 'Cualquier otro tipo de afectación que no se encuentre clasificada en las categorías anteriores.', 5);
+
 
 
 -- -----------------------------------------------------

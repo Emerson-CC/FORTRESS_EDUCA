@@ -7,6 +7,8 @@ from app.services.admin.accounts_func import Accounts_Func_Service
 from app.services.admin.history import History_Service
 from app.services.admin.school_status import School_Status_Service
 from app.services.admin.school_config import School_Config_Service
+from app.services.admin.settings import Settings_Service
+
 
 class AdminController:
     """Controlador de funciones para la parte de admin"""
@@ -21,6 +23,7 @@ class AdminController:
         self.history_service = History_Service()
         self.school_status_service = School_Status_Service()
         self.school_config_service = School_Config_Service()
+        self.settings_service = Settings_Service()
         
     # DASHBOARD
     def dashboard(self):
@@ -114,3 +117,37 @@ class AdminController:
 
     def school_config_estado(self, id_colegio: int):
         return self.school_config_service.cambiar_estado(id_colegio)    
+    
+    # SETTINGS
+    def settings(self):
+        return self.settings_service.cargar_settings()
+
+        # AFECTACIONES
+    def settings_afectacion_crear(self):
+        return self.settings_service.crear_afectacion()
+
+    def settings_afectacion_editar(self, id_afectacion: int):
+        return self.settings_service.actualizar_afectacion(id_afectacion)
+
+    def settings_afectacion_estado(self, id_afectacion: int):
+        return self.settings_service.cambiar_estado_afectacion(id_afectacion)
+
+        # GRUPOS PREFERENCIALES
+    def settings_grupo_crear(self):
+        return self.settings_service.crear_grupo()
+
+    def settings_grupo_editar(self, id_grupo: int):
+        return self.settings_service.actualizar_grupo(id_grupo)
+
+    def settings_grupo_estado(self, id_grupo: int):
+        return self.settings_service.cambiar_estado_grupo(id_grupo)
+
+        # ESTRATOS
+    def settings_estrato_crear(self):
+        return self.settings_service.crear_estrato()
+
+    def settings_estrato_editar(self, id_estrato: int):
+        return self.settings_service.actualizar_estrato(id_estrato)
+
+    def settings_estrato_estado(self, id_estrato: int):
+        return self.settings_service.cambiar_estado_estrato(id_estrato)    

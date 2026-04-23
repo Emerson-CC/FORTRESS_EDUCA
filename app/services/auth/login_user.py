@@ -37,6 +37,9 @@ class Login_User_Service:
         mostrar_recaptcha   = intentos_fallidos >= INTENTOS_PARA_RECAPTCHA
         site_key = current_app.config.get("RECAPTCHA_SITE_KEY", "")
 
+        # Indicar que la recuperación de contraseña debe volver a la página de login de usuario
+        session["password_recovery_login_endpoint"] = "auth.login_user"
+
         # Contexto base para render_no_cache
         ctx = dict(form=form, mostrar_recaptcha=mostrar_recaptcha,
                    recaptcha_site_key=site_key)

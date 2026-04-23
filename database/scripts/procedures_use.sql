@@ -848,7 +848,7 @@ BEGIN
         CONCAT(e.Primer_Nombre, ' ', e.Primer_Apellido) AS Nombre_Estudiante,
         e.Nombre_Grado_Actual
 
-    FROM vw_ticket_base t
+    FROM vw_ticket_detalle t
     INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
 
     WHERE t.FK_ID_Usuario_Creador = p_id_usuario
@@ -3603,7 +3603,6 @@ DELIMITER ;
 -- SP PARA LA PAGINA DE SCHOOL_STATUS
 -- ====================================================================================================================================================
 
-
 -- --------------------------------------------------------
 -- SP: Devuelve todos los colegios con sus datos de resumen
 
@@ -3879,5 +3878,265 @@ BEGIN
     FROM TBL_GRADO
     WHERE Estado_Grado = 1
     ORDER BY ID_Grado;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE SETTINGS
+-- ====================================================================================================================================================
+
+    -- TIPO DE AFECTACIÓN
+
+-- --------------------------------------------------------
+-- SP: Ver lista de tipos de afectaciones
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_afectaciones_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_afectaciones_listar()
+BEGIN
+    SELECT ID_Tipo_Afectacion,
+           Nombre_Afectacion,
+           Descripcion_Afectacion,
+           Nivel_Prioridad_TC,
+           Estado_Afectacion
+    FROM TBL_TIPO_AFECTACION
+    ORDER BY Nivel_Prioridad_TC DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Ver lista de tipos de afectaciones
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_afectacion_insertar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_afectacion_insertar(
+    IN  p_nombre VARCHAR(60),
+    IN  p_descripcion VARCHAR(150),
+    IN  p_nivel TINYINT,
+    OUT p_nuevo_id TINYINT
+)
+BEGIN
+    INSERT INTO TBL_TIPO_AFECTACION
+        (Nombre_Afectacion, Descripcion_Afectacion, Nivel_Prioridad_TC)
+    VALUES (p_nombre, p_descripcion, p_nivel);
+    SET p_nuevo_id = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Actualizar un tipo de afectación registrada
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_afectacion_actualizar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_afectacion_actualizar(
+    IN p_id TINYINT,
+    IN p_nombre VARCHAR(60),
+    IN p_descripcion VARCHAR(150),
+    IN p_nivel TINYINT
+)
+BEGIN
+    UPDATE TBL_TIPO_AFECTACION
+    SET Nombre_Afectacion = p_nombre,
+           Descripcion_Afectacion = p_descripcion,
+           Nivel_Prioridad_TC = p_nivel
+    WHERE  ID_Tipo_Afectacion = p_id;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Eliminado logico de tipo de afectación
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_afectacion_estado_cambiar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_afectacion_estado_cambiar(
+    IN p_id TINYINT
+)
+BEGIN
+    UPDATE TBL_TIPO_AFECTACION
+    SET Estado_Afectacion = IF(Estado_Afectacion = 1, 0, 1)
+    WHERE ID_Tipo_Afectacion = p_id;
+
+    SELECT Estado_Afectacion AS Nuevo_Estado
+    FROM TBL_TIPO_AFECTACION
+    WHERE ID_Tipo_Afectacion = p_id;
+END $$
+DELIMITER ;
+
+
+    -- GRUPO / COMUNIDAD PREFERENCIAL
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_grupos_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_grupos_listar()
+BEGIN
+    SELECT ID_Grupo_Preferencial,
+           Nombre_Grupo_Preferencial,
+           Descripcion_Grupo_Preferencial,
+           Nivel_Prioridad_GP,
+           Estado_Grupo_Preferencial
+    FROM   TBL_GRUPO_PREFERENCIAL
+    ORDER  BY Nivel_Prioridad_GP DESC;
+END $$
+DELIMITER ;
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_grupo_insertar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_grupo_insertar(
+    IN  p_nombre VARCHAR(30),
+    IN  p_descripcion VARCHAR(150),
+    IN  p_nivel TINYINT,
+    OUT p_nuevo_id TINYINT
+)
+BEGIN
+    INSERT INTO TBL_GRUPO_PREFERENCIAL
+        (Nombre_Grupo_Preferencial, Descripcion_Grupo_Preferencial, Nivel_Prioridad_GP)
+    VALUES (p_nombre, p_descripcion, p_nivel);
+    SET p_nuevo_id = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_grupo_actualizar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_grupo_actualizar(
+    IN p_id TINYINT,
+    IN p_nombre VARCHAR(30),
+    IN p_descripcion VARCHAR(150),
+    IN p_nivel TINYINT
+)
+BEGIN
+    UPDATE TBL_GRUPO_PREFERENCIAL
+    SET    Nombre_Grupo_Preferencial = p_nombre,
+           Descripcion_Grupo_Preferencial = p_descripcion,
+           Nivel_Prioridad_GP = p_nivel
+    WHERE  ID_Grupo_Preferencial = p_id;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_grupo_estado_cambiar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_grupo_estado_cambiar(
+    IN p_id TINYINT
+)
+BEGIN
+    UPDATE TBL_GRUPO_PREFERENCIAL
+    SET Estado_Grupo_Preferencial = IF(Estado_Grupo_Preferencial = 1, 0, 1)
+    WHERE ID_Grupo_Preferencial = p_id;
+
+    SELECT Estado_Grupo_Preferencial AS Nuevo_Estado
+    FROM TBL_GRUPO_PREFERENCIAL
+    WHERE ID_Grupo_Preferencial = p_id;
+END $$
+DELIMITER ;
+
+
+    -- ESTRATO
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_estratos_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_estratos_listar()
+BEGIN
+    SELECT ID_Estrato,
+           Nombre_Estrato,
+           Descripcion_Estrato,
+           Nivel_Prioridad_E,
+           Estado_Estrato
+    FROM   TBL_ESTRATO
+    ORDER  BY Nivel_Prioridad_E DESC;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_estrato_insertar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_estrato_insertar(
+    IN  p_nombre VARCHAR(10),
+    IN  p_descripcion VARCHAR(150),
+    IN  p_nivel TINYINT,
+    OUT p_nuevo_id TINYINT
+)
+BEGIN
+    INSERT INTO TBL_ESTRATO
+        (Nombre_Estrato, Descripcion_Estrato, Nivel_Prioridad_E)
+    VALUES (p_nombre, p_descripcion, p_nivel);
+    SET p_nuevo_id = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_estrato_actualizar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_prioridad_estrato_actualizar(
+    IN p_id TINYINT,
+    IN p_nombre VARCHAR(10),
+    IN p_descripcion VARCHAR(150),
+    IN p_nivel TINYINT
+)
+BEGIN
+    UPDATE TBL_ESTRATO
+    SET    Nombre_Estrato = p_nombre,
+           Descripcion_Estrato = p_descripcion,
+           Nivel_Prioridad_E = p_nivel
+    WHERE  ID_Estrato = p_id;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: 
+
+DROP PROCEDURE IF EXISTS sp_admin_prioridad_estrato_estado_cambiar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_admin_prioridad_estrato_estado_cambiar(
+    IN p_id TINYINT
+)
+BEGIN
+    UPDATE TBL_ESTRATO
+    SET    Estado_Estrato = IF(Estado_Estrato = 1, 0, 1)
+    WHERE  ID_Estrato = p_id;
+
+    SELECT Estado_Estrato AS Nuevo_Estado
+    FROM   TBL_ESTRATO
+    WHERE  ID_Estrato = p_id;
 END $$
 DELIMITER ;

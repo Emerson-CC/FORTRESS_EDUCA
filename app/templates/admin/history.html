@@ -1,4 +1,3 @@
-<!-- #Llamar a layout_admin.html -->
 {% extends 'layout_admin.html' %}
 
 {% block titulo %}Fortress Educa - Historial Auditoría{% endblock %}
@@ -8,6 +7,11 @@
 
 <!-- invocar el bloque -->
 {% block Contenido_Pagina %}
+
+    <!--
+        FORTRESS EDUCA - PLATAFORMA DE CUPOS EDUCATIVOS
+        Función: Pagina de visualización de estadisticas global del sistema
+    -->
 
 {# ── Macro: construye query-string conservando filtros activos ── #}
 {% macro qs(extra={}) %}

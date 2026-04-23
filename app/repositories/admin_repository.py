@@ -375,6 +375,7 @@ def sp_admin_colegio_insertar( nombre: str, dane: str, email: str, telefono: str
         "sp_admin_colegio_insertar",
         (nombre, dane, email, telefono, direccion, id_barrio),
         out_params=1,   # p_nuevo_id es parámetro OUT
+        commit=True,
     ) or []
     return resultado[0].get("p_nuevo_id") if resultado else None
 
@@ -384,13 +385,14 @@ def sp_admin_colegio_actualizar(id_colegio: int, nombre: str, dane: str, email: 
     db.call_procedure(
         "sp_admin_colegio_actualizar",
         (id_colegio, nombre, dane, email, telefono, direccion, id_barrio),
+        commit=True,
     )
 
 
 def sp_admin_colegio_estado_cambiar(id_colegio: int) -> int | None:
     """Alterna Estado_Colegio entre 1 y 0. Retorna el nuevo estado (1 = activo, 0 = inactivo)"""
     resultado = db.call_procedure(
-        "sp_admin_colegio_estado_cambiar", (id_colegio,)
+        "sp_admin_colegio_estado_cambiar", (id_colegio,), commit=True
     ) or []
     return resultado[0].get("Nuevo_Estado") if resultado else None
 
@@ -407,14 +409,14 @@ def sp_admin_colegio_jornadas_activas(id_colegio: int) -> list[dict]:
 def sp_admin_colegio_jornada_agregar(id_colegio: int, id_jornada: int) -> None:
     """Activa una jornada para el colegio creando/reactivando cupos"""
     db.call_procedure(
-        "sp_admin_colegio_jornada_agregar", (id_colegio, id_jornada)
+        "sp_admin_colegio_jornada_agregar", (id_colegio, id_jornada), commit=True
     )
 
 
 def sp_admin_colegio_jornada_quitar(id_colegio: int, id_jornada: int) -> None:
     """Desactiva todos los cupos de la jornada para el colegio"""
     db.call_procedure(
-        "sp_admin_colegio_jornada_quitar", (id_colegio, id_jornada)
+        "sp_admin_colegio_jornada_quitar", (id_colegio, id_jornada), commit=True
     )
 
 
@@ -431,5 +433,121 @@ def sp_admin_colegio_cupo_guardar(id_colegio: int,id_grado: int,id_jornada: int,
     """Upsert de una celda individual de la tabla de cupos"""
     db.call_procedure(
         "sp_admin_colegio_cupo_guardar",
-        (id_colegio, id_grado, id_jornada, cupos_disponibles),
+        (id_colegio, id_grado, id_jornada, cupos_disponibles), commit=True
     )
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA SETTINGS.HTML
+# ====================================================================================================================================================
+
+# TIPO AFECTACIÓN
+
+def sp_admin_prioridad_afectaciones_listar() -> list[dict]:
+    """Lista todos los tipos de afectación ordenados por nivel de prioridad"""
+    return db.call_procedure("sp_admin_prioridad_afectaciones_listar", ()) or []
+
+
+def sp_admin_prioridad_afectacion_insertar(nombre: str, descripcion: str, nivel: int) -> int | None:
+    """Inserta un nuevo tipo de afectación. Retorna el ID generado o None si falla"""
+    resultado = db.call_procedure(
+        "sp_admin_prioridad_afectacion_insertar",
+        (nombre, descripcion, nivel),
+        out_params=1,
+        commit=True,
+    ) or []
+    return resultado[0].get("p_nuevo_id") if resultado else None
+
+
+def sp_admin_prioridad_afectacion_actualizar(id_afectacion: int, nombre: str, descripcion: str, nivel: int) -> None:
+    """Actualiza los datos de un tipo de afectación existente"""
+    db.call_procedure(
+        "sp_admin_prioridad_afectacion_actualizar",
+        (id_afectacion, nombre, descripcion, nivel),
+        commit=True,
+    )
+
+
+def sp_admin_prioridad_afectacion_estado_cambiar(id_afectacion: int) -> int | None:
+    """Alterna Estado_Afectacion entre 1 y 0. Retorna el nuevo estado"""
+    resultado = db.call_procedure(
+        "sp_admin_prioridad_afectacion_estado_cambiar",
+        (id_afectacion,),
+        commit=True,
+    ) or []
+    return resultado[0].get("Nuevo_Estado") if resultado else None
+
+
+# GRUPO PREFERENCIAL
+
+def sp_admin_prioridad_grupos_listar() -> list[dict]:
+    """Lista todos los grupos preferenciales ordenados por nivel de prioridad"""
+    return db.call_procedure("sp_admin_prioridad_grupos_listar", ()) or []
+
+
+def sp_admin_prioridad_grupo_insertar(nombre: str, descripcion: str, nivel: int) -> int | None:
+    """Inserta un nuevo grupo preferencial. Retorna el ID generado o None si falla"""
+    resultado = db.call_procedure(
+        "sp_admin_prioridad_grupo_insertar",
+        (nombre, descripcion, nivel),
+        out_params=1,
+        commit=True,
+    ) or []
+    return resultado[0].get("p_nuevo_id") if resultado else None
+
+
+def sp_admin_prioridad_grupo_actualizar(id_grupo: int, nombre: str, descripcion: str, nivel: int) -> None:
+    """Actualiza los datos de un grupo preferencial existente"""
+    db.call_procedure(
+        "sp_admin_prioridad_grupo_actualizar",
+        (id_grupo, nombre, descripcion, nivel),
+        commit=True,
+    )
+
+
+def sp_admin_prioridad_grupo_estado_cambiar(id_grupo: int) -> int | None:
+    """Alterna Estado_Grupo_Preferencial entre 1 y 0. Retorna el nuevo estado"""
+    resultado = db.call_procedure(
+        "sp_admin_prioridad_grupo_estado_cambiar",
+        (id_grupo,),
+        commit=True,
+    ) or []
+    return resultado[0].get("Nuevo_Estado") if resultado else None
+
+
+# ESTRATO
+
+def sp_admin_prioridad_estratos_listar() -> list[dict]:
+    """Lista todos los estratos ordenados por nivel de prioridad"""
+    return db.call_procedure("sp_admin_prioridad_estratos_listar", ()) or []
+
+
+def sp_admin_prioridad_estrato_insertar(nombre: str, descripcion: str, nivel: int) -> int | None:
+    """Inserta un nuevo estrato. Retorna el ID generado o None si falla"""
+    resultado = db.call_procedure(
+        "sp_admin_prioridad_estrato_insertar",
+        (nombre, descripcion, nivel),
+        out_params=1,
+        commit=True,
+    ) or []
+    return resultado[0].get("p_nuevo_id") if resultado else None
+
+
+def sp_admin_prioridad_estrato_actualizar(id_estrato: int, nombre: str, descripcion: str, nivel: int) -> None:
+    """Actualiza los datos de un estrato existente"""
+    db.call_procedure(
+        "sp_admin_prioridad_estrato_actualizar",
+        (id_estrato, nombre, descripcion, nivel),
+        commit=True,
+    )
+
+
+def sp_admin_prioridad_estrato_estado_cambiar(id_estrato: int) -> int | None:
+    """Alterna Estado_Estrato entre 1 y 0. Retorna el nuevo estado"""
+    resultado = db.call_procedure(
+        "sp_admin_prioridad_estrato_estado_cambiar",
+        (id_estrato,),
+        commit=True,
+    ) or []
+    return resultado[0].get("Nuevo_Estado") if resultado else None
