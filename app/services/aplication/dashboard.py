@@ -55,7 +55,7 @@ _PASOS_PROCESO = [
 ]
 
 def _construir_pasos(nombre_estado: str | None) -> list[dict]:
-    """Devuelve pasos con estado: 'done', 'active' o '' (pendiente)."""
+    """Devuelve pasos con estado: 'done', 'active' o '' (pendiente)"""
     if not nombre_estado:
         return [dict(p, cls="") for p in _PASOS_PROCESO]
 

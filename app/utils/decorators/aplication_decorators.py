@@ -11,7 +11,7 @@ from flask_jwt_extended import verify_jwt_in_request, get_jwt, unset_jwt_cookies
 
 @lru_cache(maxsize=None)
 def _get_role_id(nombre_rol):
-    """Obtiene y cachea el ID de un rol por su nombre."""
+    """Obtiene y cachea el ID de un rol por su nombre"""
     return sp_obtener_roles(nombre_rol)
 
 
@@ -40,7 +40,7 @@ def login_required(f):
 
 
 def acudiente_required(f):
-    """Verifica que el usuario sea ACUDIENTE."""
+    """Verifica que el usuario sea ACUDIENTE"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:

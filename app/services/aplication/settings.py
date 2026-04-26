@@ -51,7 +51,7 @@ class General_Settings_Service:
 # ACTUALIZAR NOTIFICACIONES AL CORREO
 
     def Email_Notif(self):
-        """Procesa el formulario de notificaciones por correo electrónico."""
+        """Procesa el formulario de notificaciones por correo electrónico"""
         
         form_email = FormNotificacionesEmail()
  

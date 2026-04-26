@@ -38,14 +38,14 @@ _MAX_FILE_BYTES = 5 * 1024 * 1024   # 5 MB
 
 
 class Ticket_Panel_Service:
-    """Servicio principal para el panel técnico de tickets."""
+    """Servicio principal para el panel técnico de tickets"""
 
     def __init__(self):
         self._allowed_extensions = _ALLOWED_EXTENSIONS
         self._max_file_bytes = _MAX_FILE_BYTES
 
     def _cargar_formularios(self, id_ticket: str) -> dict:
-        """Instancia y rellena los formularios del panel del ticket."""
+        """Instancia y rellena los formularios del panel del ticket"""
         form_estado = FormCambiarEstado()
         estados = sp_catalogo_estados_ticket()
         form_estado.estado.choices = [(0, "-- Seleccione --")] + [
@@ -91,7 +91,7 @@ class Ticket_Panel_Service:
         }
 
     def _cargar_contexto_ticket(self, id_ticket: str) -> dict | None:
-        """Carga los datos completos del ticket para el panel."""
+        """Carga los datos completos del ticket para el panel"""
         ticket = sp_ticket_panel_consultar_detalle(id_ticket)
         if not ticket:
             return None
@@ -110,14 +110,14 @@ class Ticket_Panel_Service:
         }   
 
     def _contexto_tecnico(self) -> dict:
-        """Construye datos de contexto del técnico para el navbar."""
+        """Construye datos de contexto del técnico para el navbar"""
         nombre = session.get("nombre_usuario", "Técnico")
         partes = nombre.strip().split()
         iniciales = "".join(p[0].upper() for p in partes[:2]) if partes else "T"
         return {"nombre_usuario": nombre, "iniciales": iniciales}
 
     def cargar_ticket_panel(self, id_ticket: str):
-        """Retorna la vista del detalle del ticket."""
+        """Retorna la vista del detalle del ticket"""
         ctx = self._cargar_contexto_ticket(id_ticket)
         if not ctx:
             flash("El ticket no existe o no está disponible.", "danger")
@@ -134,7 +134,7 @@ class Ticket_Panel_Service:
         )
 
     def agregar_comentario(self, id_ticket: str):
-        """Agrega un comentario interno o público al ticket."""
+        """Agrega un comentario interno o público al ticket"""
         form = FormAgregarComentario()
         if not form.validate_on_submit():
             errores = "; ".join(
@@ -161,7 +161,7 @@ class Ticket_Panel_Service:
         return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
 
     def actualizar_estado(self, id_ticket: str):
-        """Actualiza el estado del ticket."""
+        """Actualiza el estado del ticket"""
         form_estado = FormCambiarEstado()
         estados = sp_catalogo_estados_ticket()
         form_estado.estado.choices = [(0, "-- Seleccione --")] + [
@@ -196,7 +196,7 @@ class Ticket_Panel_Service:
         return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
 
     def asignar_cupo(self, id_ticket: str):
-        """Asigna el cupo seleccionado al ticket."""
+        """Asigna el cupo seleccionado al ticket"""
         form_asignacion = FormAsignarCupo()
         form_asignacion.colegio_asignado.choices = [(0, "-- Seleccione --")] + [
             (c["ID_Colegio"], c["Nombre_Colegio"]) for c in sp_catalogo_colegios()
@@ -238,7 +238,7 @@ class Ticket_Panel_Service:
         return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
 
     def subir_documento(self, id_ticket: str):
-        """Sube un documento adicional al ticket."""
+        """Sube un documento adicional al ticket"""
         form_doc = FormSubirDocumentoTecnico()
         tipos_doc = sp_tipo_documento_consultar()
         form_doc.tipo_documento.choices = [(0, "-- Seleccione --")] + [
@@ -289,7 +289,7 @@ class Ticket_Panel_Service:
         return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
 
     def descargar_documento(self, id_ticket: str, id_doc: int):
-        """Descarga el documento asociado al ticket."""
+        """Descarga el documento asociado al ticket"""
         doc = sp_ticket_panel_documento_descargar(id_doc)
         if not doc:
             flash("Documento no encontrado.", "danger")
@@ -362,7 +362,7 @@ class Ticket_Panel_Service:
             </nav>
         </div>
 
-        <!-- ── Mensajes flash ── -->
+        <!--  Mensajes flash  -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

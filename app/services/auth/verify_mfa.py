@@ -16,7 +16,8 @@ from app.security.mfa_controller import MFA_Controller
 # Whitelist de destinos válidos por rol.
 _DESTINOS_PERMITIDOS = {
     "Acudiente": "aplication.dashboard",
-    "Admin":     "admin.dashboard",
+    "Admin": "admin.dashboard",
+    "Tecnico": "technical.dashboard",
 }
 
 # ====================================================================================================================================================
@@ -87,7 +88,7 @@ class Verify_MFA_Service:
                     flash("Código incorrecto. Intente de nuevo.", "danger")
                     return render_no_cache("auth/verify_mfa.html", form=form)
 
-                # ── MFA válido: limpiar banderas y redirigir ─────────────────
+                # MFA válido: limpiar banderas y redirigir
                 session.pop("mfa_pendiente", None)
                 session.pop("mfa_user_autenticado", None)
                 session.pop("mfa_rol_esperado", None)
@@ -101,10 +102,12 @@ class Verify_MFA_Service:
                 print(f"[ERROR] VerificarMFA.verificar: {e}")
                 flash("Error interno. Intente nuevamente.", "danger")
 
-        # ── GET ───────────────────────────────────────────────────────────────
+        
+        # =====================================================
+        # SOLICITUD GET
         return render_no_cache("auth/verify_mfa.html", form=form)
 
-    # ── Método privado ────────────────────────────────────────────────────────
+    # Método privado
 
     def _validar_rol_vs_esperado(self, rol_esperado: str, role_id) -> bool:
         """Compara el role_id real de la sesión contra el rol que el login declaró como esperado"""

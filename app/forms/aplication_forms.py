@@ -18,7 +18,7 @@ def seleccion_valida(form, field):
 # ====================================================================================================================================================
 
 class FormTicketPaso1(FlaskForm):
-    """Paso 1 — Selección del estudiante."""
+    """Paso 1 — Selección del estudiante"""
     
     id_estudiante = SelectField(
         "Estudiante",
@@ -28,7 +28,7 @@ class FormTicketPaso1(FlaskForm):
 
 
 class FormTicketPaso2(FlaskForm):
-    """Paso 2 — Vulnerabilidad."""
+    """Paso 2 — Vulnerabilidad"""
     
     id_tipo_afectacion = SelectField(
         "Tipo de Afectación",
@@ -43,7 +43,7 @@ class FormTicketPaso2(FlaskForm):
 
 
 class FormTicketPaso3(FlaskForm):
-    """Paso 3 — Ubicación."""
+    """Paso 3 — Ubicación"""
     
     id_barrio = SelectField(
         "Barrio",
@@ -59,7 +59,7 @@ class FormTicketPaso3(FlaskForm):
 
 
 class FormTicketPaso4(FlaskForm):
-    """Paso 4 — Preferencias educativas."""
+    """Paso 4 — Preferencias educativas"""
     
     id_jornada = SelectField(
         "Jornada Preferida",
@@ -75,7 +75,7 @@ class FormTicketPaso4(FlaskForm):
 
 
 class FormTicketPaso5(FlaskForm):
-    """Paso 5 — Documentos."""
+    """Paso 5 — Documentos"""
     doc_acudiente = FileField(
         "Documento del Acudiente",
         validators=[
@@ -107,7 +107,7 @@ class FormTicketPaso5(FlaskForm):
 
 
 class FormTicketPaso6(FlaskForm):
-    """Paso 6 — Confirmación."""
+    """Paso 6 — Confirmación"""
     acepta_terminos = BooleanField(
         "Acepto y declaro que la información es verídica.",
         validators=[DataRequired(message="Debe aceptar los términos para continuar.")]
@@ -117,11 +117,11 @@ class FormTicketPaso6(FlaskForm):
 
     
 # ====================================================================================================================================================
-#                                           PAGINA TICKET_STATUS.HTML
+#                                           PAGINA TICKET_DETAIL.HTML
 # ====================================================================================================================================================
 
 class FormSubirDocumento(FlaskForm):
-    """Formulario para subir un documento adicional a un ticket existente."""
+    """Formulario para subir un documento adicional a un ticket existente"""
 
     tipo_documento = SelectField(
         "Tipo de Documento",
@@ -140,6 +140,18 @@ class FormSubirDocumento(FlaskForm):
         ],
     )
 
+# Agregar comentario desde la vista del usuario (sin toggle interno)
+class FormAgregarComentarioUsuario(FlaskForm):
+    """Permite al usuario registrado agregar un comentario público a su ticket"""
+    comentario = TextAreaField(
+        "Comentario",
+        validators=[
+            DataRequired(message="El comentario no puede estar vacío."),
+            Length(min=3, max=3000, message="El comentario debe tener entre 3 y 3000 caracteres."),
+        ],
+        render_kw={"rows": 3, "placeholder": "Escribe tu comentario aquí…"},
+    )
+
 # ====================================================================================================================================================
 #                                           PAGINA PROFILE.HTML
 # ====================================================================================================================================================
@@ -147,7 +159,7 @@ class FormSubirDocumento(FlaskForm):
 # PERFIL - Acudiente
 
 class FormAcudienteDatosPersonales(FlaskForm):
-    """Campos NO editables del acudiente (solo lectura, sin validación activa)."""
+    """Campos NO editables del acudiente (solo lectura, sin validación activa)"""
 
     primer_nombre = StringField("Primer Nombre")
     segundo_nombre = StringField("Segundo Nombre")
@@ -160,7 +172,7 @@ class FormAcudienteDatosPersonales(FlaskForm):
     email = StringField("Correo Electrónico")
 
 class FormAcudienteDatosEditables(FlaskForm):
-    """Campos editables del acudiente."""
+    """Campos editables del acudiente"""
 
     telefono = TelField(
         "Teléfono / Celular",
@@ -195,7 +207,7 @@ class FormAcudienteDatosEditables(FlaskForm):
 # PERFIL - Estudiante
 
 class FormEstudianteDatosPersonales(FlaskForm):
-    """Campos NO editables del estudiante en perfil."""
+    """Campos NO editables del estudiante en perfil"""
 
     tipo_identificacion = StringField("Tipo de Identificación")
     
@@ -203,7 +215,7 @@ class FormEstudianteDatosPersonales(FlaskForm):
 
 
 class FormEstudianteDatosEditables(FlaskForm):
-    """Campos editables del estudiante en perfil."""
+    """Campos editables del estudiante en perfil"""
     
     id_estudiante = HiddenField(
         "ID Estudiante",
@@ -272,7 +284,7 @@ class FormEstudianteDatosEditables(FlaskForm):
 # ====================================================================================================================================================
 
 class FormRegistroEstudiante(FlaskForm):
-    """Formulario completo para registrar un nuevo estudiante."""
+    """Formulario completo para registrar un nuevo estudiante"""
 
     # Datos de identidad (TBL_PERSONA)
     primer_nombre = StringField(
@@ -370,7 +382,7 @@ class FormRegistroEstudiante(FlaskForm):
 
 
 class FormCambiarcontraseña(FlaskForm):
-    """Formulario para cambiar la contraseña desde el perfil."""
+    """Formulario para cambiar la contraseña desde el perfil"""
 
     contraseña_actual = PasswordField(
         "Contraseña Actual",
@@ -401,7 +413,7 @@ class FormCambiarcontraseña(FlaskForm):
 
 
 class FormVerificarMFA(FlaskForm):
-    """Formulario para confirmar un código TOTP al activar o autenticar 2FA."""
+    """Formulario para confirmar un código TOTP al activar o autenticar 2FA"""
 
     codigo_mfa = StringField(
         "Código de verificación",
@@ -421,21 +433,21 @@ class FormVerificarMFA(FlaskForm):
 
 
 class FormNotificacionesEmail(FlaskForm):
-    """Formulario para activar o desactivar notificaciones por correo electrónico."""
+    """Formulario para activar o desactivar notificaciones por correo electrónico"""
  
     notificaciones_email = BooleanField("Recibir alertas por Correo Electrónico")
     submit_email = SubmitField("Guardar")
  
  
 class FormNotificacionesNavegador(FlaskForm):
-    """Formulario para activar o desactivar notificaciones en el navegador."""
+    """Formulario para activar o desactivar notificaciones en el navegador"""
  
     notificaciones_navegador = BooleanField("Notificaciones en el Navegador")
     submit_navegador = SubmitField("Guardar")
 
 
 class FormEliminarCuenta(FlaskForm):
-    """Formulario para ejecutar baja lógica de usuario."""
+    """Formulario para ejecutar baja lógica de usuario"""
     
     contraseña = PasswordField(
         "Contraseña",

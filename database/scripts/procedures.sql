@@ -76,6 +76,27 @@ BEGIN
 END $$
 DELIMITER ;
 
+
+-- --------------------------------------------------------
+-- SP: Obtiene los datos del usuario relacionados con el MFA
+
+DROP PROCEDURE IF EXISTS sp_tbl_usuario_verificar_mfa;
+
+DELIMITER $$
+CREATE PROCEDURE sp_tbl_usuario_verificar_mfa(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT 
+        Doble_Factor_Activo,
+        MFA_Secret
+    FROM TBL_USUARIO
+    WHERE ID_Usuario = p_id_usuario
+      AND Estado_Usuario = 1
+    LIMIT 1;
+END $$
+DELIMITER ;
+
 -- ====================================================================================================================================================
 --                                          SPs PARA HOME
 -- ====================================================================================================================================================
@@ -843,16 +864,21 @@ BEGIN
         t.Titulo_Ticket,
         t.Fecha_Creacion,
         t.Fecha_Cierre,
-        t.Nombre_Estado,
+        et.Nombre_Estado,
+        g.Nombre_Grado,
+        CONCAT(p.Primer_Nombre, ' ', COALESCE(p.Segundo_Nombre, ''), ' ', p.Primer_Apellido, ' ', COALESCE(p.Segundo_Apellido, '')) AS Nombre_Estudiante,
+        COALESCE(c.Nombre_Colegio, 'Sin asignar') AS Nombre_Colegio
+    FROM TBL_TICKET t
+    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    INNER JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
+    INNER JOIN TBL_PERSONA p ON est.FK_ID_Persona = p.ID_Persona
+    INNER JOIN TBL_GRADO g ON est.FK_ID_Grado_Actual = g.ID_Grado
+    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+    LEFT JOIN TBL_COLEGIO c ON cu.FK_ID_Colegio = c.ID_Colegio
 
-        CONCAT(e.Primer_Nombre, ' ', e.Primer_Apellido) AS Nombre_Estudiante,
-        e.Nombre_Grado_Actual
-
-    FROM vw_ticket_detalle t
-    INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
-
-    WHERE t.FK_ID_Usuario_Creador = p_id_usuario
-      AND t.Estado_Final = 1
+    WHERE t.FK_ID_Usuario_Creador = p_id_usuario 
+        AND t.Estado_Ticket = 1
+        AND et.Estado_Final = 1
     ORDER BY t.Fecha_Creacion DESC;
 END $$
 DELIMITER ;
@@ -2238,18 +2264,10 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS sp_cases_listar_todos;
 
 DELIMITER $$
-CREATE PROCEDURE sp_cases_listar_todos(
-    IN p_id_estado TINYINT,
-    IN p_id_grado TINYINT,
-    IN p_id_afectacion TINYINT
-)
+CREATE PROCEDURE sp_cases_listar_todos()
 BEGIN
     SELECT *
-    FROM vw_cases_general
-    WHERE (p_id_estado IS NULL OR FK_ID_Estado_Ticket = p_id_estado)
-      AND (p_id_grado IS NULL OR FK_ID_Grado_Actual = p_id_grado OR FK_ID_Grado_Proximo = p_id_grado)
-      AND (p_id_afectacion IS NULL OR FK_ID_Tipo_Afectacion = p_id_afectacion)
-    ORDER BY Puntaje_Prioridad DESC, Fecha_Creacion ASC;
+    FROM vw_cases_general;
 END $$
 DELIMITER ;
 
@@ -4138,5 +4156,179 @@ BEGIN
     SELECT Estado_Estrato AS Nuevo_Estado
     FROM   TBL_ESTRATO
     WHERE  ID_Estrato = p_id;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+--                                          SPs PARA TECHNICAL
+-- ====================================================================================================================================================
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE DASHBOARD
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Métricas del dashboard del técnico
+
+DROP PROCEDURE IF EXISTS sp_technical_dashboard_metricas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_dashboard_metricas(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT
+        -- Tickets activos asignados al técnico que aún no tienen solución
+        (SELECT COUNT(*)
+            FROM TBL_TICKET t
+            JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+            WHERE t.FK_ID_Usuario_Tecnico = p_id_usuario
+              AND t.Estado_Ticket = 1
+              AND et.Estado_Final = 0
+        ) AS solicitudes_asignadas,
+
+        -- Tickets resueltos por el técnico (Estado_Final = 1)
+        (SELECT COUNT(*)
+            FROM TBL_TICKET t
+            JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+            WHERE t.FK_ID_Usuario_Tecnico = p_id_usuario
+              AND t.Estado_Ticket = 1
+              AND et.Estado_Final = 1
+        ) AS solicitudes_solucionadas,
+
+        -- Total de tickets asignados al técnico (cualquier estado de ticket)
+        (SELECT COUNT(*)
+            FROM TBL_TICKET
+            WHERE FK_ID_Usuario_Tecnico = p_id_usuario
+              AND Estado_Ticket = 1
+        ) AS total_solicitudes,
+
+        -- Cupos disponibles en Engativá — dato global (igual que admin)
+        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)
+            FROM TBL_CUPOS c
+            JOIN TBL_COLEGIO co ON c.FK_ID_Colegio = co.ID_Colegio
+            JOIN TBL_BARRIO b  ON co.FK_ID_Barrio = b.ID_Barrio
+            JOIN TBL_LOCALIDAD l ON b.FK_ID_Localidad = l.ID_Localidad
+            WHERE c.Estado_Cupos = 1
+              AND co.Estado_Colegio = 1
+              AND b.Estado_Barrio = 1
+              AND l.Estado_Localidad = 1
+              AND l.ID_Localidad = 1   -- Engativá
+        ) AS cupos_disponibles_engativa;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Métricas del dashboard del técnico
+
+DROP PROCEDURE IF EXISTS sp_technical_cases_listar_asignados;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_cases_listar_asignados(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT
+        ID_Ticket,
+        Nombre_Estudiante,
+        Nombre_Grado,
+        Nombre_Estado,
+        Estado_Final,
+        Fecha_Creacion
+    FROM  vw_cases_tecnico
+    WHERE ID_Usuario_Tecnico = p_id_usuario
+    ORDER BY Fecha_Creacion DESC
+    LIMIT 5;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Actividad de los últimos 7 días, filtrada por técnico
+
+DROP PROCEDURE IF EXISTS sp_technical_dashboard_chart_actividad;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_dashboard_chart_actividad(IN p_id_usuario INT)
+BEGIN
+    WITH dias AS (
+        SELECT CURDATE() - INTERVAL n DAY AS fecha
+        FROM (
+            SELECT 0 AS n UNION SELECT 1 UNION SELECT 2
+            UNION SELECT 3  UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+        ) nums
+    )
+    SELECT
+        DATE_FORMAT(d.fecha, '%a')  AS label,
+        d.fecha,
+        -- Nuevas solicitudes asignadas al técnico en ese día
+        COUNT(DISTINCT CASE
+            WHEN DATE(t.Fecha_Creacion) = d.fecha THEN t.ID_Ticket
+        END) AS nuevas_solicitudes,
+        -- Solicitudes que ese día pasaron a "Solucionado"
+        COUNT(DISTINCT CASE
+            WHEN DATE(t.Fecha_Creacion) = d.fecha
+             AND et.Nombre_Estado = 'Solucionado' THEN t.ID_Ticket
+        END) AS cupos_asignados
+    FROM dias d
+    LEFT JOIN TBL_TICKET t
+           ON DATE(t.Fecha_Creacion)      = d.fecha
+          AND t.Estado_Ticket             = 1
+          AND t.FK_ID_Usuario_Tecnico     = p_id_usuario   -- filtro técnico
+    LEFT JOIN TBL_ESTADO_TICKET et
+           ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    GROUP BY d.fecha
+    ORDER BY d.fecha ASC;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE CASES
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Retorna todos los tickets del técnico indicado
+
+DROP PROCEDURE IF EXISTS sp_technical_cases_listar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_cases_listar(
+    IN p_id_tecnico INT      -- ID del técnico autenticado
+)
+BEGIN
+    SELECT *
+    FROM vw_technical_cases
+    WHERE FK_ID_Usuario_Tecnico = p_id_tecnico;
+    -- Sin ORDER BY: Python aplica _filtrar y _ordenar.
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Conteo de datos para metricas de cases de tecnico
+
+DROP PROCEDURE IF EXISTS sp_technical_cases_metricas;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_cases_metricas(
+    IN p_id_tecnico INT
+)
+BEGIN
+    SELECT
+        -- Scoped al técnico
+        COUNT(*) AS solicitudes_asignadas,
+        SUM(FK_ID_Estado_Ticket = 2) AS en_revision,
+        SUM(Nombre_Estado = 'Solucionado') AS solucionados,
+
+        -- Global (cupos disponibles en el sistema, sin importar técnico)
+        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)FROM TBL_CUPOS c WHERE c.Estado_Cupos = 1) AS cupos_disponibles
+
+    FROM vw_technical_cases
+    WHERE FK_ID_Usuario_Tecnico = p_id_tecnico;
 END $$
 DELIMITER ;

@@ -13,7 +13,7 @@
         Función: Pagina de visualización de estadisticas global del sistema
     -->
 
-{# ── Macro: construye query-string conservando filtros activos ── #}
+<!--  Macro: construye query-string conservando filtros activos  -->
 {% macro qs(extra={}) %}
   {%- set params = [] -%}
   {%- if filtros.tipo_evento -%}  {%- set _ = params.append("tipo_evento=" ~ filtros.tipo_evento) -%}  {%- endif -%}
@@ -32,7 +32,7 @@
         para garantizar transparencia y trazabilidad. No puede ser modificado por los administradores.
     </div>
 
-    <!-- ── Filtros ── -->
+    <!--  Filtros  -->
     <div class="card border-0 shadow-sm p-3 mb-4">
         <form method="GET" action="{{ url_for('admin.history') }}" id="filtrosForm">
         <div class="row g-3 align-items-end">
@@ -82,7 +82,7 @@
         </form>
     </div><!-- /filtros -->
 
-    <!-- ── Tabla de auditoría ── -->
+    <!--  Tabla de auditoría  -->
     <div class="card border-0 shadow-sm p-4">
 
         <h5 class="fw-bold mb-4">
@@ -139,6 +139,10 @@
                     <span class="badge bg-danger">
                     <i class="fas fa-lock me-1"></i>{{ r.Tipo_Evento }}
                     </span>
+                {% elif r.Tipo_Evento == "Cupo Cancelado" %}
+                    <span class="badge bg-danger">
+                    <i class="fas fa-school me-1"></i>{{ r.Tipo_Evento }}
+                    </span>                    
                 {% else %}
                     <span class="badge bg-secondary">
                     <i class="fas fa-comment me-1"></i>{{ r.Tipo_Evento }}
@@ -159,7 +163,7 @@
                 <!-- Ticket -->
                 <td>
                     {% if r.FK_ID_Ticket %}
-                    <a href="{{ url_for('admin.ticket_panel_detail', id_ticket=r.FK_ID_Ticket) }}"
+                    <a href="{{ url_for('ticket_ad.ticket_panel_detail', id_ticket=r.FK_ID_Ticket) }}"
                         class="fw-bold text-primary text-decoration-none" target="_blank">
                         #{{ r.FK_ID_Ticket }}
                     </a>
@@ -194,7 +198,7 @@
         </table>
         </div><!-- /table-responsive -->
 
-        <!-- ── Pie: contador + paginación ── -->
+        <!--  Pie: contador + paginación  -->
         <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
 
         <small class="text-muted">
@@ -211,7 +215,7 @@
         <nav>
             <ul class="pagination pagination-sm mb-0">
 
-            {# Anterior #}
+            <!-- Anterior -->
             <li class="page-item {% if pagina_actual <= 1 %}disabled{% endif %}">
                 <a class="page-link"
                 href="{{ url_for('admin.history') }}{{ qs({'pagina': pagina_actual - 1}) }}">
@@ -219,7 +223,7 @@
                 </a>
             </li>
 
-            {# Páginas visibles: primera, ventana centrada, última #}
+            <!-- Páginas visibles: primera, ventana centrada, última -->
             {% set rango_ini = [pagina_actual - 2, 1] | max %}
             {% set rango_fin = [pagina_actual + 2, total_paginas] | min %}
 
@@ -253,7 +257,7 @@
                 </li>
             {% endif %}
 
-            {# Siguiente #}
+            <!-- Siguiente -->
             <li class="page-item {% if pagina_actual >= total_paginas %}disabled{% endif %}">
                 <a class="page-link"
                 href="{{ url_for('admin.history') }}{{ qs({'pagina': pagina_actual + 1}) }}">

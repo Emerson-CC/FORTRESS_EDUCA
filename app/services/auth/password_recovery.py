@@ -43,7 +43,7 @@ class Password_Recovery_Service:
     #  Solicitar código
     def Password_Recovery(self):
         
-        """GET / POST — el usuario ingresa su correo y recibe el código."""
+        """GET / POST — el usuario ingresa su correo y recibe el código"""
         _set_password_recovery_login_endpoint_from_request()
         login_url = _obtener_url_login_recovery()
         form = RecuperarcontraseñaForm()
@@ -95,7 +95,7 @@ class Password_Recovery_Service:
 
     #  Verificar código
     def Verify_Code(self):
-        """GET / POST — el usuario ingresa el código recibido."""
+        """GET / POST — el usuario ingresa el código recibido"""
         _set_password_recovery_login_endpoint_from_request()
         login_url = _obtener_url_login_recovery()
         form = VerificarCodigoForm()
@@ -178,7 +178,7 @@ class Password_Recovery_Service:
 
     #  Envio Correo
     def _enviar_correo_codigo(self, destinatario: str, codigo: str):
-        """Envía el correo con el código de verificación."""
+        """Envía el correo con el código de verificación"""
         msg = Message(
             subject="Recuperación de contraseña - Fortress Educa",
             recipients=[destinatario]

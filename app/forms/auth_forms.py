@@ -43,11 +43,29 @@ class LoginAdminForm(FlaskForm):
 
 
 # ====================================================================================================================================================
+#                                           PAGINA LOGIN_TECHNICAL.HTML
+# ====================================================================================================================================================
+
+class LoginTecForm(FlaskForm):
+
+    username_technical = StringField(
+        "Usuario",
+        validators = [DataRequired(), Length(min=3, max=100), Email()]
+    )
+    
+    password = PasswordField(
+        "Contraseña",
+        validators = [DataRequired(), Length(min=6, max=255)]
+    )
+    
+
+
+# ====================================================================================================================================================
 #                                           PAGINA CONFIG_MFA.HTML
 # ====================================================================================================================================================
 
 class FormVerificarMFA(FlaskForm):
-    """Formulario para confirmar un código TOTP al activar o autenticar 2FA."""
+    """Formulario para confirmar un código TOTP al activar o autenticar 2FA"""
 
     codigo_mfa = StringField(
         "Código de verificación",

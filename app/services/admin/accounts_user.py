@@ -9,7 +9,7 @@ from app.repositories.admin_repository import (
 from app.forms.admin_forms import FormToggleEstado
 
 class Accounts_User_Service:
-    """Lógica de negocio para accounts_user.html (acudientes y estudiantes)."""
+    """Lógica de negocio para accounts_user.html (acudientes y estudiantes)"""
 
 
     @staticmethod

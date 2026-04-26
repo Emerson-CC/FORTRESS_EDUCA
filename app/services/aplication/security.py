@@ -18,7 +18,7 @@ from app.repositories.aplication_repository import *
 # ====================================================================================================================================================
 
 class Security_Settings_Service:
-    """Inicializa los formularios para la pagina de security."""
+    """Inicializa los formularios para la pagina de security"""
 
     def cargar_informacion_seguridad(self):
         
@@ -40,7 +40,7 @@ class Security_Settings_Service:
 #  GESTIÓN DE CAMBIO DE CONTRASEÑA
 
     def Change_Password(self):
-        """Gestiona el cambio de contraseña desde el perfil del usuario."""
+        """Gestiona el cambio de contraseña desde el perfil del usuario"""
 
         # Cargar formulario
         form = FormCambiarcontraseña()
@@ -131,7 +131,7 @@ class Security_Settings_Service:
 #  GESTIÓN DE MFA (Microsoft Authenticator / TOTP)
 
     def MFA_Activation(self):
-        """Activa, desactiva y verifica el doble factor de autenticación."""
+        """Activa, desactiva y verifica el doble factor de autenticación"""
 
         # Obener datos del usuario
         id_usuario = session.get("user_id")
@@ -281,7 +281,7 @@ class Security_Settings_Service:
 # CENTRO DE CONTROL DE SESIONES 
 
     def Session_Handler_Service(self):
-        """Consulta y revoca sesiones activas del usuario."""
+        """Consulta y revoca sesiones activas del usuario"""
         
         id_usuario = session.get("user_id")
         try:

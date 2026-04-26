@@ -1,7 +1,7 @@
 USE FORTRESS_EDUCA_DB;
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE PROFILE
+-- VIEWS PARA LA PAGINA DE PROFILE (ADMIN)
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -57,7 +57,7 @@ INNER JOIN TBL_COLEGIO c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio;
 
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE STATUS
+-- VIEWS PARA LA PAGINA DE STATUS (ADMIN)
 -- ====================================================================================================================================================
 
     -- DATOS PARA LA PAGINA DE DETAIL
@@ -121,7 +121,7 @@ INNER JOIN TBL_TIPO_AFECTACION ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afecta
 
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE TICKET_PANEL
+-- VIEWS PARA LA PAGINA DE TICKET_PANEL (TICKETS)
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -354,7 +354,7 @@ ORDER BY b.Nombre_Barrio;
 
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE ACCOUNTS / ACCOUNTS_USER / ACCOUNTS_FUNC
+-- VIEWS PARA LA PAGINA DE ACCOUNTS / ACCOUNTS_USER / ACCOUNTS_FUNC (ADMIN)
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -523,7 +523,7 @@ WHERE r.Nombre_Rol = 'Admin';
 
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE HISTORY
+-- VIEWS PARA LA PAGINA DE HISTORY (ADMIN)
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -550,7 +550,7 @@ INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;
 
 
 -- ====================================================================================================================================================
--- VIEWS PARA LA PAGINA DE SCHOOL_STATUS
+-- VIEWS PARA LA PAGINA DE SCHOOL_STATUS (ADMIN)
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -584,3 +584,91 @@ GROUP BY
     c.ID_Colegio, c.Nombre_Colegio, c.Codigo_DANE,
     c.Email, c.Telefono, c.Direccion_Colegio,
     b.ID_Barrio, b.Nombre_Barrio, c.Estado_Colegio;
+
+
+
+-- ====================================================================================================================================================
+-- VIEWS PARA LA PAGINA DE DASHBOARD (TECHNICAL)
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- Extiende vw_cases_general exponiendo el ID del para poder filtrar por él en los SPs del técnico.
+-- USADO EN sp_technical_cases_listar_asignados
+
+CREATE OR REPLACE VIEW vw_cases_tecnico AS
+SELECT
+    v.*,
+    ut.ID_Usuario AS ID_Usuario_Tecnico   -- columna extra para filtros
+FROM vw_cases_general v
+LEFT JOIN TBL_TICKET   t  ON v.ID_Ticket = t.ID_Ticket
+LEFT JOIN TBL_USUARIO  ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario;
+
+
+
+-- ====================================================================================================================================================
+-- VIEWS PARA LA PAGINA DE CASES (TECHNICAL)
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- Lista de casos asignados a un tecnico
+-- USADO EN sp_technical_cases_listar | sp_technical_cases_metricas
+
+CREATE OR REPLACE VIEW vw_technical_cases AS
+SELECT
+    -- Identificadores y fechas
+    t.ID_Ticket,
+    t.Fecha_Creacion,
+    t.Puntaje_Prioridad,
+
+    -- FKs raw para filtrado posterior en Python
+    t.FK_ID_Estado_Ticket,
+    t.FK_ID_Usuario_Tecnico,
+    t.FK_ID_Tipo_Afectacion,
+    est.FK_ID_Grado_Actual,
+    est.FK_ID_Grado_Proximo,
+
+    -- Datos del estudiante
+    -- TBL_ESTUDIANTE no tiene nombre; viene de TBL_PERSONA via FK_ID_Persona
+    CONCAT(pe.Primer_Nombre, ' ', pe.Primer_Apellido) AS Nombre_Estudiante,
+    TIMESTAMPDIFF(YEAR, pe.Fecha_Nacimiento, CURDATE()) AS Edad_Estudiante,
+
+    -- Acudiente (usuario creador del ticket)
+    -- TBL_USUARIO no tiene nombre; viene de TBL_PERSONA via FK_ID_Persona
+    CONCAT(pa.Primer_Nombre, ' ', pa.Primer_Apellido) AS Nombre_Acudiente,
+
+    -- Técnico asignado (LEFT JOIN porque puede ser NULL)
+    COALESCE(CONCAT(pt.Primer_Nombre, ' ', pt.Primer_Apellido),'Sin asignar') AS Nombre_Tecnico,
+
+    -- Catálogos en texto
+    es.Nombre_Estado,
+    es.Estado_Final,
+    af.Nombre_Afectacion,
+
+    -- Grado: preferir el próximo grado; si no existe, usar el actual
+    COALESCE(gp.Nombre_Grado, ga.Nombre_Grado) AS Nombre_Grado,
+
+    -- Colegio asignado a través del cupo
+    COALESCE(co.Nombre_Colegio, 'Sin asignar') AS Colegio_Asignado
+
+FROM TBL_TICKET t
+
+-- Estudiante y su persona
+JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
+JOIN TBL_PERSONA pe ON est.FK_ID_Persona = pe.ID_Persona
+-- Acudiente: usuario creador → persona
+JOIN TBL_USUARIO ua ON t.FK_ID_Usuario_Creador = ua.ID_Usuario
+JOIN TBL_PERSONA pa ON ua.FK_ID_Persona = pa.ID_Persona
+-- Técnico asignado → persona (opcional)
+LEFT JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
+LEFT JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
+-- Catálogos obligatorios
+JOIN TBL_ESTADO_TICKET es ON t.FK_ID_Estado_Ticket = es.ID_Estado_Ticket
+JOIN TBL_TIPO_AFECTACION af ON t.FK_ID_Tipo_Afectacion = af.ID_Tipo_Afectacion
+-- Grados (actual siempre existe; próximo puede ser NULL)
+JOIN TBL_GRADO ga ON est.FK_ID_Grado_Actual = ga.ID_Grado
+LEFT JOIN TBL_GRADO gp ON est.FK_ID_Grado_Proximo = gp.ID_Grado
+-- Cupo y colegio asignados (opcionales)
+LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+LEFT JOIN TBL_COLEGIO co ON cu.FK_ID_Colegio = co.ID_Colegio
+
+WHERE t.Estado_Ticket = 1;

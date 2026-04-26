@@ -36,6 +36,9 @@ class AplicationController:
     def ticket_detail_download_doc(self, id_ticket, id_doc):
         return self.service_ticket_d.descargar_doc(id_ticket, id_doc)
 
+    def ticket_detail_coment(self, id_ticket):
+        return self.service_ticket_d.agregar_comentario(id_ticket)
+
     # REGISTRO ESTUDIANTE
     def register_student(self):
         return self.service_student.registrar()

@@ -1,5 +1,6 @@
 from app.services.auth.login_user import Login_User_Service
 from app.services.auth.login_admin import Login_Admin_Service
+from app.services.auth.login_technical import Login_Technical_Service
 from app.services.auth.verify_mfa import Verify_MFA_Service
 from app.services.auth.config_mfa import Config_MFA_Service
 from app.services.auth.password_recovery import Password_Recovery_Service
@@ -12,6 +13,7 @@ class AuthController:
     def __init__(self):
         self.service_login_us = Login_User_Service()
         self.service_login_ad = Login_Admin_Service()
+        self.service_login_tec = Login_Technical_Service()
         self.service_verify_mfa = Verify_MFA_Service()
         self.service_config_mfa = Config_MFA_Service()
         self.service_password = Password_Recovery_Service()
@@ -24,12 +26,18 @@ class AuthController:
     def login_ad(self):
         return self.service_login_ad.Login_Admin()
 
-    # LOGOUT
-    def logout_ad(self):
-        return self.service_login_ad.Logout()
+    def login_tec(self):
+        return self.service_login_tec.Login_Technical()
 
+    # LOGOUT
     def logout(self):
         return self.service_login_us.Logout()
+
+    def logout_ad(self):
+            return self.service_login_ad.Logout()
+        
+    def logout_tec(self):
+            return self.service_login_tec.Logout()    
 
     # MFA
         # VERIFICAR MFA

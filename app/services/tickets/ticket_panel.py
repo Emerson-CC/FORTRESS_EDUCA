@@ -3,7 +3,7 @@ import io
 from flask import render_template, redirect, url_for, flash, session, request, send_file, current_app
 from itsdangerous import URLSafeSerializer, BadSignature
 
-from app.repositories.admin_repository import (
+from app.repositories.tickets_repository import (
     sp_catalogo_barrios_con_colegios,
     sp_catalogo_colegios_por_barrio,
     sp_ticket_validar_cupo,
@@ -27,7 +27,7 @@ from app.repositories.admin_repository import (
     sp_ticket_usuario_cancelar_cupo,
 )
 
-from app.forms.admin_forms import FormCambiarEstado, FormAgregarComentario, FormConfirmarCupo, FormSubirDocumentoTecnico
+from app.forms.tickets_forms import FormCambiarEstado, FormAgregarComentario, FormConfirmarCupo, FormSubirDocumentoTecnico
 from app.utils.database_utils import db
 
 _ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png"}
@@ -45,7 +45,7 @@ class Ticket_Panel_Service:
     # ----------------------------------------------------------
 
     def _cargar_formularios(self, id_ticket: str) -> dict:
-        """Instancia los formularios del panel (sin dropdowns de cupo)."""
+        """Instancia los formularios del panel (sin dropdowns de cupo)"""
         form_estado = FormCambiarEstado()
         estados = sp_catalogo_estados_ticket()
         form_estado.estado.choices = [(0, "-- Seleccione --")] + [
@@ -98,7 +98,7 @@ class Ticket_Panel_Service:
         return {"nombre_usuario": nombre, "iniciales": iniciales}
 
     def _procesar_tickets_abandonados(self) -> None:
-        """Llama a los SPs de detección y cierre de tickets abandonados. Se ejecuta en cada carga del panel para mantener estados actualizados."""
+        """Llama a los SPs de detección y cierre de tickets abandonados. Se ejecuta en cada carga del panel para mantener estados actualizados"""
         try:
             abandonados = sp_ticket_obtener_abandonados()
             for t in abandonados:
@@ -121,7 +121,7 @@ class Ticket_Panel_Service:
         return s.dumps({"b": barrio_id, "c": colegio_id, "j": jornada_id})
 
     def _leer_filtros(self, token: str) -> tuple[int, int, int]:
-        """Devuelve (barrio_id, colegio_id, jornada_id) o (0,0,0) si el token es inválido."""
+        """Devuelve (barrio_id, colegio_id, jornada_id) o (0,0,0) si el token es inválido"""
         if not token:
             return 0, 0, 0
         s = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="cupo-filtros")
@@ -147,7 +147,7 @@ class Ticket_Panel_Service:
 
         token = self._firmar_filtros(barrio_id, colegio_id, jornada_id)
         return redirect(
-            url_for("admin.ticket_panel_detail", id_ticket=id_ticket, t=token, tab="asignacion")
+            url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket, t=token, tab="asignacion")
         )
 
     def cargar_ticket_panel(self, id_ticket: str):
@@ -159,7 +159,7 @@ class Ticket_Panel_Service:
         ctx = self._cargar_contexto_ticket(id_ticket)
         if not ctx:
             flash("El ticket no existe o no está disponible.", "danger")
-            return redirect(url_for("admin.cases"))
+            return redirect(url_for("ticket_ad.cases"))
 
         forms = self._cargar_formularios(id_ticket)
         forms["form_estado"].estado.data = ctx["ticket"]["ID_Estado_Ticket"]
@@ -181,7 +181,7 @@ class Ticket_Panel_Service:
             cupo_info = sp_ticket_validar_cupo(id_ticket, colegio_id, jornada_id)
         
         return render_template(
-            "admin/ticket_panel.html", 
+            "tickets/ticket_panel.html", 
             **ctx,
             **forms,
             tecnico = self._contexto_tecnico(),
@@ -200,13 +200,13 @@ class Ticket_Panel_Service:
     # ----------------------------------------------------------
 
     def asignar_cupo(self, id_ticket: str):
-        """Valida CSRF y confirma la asignación del cupo."""
+        """Valida CSRF y confirma la asignación del cupo"""
         form = FormConfirmarCupo()
 
         # 1. Validar solo el token CSRF
         if not form.validate_on_submit():
             flash("Solicitud inválida. Vuelva a intentarlo.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
         # 2. Leer id_cupo directamente del request (evita conflictos de WTForms)
         id_cupo = request.form.get("id_cupo", type=int)
@@ -214,12 +214,12 @@ class Ticket_Panel_Service:
         print(id_cupo)
         if not id_cupo:
             flash("No se recibió un cupo válido. Intente nuevamente.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
         try:
             sp_ticket_confirmar_asignacion(
-                id_ticket  = id_ticket,
-                id_cupo    = id_cupo,
+                id_ticket = id_ticket,
+                id_cupo = id_cupo,
                 id_tecnico = session["user_id"],
             )
             db.commit()
@@ -233,15 +233,15 @@ class Ticket_Panel_Service:
             print(f"[ERROR - cupo] {e}")
             flash("No se pudo asignar el cupo. Intente nuevamente.", "danger")
 
-        return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+        return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
 
-    # ── autorizar cupo ──
+    #  autorizar cupo 
     def autorizar_cupo(self, id_ticket: str):
         form = FormConfirmarCupo()
         if not form.validate_on_submit():
             flash("Solicitud inválida.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
         try:
             sp_ticket_usuario_confirmar_cupo(
                 id_ticket  = id_ticket,
@@ -253,14 +253,14 @@ class Ticket_Panel_Service:
             db.rollback()
             print(f"[ERROR - autorizar cupo] {e}")
             flash("No se pudo confirmar el cupo. Intente nuevamente.", "danger")
-        return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+        return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
-    # ── cancelar cupo ──
+    #  cancelar cupo 
     def cancelar_cupo(self, id_ticket: str):
         form = FormConfirmarCupo()
         if not form.validate_on_submit():
             flash("Solicitud inválida.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
         try:
             sp_ticket_usuario_cancelar_cupo(
                 id_ticket  = id_ticket,
@@ -272,7 +272,7 @@ class Ticket_Panel_Service:
             db.rollback()
             print(f"[ERROR - cancelar cupo] {e}")
             flash("No se pudo cancelar el cupo. Intente nuevamente.", "danger")
-        return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+        return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
 
     # ----------------------------------------------------------
@@ -283,7 +283,7 @@ class Ticket_Panel_Service:
         form = FormAgregarComentario()
         if not form.validate_on_submit():
             flash("Por favor revise el comentario antes de enviarlo.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
         try:
             sp_ticket_panel_comentario_insertar(
                 id_ticket = id_ticket,
@@ -298,7 +298,7 @@ class Ticket_Panel_Service:
             db.rollback()
             print(f"[ERROR - comentario] {e}")
             flash("Ocurrió un error al guardar el comentario.", "danger")
-        return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+        return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
     def actualizar_estado(self, id_ticket: str):
         form_estado = FormCambiarEstado()
@@ -308,7 +308,7 @@ class Ticket_Panel_Service:
         ]
         if not form_estado.validate_on_submit():
             flash("Por favor revise los campos antes de guardar.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
         fecha_cierre = form_estado.fecha_cierre.data or None
         try:
             sp_ticket_panel_estado_actualizar(
@@ -324,7 +324,7 @@ class Ticket_Panel_Service:
             db.rollback()
             print(f"[ERROR - estado] {e}")
             flash("No se pudo actualizar el estado.", "danger")
-        return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+        return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
     # ----------------------------------------------------------
     # TAB DOCUMENTOS
@@ -338,7 +338,7 @@ class Ticket_Panel_Service:
         ]
         if not form_doc.validate_on_submit():
             flash("Por favor revise el formulario de documentos.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
         archivo_field = form_doc.archivo.data
         nombre_original = archivo_field.filename
@@ -346,12 +346,12 @@ class Ticket_Panel_Service:
 
         if extension not in self._allowed_extensions:
             flash("Tipo de archivo no permitido. Solo PDF, JPG o PNG.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
         contenido = archivo_field.read()
         if len(contenido) > self._max_file_bytes:
             flash("El archivo supera el límite de 5 MB.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
         try:
             sp_ticket_panel_documento_insertar(
@@ -374,13 +374,13 @@ class Ticket_Panel_Service:
             print(f"[ERROR - documento upload] {e}")
             flash("Ocurrió un error al subir el documento.", "danger")
 
-        return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+        return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
 
     def descargar_documento(self, id_ticket: str, id_doc: int):
         doc = sp_ticket_panel_documento_descargar(id_doc)
         if not doc:
             flash("Documento no encontrado.", "danger")
-            return redirect(url_for("admin.ticket_panel_detail", id_ticket=id_ticket))
+            return redirect(url_for("ticket_ad.ticket_panel_detail", id_ticket=id_ticket))
         return send_file(
             io.BytesIO(doc["Archivo"]),
             download_name=doc["Nombre_Original"],

@@ -14,7 +14,7 @@ from app.repositories.aplication_repository import *
 # ====================================================================================================================================================
 
 def _form_opciones_acudiente(form):
-    """Asigna choices a los SelectFields del formulario del acudiente."""
+    """Asigna choices a los SelectFields del formulario del acudiente"""
     form.estrato.choices = (
         [(0, "— Seleccione un Estrato —")] +
         [(e["ID_Estrato"], e["Nombre_Estrato"]) for e in sp_obtener_estratos()]
@@ -34,7 +34,7 @@ def _form_opciones_acudiente(form):
 
 
 def _form_opciones_estudiante(form):
-    """Asigna choices a todos los SelectFields del formulario del estudiante."""
+    """Asigna choices a todos los SelectFields del formulario del estudiante"""
     form.genero.choices = (
         [(0, "— Seleccione un Género —")] +
         [(g["ID_Genero"], g["Nombre_Genero"]) for g in sp_obtener_generos()]

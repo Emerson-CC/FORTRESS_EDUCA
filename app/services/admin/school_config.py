@@ -130,9 +130,9 @@ class School_Config_Service:
             total_cupos = colegio["Total_Cupos"],
         )
 
-    # ── Guardar datos institucionales ─────────────────────────────────
+    #  Guardar datos institucionales 
     def guardar_datos(self, id_colegio: int):
-        """Procesa el POST de la Sección 1 (datos del colegio)."""
+        """Procesa el POST de la Sección 1 (datos del colegio)"""
         form = FormEditarColegio()
         form.id_barrio.choices = self._cargar_catalogo_barrios_choices()
 
@@ -154,7 +154,7 @@ class School_Config_Service:
 
         return redirect(url_for("admin.school_config", id_colegio=id_colegio))
 
-    # ── Guardar jornadas ─────────────────────────────────────────────
+    #  Guardar jornadas 
     def guardar_jornadas(self, id_colegio: int):
         """
         Procesa el POST de la Sección 2 (jornadas).
@@ -185,7 +185,7 @@ class School_Config_Service:
 
         return redirect(url_for("admin.school_config", id_colegio=id_colegio))
 
-    # ── Guardar cupos ────────────────────────────────────────────────
+    #  Guardar cupos 
     def guardar_cupos(self, id_colegio: int):
         """
         Procesa el POST de la Sección 3 (cupos).
@@ -220,7 +220,7 @@ class School_Config_Service:
 
     # Cambiar estado
     def cambiar_estado(self, id_colegio: int):
-        """Procesa el POST de la Sección 4 (activar/desactivar)."""
+        """Procesa el POST de la Sección 4 (activar/desactivar)"""
         form = FormCambiarEstadoColegio()
 
         if form.validate_on_submit():

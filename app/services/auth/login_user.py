@@ -22,7 +22,7 @@ INTENTOS_PARA_RECAPTCHA = 3
 
 # Declarar Variables Globales
 class Login_User_Service:
-    """Servicio de autenticación."""
+    """Servicio de autenticación"""
 
 # ====================================================================================================================================================
 #                                           PAGINA LOGIN_USER.HTML
@@ -33,8 +33,8 @@ class Login_User_Service:
         
         form = LoginUserForm()
         
-        intentos_fallidos   = session.get("login_intentos", 0)
-        mostrar_recaptcha   = intentos_fallidos >= INTENTOS_PARA_RECAPTCHA
+        intentos_fallidos = session.get("login_intentos", 0)
+        mostrar_recaptcha = intentos_fallidos >= INTENTOS_PARA_RECAPTCHA
         site_key = current_app.config.get("RECAPTCHA_SITE_KEY", "")
 
         # Indicar que la recuperación de contraseña debe volver a la página de login de usuario

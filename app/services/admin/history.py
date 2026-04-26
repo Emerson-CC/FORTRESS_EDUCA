@@ -21,7 +21,7 @@ POR_PAGINA = 15
 
 
 class History_Service:
-    """Servicio para el módulo de historial y auditoría."""
+    """Servicio para el módulo de historial y auditoría"""
 
     # Vista principal con filtros y paginación
     def listar_auditoria(self):

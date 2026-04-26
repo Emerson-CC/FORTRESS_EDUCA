@@ -5,7 +5,7 @@ from app.forms.admin_forms import FormToggleEstado
 
 
 class Accounts_Func_Service:
-    """Lógica de negocio para accounts_func.html (técnicos y admins)."""
+    """Lógica de negocio para accounts_func.html (técnicos y admins)"""
 
     @staticmethod
     def _int_or_none(value):
