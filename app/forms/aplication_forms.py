@@ -1,11 +1,11 @@
 # FUNCIONES DE FLASK
 from flask_wtf import FlaskForm
-# FUNCIONES DE FLASK
 from flask_wtf.file import FileField, FileRequired, FileAllowed, MultipleFileField
 
 from wtforms import StringField, SelectField, DateField, TelField, PasswordField, BooleanField, SubmitField, HiddenField, TextAreaField
 from wtforms.validators import DataRequired, Length, Optional, EqualTo, ValidationError
 
+# UTILIDADES
 from app.utils.validation_utils import regex
 
 # FUNCIÓN PARA VALIDAR SI EL ID = 0

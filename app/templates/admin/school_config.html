@@ -1,6 +1,6 @@
 {% extends 'layout_admin.html' %}
 
-{% block titulo %}Fortress Educa - Gestión de Colegio{% endblock %}
+{% block titulo %}Configuración de Colegio - Admin Educa{% endblock %}
 
 <!-- Titulo del Header -->
 {% set admin_header_title = colegio.Nombre_Colegio %}
@@ -241,8 +241,8 @@
 
                 <div class="row g-3">
                     {% set iconos_jornada = {
-                        'Mañana':        ('fa-sun',           'primary'),
-                        'Tarde':         ('fa-cloud-sun',     'warning'),
+                        'Mañana':        ('fa-sun',           'warning'),
+                        'Tarde':         ('fa-cloud-sun',     'primary'),
                         'Nocturna':      ('fa-moon',          'secondary'),
                         'Única':         ('fa-circle',        'info'),
                         'Completa':      ('fa-check-double',  'success'),

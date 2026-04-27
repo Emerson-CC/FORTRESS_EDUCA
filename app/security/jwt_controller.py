@@ -1,8 +1,6 @@
 # FUNCIONES DE FLASK
 from flask_jwt_extended import create_access_token, create_refresh_token, unset_jwt_cookies
-# FUNCIONES DE FLASK
 from flask import redirect, flash, session, make_response
-# FUNCIONES DE FLASK
 from flask import current_app
 
 from app.security.redirect_controller import get_login_url_por_rol

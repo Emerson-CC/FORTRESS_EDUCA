@@ -1,8 +1,7 @@
 from app.services.technical.dashboard import Dashboard_Service
-from app.services.tickets.ticket_panel import Ticket_Panel_Service
 from app.services.technical.cases import Cases_Service
-from app.services.admin.history import History_Service
-from app.services.admin.settings import Settings_Service
+from app.services.technical.history import History_Service
+#from app.services.technical.security import Security_Service
 
 
 class TechnicalController:
@@ -10,10 +9,9 @@ class TechnicalController:
 
     def __init__(self):
         self.dashboard_service = Dashboard_Service()        
-        self.ticket_panel_service = Ticket_Panel_Service()
         self.cases_service = Cases_Service()
         self.history_service = History_Service()
-        self.settings_service = Settings_Service()
+        #self.security_service = Security_Service()
         
     # DASHBOARD
     def dashboard(self):
@@ -22,16 +20,25 @@ class TechnicalController:
     # CASES
     def cases(self):
         return self.cases_service.listar_tickets_tecnico()
-
     
     # HISTORY
     def history(self):
-        return self.history_service.listar_auditoria()
+        return self.history_service.listar_historial()
 
     def history_export(self):
-        return self.history_service.exportar_csv()    
+        return self.history_service.exportar_historial()    
     
+    # # SEGURIDAD
+    # def security(self):
+    #     return self.service_security.cargar_informacion_seguridad()
+        
+    #     # CAMBIAR CONTRASEÑA
+    # def security_change_password(self):
+    #     return self.service_security.Change_Password()
     
-    # SETTINGS
-    def settings(self):
-        return self.settings_service.cargar_settings()
+    #     # SESION CONTROLADOR
+    # def security_session_one(self, jti_sesion):
+    #     return self.service_security.cerrar_sesion(jti_sesion)
+    
+    # def security_session_all(self):
+    #     return self.service_security.cerrar_sesiones()

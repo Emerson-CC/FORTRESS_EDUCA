@@ -447,7 +447,7 @@ CREATE TABLE TBL_TICKET_COMENTARIO (
     Tipo_Evento VARCHAR(20) NOT NULL, -- Nueva Solicitud, Comentario, Cambio Estado, Documento Subido, Cambio Tecnico, Cupo Asignado, Cierre Solicitud
     Comentario TEXT NOT NULL, -- Detalle
     Fecha_Comentario DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    Es_Interno TINYINT(1) NOT NULL, -- Interno (1), Publico (0)
+    Es_Interno TINYINT(1) NOT NULL, -- Interno (1), Publico (0). Visibilidad en el sisteama
 
     FK_ID_Usuario INT NOT NULL,
     FK_ID_Ticket VARCHAR(10) NOT NULL,

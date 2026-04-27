@@ -3474,7 +3474,7 @@ DELIMITER ;
 
 
 -- ====================================================================================================================================================
--- SP PARA LA PAGINA DE HISTORY
+-- SP PARA LA PAGINA DE HISTORY (ADMIN)
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -3499,27 +3499,6 @@ BEGIN
 END $$
 DELIMITER ;
 
-
--- --------------------------------------------------------
--- SP: Contar total de registros (para paginación)
-
-DROP PROCEDURE IF EXISTS sp_history_contar_auditoria;
-
-DELIMITER $$
-CREATE PROCEDURE sp_history_contar_auditoria(
-    IN p_tipo_evento VARCHAR(30),
-    IN p_fecha_desde DATE,
-    IN p_fecha_hasta DATE
-)
-BEGIN
-    SELECT COUNT(*) AS total
-    FROM vw_auditoria_comentarios
-    WHERE Estado_Comentario_Ticket = 1
-      AND (p_tipo_evento IS NULL OR Tipo_Evento = p_tipo_evento)
-      AND (p_fecha_desde IS NULL OR DATE(Fecha_Comentario) >= p_fecha_desde)
-      AND (p_fecha_hasta IS NULL OR DATE(Fecha_Comentario) <= p_fecha_hasta);
-END $$
-DELIMITER ;
 
 -- --------------------------------------------------------
 -- SP: Export completo sin paginación (para CSV)
@@ -4316,5 +4295,69 @@ BEGIN
 
     FROM vw_technical_cases
     WHERE FK_ID_Usuario_Tecnico = p_id_tecnico;
+END $$
+DELIMITER ;
+
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA DE HISTORY
+-- ====================================================================================================================================================
+
+-- --------------------------------------------------------
+-- SP: Retorna TODOS los registros de comentarios del técnico indicado.
+
+DROP PROCEDURE IF EXISTS sp_technical_history_listar_todos;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_history_listar_todos(
+    IN p_id_tecnico INT
+)
+BEGIN
+    SELECT
+        ID_Ticket_Comentario,
+        Tipo_Evento,
+        Comentario,
+        Fecha_Comentario,
+        Es_Interno,
+        FK_ID_Ticket,
+        Nombre_Rol,
+        Nombre_Completo_Usuario
+    FROM vw_auditoria_comentarios_tecnico
+    WHERE Estado_Comentario_Ticket = 1
+      AND FK_ID_Usuario = p_id_tecnico;
+END $$
+DELIMITER ;
+
+
+-- --------------------------------------------------------
+-- SP: Export completo del técnico sin paginación (para CSV/PDF)
+
+DROP PROCEDURE IF EXISTS sp_technical_history_exportar;
+
+DELIMITER $$
+CREATE PROCEDURE sp_technical_history_exportar(
+    IN p_id_tecnico INT,
+    IN p_tipo_evento VARCHAR(30),
+    IN p_fecha_desde DATE,
+    IN p_fecha_hasta DATE
+)
+BEGIN
+    SELECT
+        ID_Ticket_Comentario,
+        Tipo_Evento,
+        Comentario,
+        Fecha_Comentario,
+        Es_Interno,
+        FK_ID_Ticket,
+        Nombre_Rol,
+        Nombre_Completo_Usuario
+    FROM vw_auditoria_comentarios_tecnico
+    WHERE Estado_Comentario_Ticket = 1
+      AND FK_ID_Usuario = p_id_tecnico
+      AND (p_tipo_evento IS NULL OR Tipo_Evento = p_tipo_evento)
+      AND (p_fecha_desde IS NULL OR DATE(Fecha_Comentario) >= p_fecha_desde)
+      AND (p_fecha_hasta IS NULL OR DATE(Fecha_Comentario) <= p_fecha_hasta)
+    ORDER BY Fecha_Comentario DESC;
 END $$
 DELIMITER ;

@@ -6,6 +6,7 @@ from flask_jwt_extended import unset_jwt_cookies, verify_jwt_in_request, get_jwt
 
 from app.settings import Config_Session
 
+# UTILIDADES
 from app.utils.database_utils import db
 
 from app.repositories.auth_repository import sp_cerrar_sesion
@@ -14,7 +15,7 @@ from app.security.redirect_controller import get_login_url_por_rol
 
 # Declarar Constantes para configuración
 TIEMPO_MAX_INACTIVIDAD = Config_Session.PERMANENT_SESSION_LIFETIME
-MAX_SESSION_DURATION   = Config_Session.MAX_SESSION_DURATION
+MAX_SESSION_DURATION = Config_Session.MAX_SESSION_DURATION
 
 def _cerrar_sesion_inactiva():
     """Cierra la sesión de un usuario por inactividad o tiempo limite"""

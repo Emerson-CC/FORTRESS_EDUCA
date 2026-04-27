@@ -51,3 +51,28 @@ def sp_catalogo_grados() -> list[dict]:
 def sp_catalogo_tipo_afectacion() -> list[dict]:
     """Tipos de afectación para el SelectField de filtro"""
     return db.call_procedure("sp_catalogo_tipo_afectacion", ()) or []
+
+
+
+# ==============================================================================
+#                       PÁGINA HISTORY.HTML
+# ==============================================================================
+
+def sp_technical_history_listar_todos(id_tecnico: int) -> list[dict]:
+    """Retorna TODOS los registros de auditoría del técnico indicado. Sin filtros"""
+    return db.call_procedure(
+        "sp_technical_history_listar_todos", (id_tecnico,)
+    ) or []
+
+def sp_technical_history_exportar(id_tecnico:  int, tipo_evento: str | None, fecha_desde: str | None, fecha_hasta: str | None) -> list[dict]:
+    """Retorna TODOS los registros del técnico sin paginar (para CSV/PDF)"""
+    return db.call_procedure(
+        "sp_technical_history_exportar",
+        (id_tecnico, tipo_evento, fecha_desde, fecha_hasta),
+    ) or []
+
+
+
+# ==============================================================================
+#                       PÁGINA SECURITY.HTML
+# ==============================================================================
