@@ -30,6 +30,9 @@ class AdminController:
     # CASES
     def cases(self):
         return self.cases_service.listar_todos_tickets()
+
+    def cases_export(self):
+        return self.cases_service.exportar_tickets()
     
     # ACCOUNTS
     def accounts(self):
@@ -65,7 +68,7 @@ class AdminController:
         return self.history_service.listar_auditoria()
 
     def history_export(self):
-        return self.history_service.exportar_csv()    
+        return self.history_service.exportar_auditoria()    
     
     # SCHOOL
         # STATUS

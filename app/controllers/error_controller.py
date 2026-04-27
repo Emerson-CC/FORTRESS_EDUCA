@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import render_template, request
 from werkzeug.exceptions import HTTPException
 

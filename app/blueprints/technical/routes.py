@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import Blueprint
 from app.utils.decorators.technical_decorator import technical_required, login_required, mfa_required
 from app.controllers.technical_controller import TechnicalController

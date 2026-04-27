@@ -2,8 +2,9 @@
 from flask import render_template, session
 
 # CONFIGURACIONES LOCALES
-from app.forms.aplication_forms import *
-from app.repositories.aplication_repository import *
+from app.repositories.aplication_repository import (
+    sp_dashboard_resumen_acudiente,
+)
 
 # ====================================================================================================================================================
 #                                           PÁGINA INDEX.HTML
@@ -11,9 +12,9 @@ from app.repositories.aplication_repository import *
 
 # Mapa de prioridad numérica a etiqueta visual
 _PRIORIDAD_LABEL = {
-    range(0,  30):  ("Baja","danger", "fa-arrow-down"),
-    range(30, 60):  ("Media", "danger", "fa-equals"),
-    range(60, 85):  ("Alta", "danger", "fa-arrow-up"),
+    range(0,  30): ("Baja","danger", "fa-arrow-down"),
+    range(30, 60): ("Media", "danger", "fa-equals"),
+    range(60, 85): ("Alta", "danger", "fa-arrow-up"),
     range(85, 9999):("Crítica","danger", "fa-exclamation-circle"),
 }
 
@@ -82,7 +83,7 @@ class Dashboard_Service:
         user_id = session["user_id"]
         resumen = sp_dashboard_resumen_acudiente(user_id)
 
-        # Sin datos → el acudiente no tiene estudiante ni tickets aún
+        # Sin datos = el acudiente no tiene estudiante ni tickets aún
         pasos = []
         prioridad = None
 

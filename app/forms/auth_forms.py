@@ -1,7 +1,8 @@
+# FUNCIONES DE FLASK
 from flask_wtf import FlaskForm
 from datetime import date, datetime
 
-from wtforms import StringField, PasswordField, SelectField, BooleanField, DateField
+from wtforms import StringField, PasswordField, SelectField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
 from app.utils.validation_utils import regex
@@ -411,16 +412,6 @@ class NuevacontraseñaForm(FlaskForm):
         "Confirmar Contraseña",
         validators = [DataRequired(), EqualTo("password", message = "Las contraseñas no coinciden.")]
     )
-
-    # def validate_username(self, field):
-    #     """Validadro personalizado para email"""
-    #     valor = field.data.strip() if field.data else ""
-        
-    #     if not valor:
-    #         raise ValidationError("El teléfono no puede estar vacío.")
-        
-    #     if not regex.formato_email(valor):
-    #         raise ValidationError
 
     def validate_password(self, field):
         """Validador personalizado para contraseña"""

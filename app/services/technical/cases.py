@@ -1,5 +1,6 @@
 # app/services/technical_cases_service.py
 
+# FUNCIONES DE FLASK
 from flask import render_template, request, session
 
 from app.forms.technical_forms import FormFiltroTicketsTecnico

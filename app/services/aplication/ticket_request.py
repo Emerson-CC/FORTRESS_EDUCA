@@ -6,9 +6,20 @@ from app.utils.database_utils import db
 
 
 # CONFIGURACIONES LOCALES
-from app.forms.aplication_forms import *
-from app.repositories.aplication_repository import *
+from app.repositories.aplication_repository import (
+    sp_ticket_obtener_ultimo_numero,
+    sp_obtener_estudiantes_por_acudiente,
+    sp_obtener_tipos_afectacion,
+    sp_obtener_barrios,
+    sp_obtener_tiempos_residencia,
+    sp_obtener_jornadas,
+    sp_obtener_colegios,
+    sp_ticket_verificar_activo,
+    sp_ticket_crear,
+    sp_documento_ticket_insertar,
+)
 
+from app.forms.aplication_forms import FormTicketPaso1, FormTicketPaso2, FormTicketPaso3, FormTicketPaso4, FormTicketPaso5, FormTicketPaso6
 
 # ====================================================================================================================================================
 #                                           PÁGINA TICKET_REQUEST.HTML
@@ -207,7 +218,7 @@ class Ticket_Request_Service:
                 active_page="request",
             )
 
-        # Colegio: 0 = sin preferencia → NULL
+        # Colegio: 0 = sin preferencia = NULL
         id_colegio = form_p4.id_colegio.data if form_p4.id_colegio.data != 0 else None
         ip = request.remote_addr
         user_agent = request.headers.get("User-Agent")

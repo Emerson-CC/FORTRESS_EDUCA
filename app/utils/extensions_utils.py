@@ -1,4 +1,6 @@
+# FUNCIONES DE FLASK
 from flask_mail import Mail
+# FUNCIONES DE FLASK
 from flask import session
 
 # Instancia global

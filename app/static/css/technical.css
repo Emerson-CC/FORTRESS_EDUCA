@@ -254,7 +254,7 @@ input:checked+.slider:before {
 
 /*  Brand / Logo  */
 .dashboard-sidebar .brand-section {
-    /* Eje vertical: (68 - 24) / 2 = 22px → centra el icono de 24px en los 68px del sidebar */
+    /* Eje vertical: (68 - 24) / 2 = 22px = centra el icono de 24px en los 68px del sidebar */
     padding: 1.3rem 0 1.3rem 22px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;

@@ -3480,20 +3480,11 @@ DELIMITER ;
 -- --------------------------------------------------------
 -- SP: Listar registros paginados con filtros opcionales
 
-DROP PROCEDURE IF EXISTS sp_history_listar_auditoria;
+DROP PROCEDURE IF EXISTS sp_history_listar_todos;
 
 DELIMITER $$
-CREATE PROCEDURE sp_history_listar_auditoria(
-    IN p_tipo_evento VARCHAR(30),
-    IN p_fecha_desde DATE,
-    IN p_fecha_hasta DATE,
-    IN p_pagina INT,
-    IN p_por_pagina INT
-)
+CREATE PROCEDURE sp_history_listar_todos()
 BEGIN
-    DECLARE v_offset INT;
-    SET v_offset = (p_pagina - 1) * p_por_pagina;
-
     SELECT
         ID_Ticket_Comentario,
         Tipo_Evento,
@@ -3504,12 +3495,7 @@ BEGIN
         Nombre_Rol,
         Nombre_Completo_Usuario
     FROM vw_auditoria_comentarios
-    WHERE Estado_Comentario_Ticket = 1
-      AND (p_tipo_evento IS NULL OR Tipo_Evento = p_tipo_evento)
-      AND (p_fecha_desde IS NULL OR DATE(Fecha_Comentario) >= p_fecha_desde)
-      AND (p_fecha_hasta IS NULL OR DATE(Fecha_Comentario) <= p_fecha_hasta)
-    ORDER BY Fecha_Comentario DESC
-    LIMIT p_por_pagina OFFSET v_offset;
+    WHERE Estado_Comentario_Ticket = 1;
 END $$
 DELIMITER ;
 

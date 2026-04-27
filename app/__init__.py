@@ -1,5 +1,8 @@
+# FUNCIONES DE FLASK
 from flask import Flask, redirect, url_for
+# FUNCIONES DE FLASK
 from flask_wtf.csrf import CSRFProtect
+# FUNCIONES DE FLASK
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 

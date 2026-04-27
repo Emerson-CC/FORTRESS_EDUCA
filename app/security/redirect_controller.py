@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import session, url_for
 from app.repositories.utils_repository import sp_obtener_roles
 

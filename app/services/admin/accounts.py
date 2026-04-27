@@ -1,3 +1,6 @@
+# FUNCIONES DE FLASK
+import datetime
+
 from flask import request, render_template
 from app.repositories.admin_repository import (
     sp_admin_historial_acceso_listar, 
@@ -6,7 +9,7 @@ from app.repositories.admin_repository import (
     sp_admin_roles_consultar,
     sp_admin_eventos_acceso_consultar,
     sp_admin_eventos_auditoria_consultar,
-    sp_admin_navegadores_consultar
+    sp_admin_navegadores_consultar,
 )
 
 # Logica de reportes
@@ -122,10 +125,12 @@ class Accounts_Service:
         datos = fila.a_lista_datos()
 
         COLUMNAS = ["ID", "Usuario", "Rol", "Evento", "IP", "Navegador", "Fecha"]
+        
+        fecha_actual = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         if formato == "pdf":
-            return ExportarReporte.pdf(datos, COLUMNAS, "Historial de Acceso", "historial_acceso")
-        return ExportarReporte.csv(datos, COLUMNAS, "historial_acceso")
+            return ExportarReporte.pdf(datos, COLUMNAS, "Historial de Acceso", f"historial_acceso_usuarios_{fecha_actual}")
+        return ExportarReporte.csv(datos, COLUMNAS, f"historial_acceso_usuarios_{fecha_actual}")
 
     # ---------------------------------------------------------------
     # Exportar Historial de Acciones
@@ -159,7 +164,9 @@ class Accounts_Service:
         datos = fila.a_lista_datos()
 
         COLUMNAS = ["ID", "Evento", "Ejecutor", "IP", "Dato Antiguo", "Dato Nuevo", "Fecha"]
+        
+        fecha_actual = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         if formato == "pdf":
-            return ExportarReporte.pdf(datos, COLUMNAS, "Historial de Acciones", "historial_acciones")
-        return ExportarReporte.csv(datos, COLUMNAS, "historial_acciones")    
+            return ExportarReporte.pdf(datos, COLUMNAS, "Historial de Acciones", f"historial_acciones_usuarios_{fecha_actual}")
+        return ExportarReporte.csv(datos, COLUMNAS, f"historial_acciones_usuarios_{fecha_actual}")    

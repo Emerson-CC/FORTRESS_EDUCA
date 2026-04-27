@@ -7,7 +7,6 @@ from flask import render_template, request, redirect, url_for, flash, session, s
 from app.utils.database_utils import db
 
 # CONFIGURACIONES LOCALES
-from app.forms.aplication_forms import FormSubirDocumento, FormAgregarComentarioUsuario
 from app.repositories.aplication_repository import (
     sp_tipo_documento_consultar, 
     sp_ticket_consultar_por_usuario,
@@ -20,6 +19,8 @@ from app.repositories.aplication_repository import (
     sp_documento_ticket_descargar,
     sp_comentario_usuario_insertar,    
 )
+from app.forms.aplication_forms import FormSubirDocumento, FormAgregarComentarioUsuario
+
 
 # ====================================================================================================================================================
 #                                           SISTEMA DE TICKETS - SEGUIMIENTO DE SOLICITUDES DE CUPO

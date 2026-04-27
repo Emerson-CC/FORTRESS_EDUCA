@@ -1,5 +1,6 @@
 import io
 
+# FUNCIONES DE FLASK
 from flask import render_template, redirect, url_for, flash, session, request, send_file, current_app
 from itsdangerous import URLSafeSerializer, BadSignature
 

@@ -48,6 +48,11 @@ def sp_catalogo_tipo_afectacion() -> list[dict]:
     """Tipos de afectación (para el <select> de filtro de afectación)"""
     return db.call_procedure("sp_catalogo_tipo_afectacion", ()) or []
 
+# Reporte de datos
+
+def sp_cases_exportar_todos() -> list[dict]:
+    """Retorna TODOS los tickets activos (para CSV/PDF)"""
+    return db.call_procedure("sp_cases_listar_todos", ()) or []
 
 # ====================================================================================================================================================
 #                                           PAGINA ACCOUNTS.HTML
@@ -144,23 +149,11 @@ def sp_admin_toggle_estado_tecnico(id_usuario, nuevo_estado, ejecutor_id, ip, us
 #                                           PAGINA HISTORY.HTML
 # ====================================================================================================================================================
 
-def sp_history_listar_auditoria(tipo_evento, fecha_desde, fecha_hasta, pagina, por_pagina) -> list[dict]:
-    """Retorna los registros de auditoría paginados y filtrados"""
-    return (
-        db.call_procedure(
-            "sp_history_listar_auditoria",
-            (tipo_evento, fecha_desde, fecha_hasta, pagina, por_pagina),
-        )
-        or []
-    )
+def sp_history_listar_todos() -> list[dict]:
+    """Retorna TODOS los registros de auditoría activos"""
+    return db.call_procedure("sp_history_listar_todos", ()) or []
 
-def sp_history_contar_auditoria(tipo_evento, fecha_desde, fecha_hasta) -> int:
-    """Retorna el total de registros que coinciden con los filtros"""
-    resultado = db.call_procedure(
-        "sp_history_contar_auditoria",
-        (tipo_evento, fecha_desde, fecha_hasta),
-    )
-    return resultado[0]["total"] if resultado else 0
+# EXPORTAR (CSV o PDF)
 
 def sp_history_exportar_auditoria(tipo_evento, fecha_desde, fecha_hasta) -> list[dict]:
     """Retorna TODOS los registros sin paginar (para CSV)"""

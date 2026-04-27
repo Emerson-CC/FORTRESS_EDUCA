@@ -1,5 +1,7 @@
+# FUNCIONES DE FLASK
 from flask import session, redirect, request
 from datetime import datetime, timezone
+# FUNCIONES DE FLASK
 from flask_jwt_extended import unset_jwt_cookies, verify_jwt_in_request, get_jwt
 
 from app.settings import Config_Session

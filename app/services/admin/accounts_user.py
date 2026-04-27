@@ -1,10 +1,11 @@
+# FUNCIONES DE FLASK
 from flask import request, render_template, redirect, url_for, flash
 from app.repositories.admin_repository import (
     sp_admin_metricas_usuarios, 
     sp_admin_acudientes_listar, 
     sp_admin_estudiantes_listar, 
     sp_admin_toggle_estado_usuario, 
-    sp_admin_toggle_estado_estudiante
+    sp_admin_toggle_estado_estudiante,
 )
 from app.forms.admin_forms import FormToggleEstado
 

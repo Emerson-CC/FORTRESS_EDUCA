@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import session, render_template
 
 from app.repositories.technical_repository import sp_technical_dashboard_metricas, sp_technical_cases_listar_asignados, sp_technical_dashboard_chart_actividad

@@ -2,6 +2,7 @@ import csv
 import io
 from datetime import datetime
 
+# FUNCIONES DE FLASK
 from flask import Response
 from app.data_structures.report_row import ReporteFila
 
@@ -69,6 +70,14 @@ class ExportarReporte:
         )
 
         styles = getSampleStyleSheet()
+        
+        st_celda = ParagraphStyle(
+            "Celda", 
+            parent=styles["Normal"], 
+            fontSize=7, 
+            leading=8, # Espaciado entre líneas
+            alignment=TA_CENTER
+        ) 
         st_titulo = ParagraphStyle(
             "Titulo", parent=styles["Heading1"],
             fontSize=15, alignment=TA_CENTER, spaceAfter=4,
@@ -82,22 +91,26 @@ class ExportarReporte:
         # Tabla
         tabla_data = [columnas]
         for fila in datos:
-            tabla_data.append([str(fila.get(col, "—")) for col in columnas])
+            fila_procesada = []
+            for col in columnas:
+                texto = str(fila.get(col, "—"))     
+                fila_procesada.append(Paragraph(texto, st_celda))
+            tabla_data.append(fila_procesada)
 
         ancho_col = (landscape(A4)[0] - 3 * cm) / len(columnas)
-        tabla     = Table(tabla_data, colWidths=[ancho_col] * len(columnas), repeatRows=1)
+        tabla = Table(tabla_data, colWidths=[ancho_col] * len(columnas), repeatRows=1)
 
         estilo = [
-            ("BACKGROUND",   (0, 0), (-1, 0),  colors.HexColor("#212529")),
-            ("TEXTCOLOR",    (0, 0), (-1, 0),  colors.white),
-            ("FONTNAME",     (0, 0), (-1, 0),  "Helvetica-Bold"),
-            ("FONTSIZE",     (0, 0), (-1, 0),  8),
-            ("FONTNAME",     (0, 1), (-1, -1), "Helvetica"),
-            ("FONTSIZE",     (0, 1), (-1, -1), 7),
-            ("ALIGN",        (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
-            ("GRID",         (0, 0), (-1, -1), 0.4, colors.HexColor("#dee2e6")),
-            ("TOPPADDING",   (0, 0), (-1, -1), 5),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#212529")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 8),
+            ("FONTNAME", (0, 1), (-1, -1),"Helvetica"),
+            ("FONTSIZE", (0, 1), (-1, -1), 7),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#dee2e6")),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
             ("BOTTOMPADDING",(0, 0), (-1, -1), 5),
         ]
         for i in range(1, len(tabla_data)):
@@ -123,3 +136,5 @@ class ExportarReporte:
             mimetype="application/pdf",
             headers={"Content-Disposition": f"attachment; filename={nombre_archivo}.pdf"},
         )
+
+

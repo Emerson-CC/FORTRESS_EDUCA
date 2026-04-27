@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import flash, redirect, render_template, url_for
 
 from app.forms.admin_forms import FormPrioridadAfectacion,FormPrioridadGrupo,FormPrioridadEstrato

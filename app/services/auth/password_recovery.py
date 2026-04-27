@@ -6,13 +6,14 @@ from flask import render_template, request, redirect, url_for, flash, session, c
 from flask_mail import Message
 
 # CONFIGURACIONES LOCALES
-from app.forms.auth_forms import *
-from app.repositories.auth_repository import *
-
-# CONFIGURAICONES GLOBALES
-from app.utils.extensions_utils import mail
+from app.forms.auth_forms import RecuperarcontraseñaForm, VerificarCodigoForm, NuevacontraseñaForm
+from app.repositories.auth_repository import (
+    sp_obtener_email_por_username, 
+    sp_actualizar_contraseña,
+)
 
 # UTILIDADES
+from app.utils.extensions_utils import mail
 from app.utils.password_utils import hashear_contraseña
 
 # Permitir solo endpoints válidos para la redirección final de recuperación

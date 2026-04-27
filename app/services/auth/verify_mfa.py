@@ -1,4 +1,5 @@
 # FUNCIONES DE FLASK
+# FUNCIONES DE FLASK
 from flask import request, redirect, url_for, flash, session
 
 # CONFIGURACIONES LOCALES

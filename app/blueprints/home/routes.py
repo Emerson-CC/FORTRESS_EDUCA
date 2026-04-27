@@ -1,4 +1,6 @@
+# FUNCIONES DE FLASK
 from flask import Blueprint, render_template, redirect, url_for
+# FUNCIONES DE FLASK
 from flask_wtf.csrf import CSRFError
 
 home_bp = Blueprint("home", __name__, url_prefix="/home")

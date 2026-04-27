@@ -1,15 +1,17 @@
+# FUNCIONES DE FLASK
 from flask import session, redirect, url_for, flash, request
 from app.utils.database_utils import db
 
 from app.repositories.auth_repository import sp_obtener_mfa_secret, sp_guardar_mfa_secret_temp, sp_activar_mfa
+from app.forms.auth_forms  import FormVerificarMFA
 
 # UTILIDADES
 from app.utils.audit_utils import Auditoria_Session
 from app.utils.database_utils import db
-
-from app.security.mfa_controller import MFA_Controller
-from app.forms.auth_forms  import FormVerificarMFA
 from app.utils.response_utils import render_no_cache
+
+# SEGURIDAD
+from app.security.mfa_controller import MFA_Controller
 
 
 class Config_MFA_Service:

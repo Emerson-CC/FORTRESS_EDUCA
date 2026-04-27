@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import Blueprint
 
 from app.utils.decorators.aplication_decorators import acudiente_required, login_required, student_required

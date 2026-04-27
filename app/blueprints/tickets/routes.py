@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import Blueprint
 from app.utils.decorators.admin_decorators import login_required, mfa_required
 from app.utils.decorators.tickets_decorators import role_required

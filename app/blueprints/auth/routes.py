@@ -1,4 +1,6 @@
+# FUNCIONES DE FLASK
 from flask import Blueprint, render_template, redirect, url_for
+# FUNCIONES DE FLASK
 from flask_wtf.csrf import CSRFError
 
 from app.controllers.auth_controller import AuthController

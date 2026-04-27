@@ -1,5 +1,10 @@
+# FUNCIONES DE FLASK
 from flask import session, render_template
-from app.repositories.admin_repository import sp_dashboard_metricas, sp_cases_listar_todos, sp_dashboard_chart_actividad
+from app.repositories.admin_repository import (
+    sp_dashboard_metricas, 
+    sp_cases_listar_todos, 
+    sp_dashboard_chart_actividad,
+)
 
 # Mapa de días en español para el gráfico
 DIAS_ES = {

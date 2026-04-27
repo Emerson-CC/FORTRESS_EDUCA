@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask_wtf import FlaskForm
 
 from wtforms import SelectField, HiddenField, StringField, SelectMultipleField, EmailField, TelField, IntegerField

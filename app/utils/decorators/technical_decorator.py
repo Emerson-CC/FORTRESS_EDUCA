@@ -1,9 +1,11 @@
 from functools import wraps, lru_cache
+# FUNCIONES DE FLASK
 from flask import session, abort, redirect, url_for, flash, make_response
 
 # Conexión con BD
 from app.repositories.utils_repository import sp_obtener_roles, sp_verificar_jti, sp_verificar_mfa
 
+# FUNCIONES DE FLASK
 from flask_jwt_extended import verify_jwt_in_request, get_jwt, unset_jwt_cookies
 
 

@@ -10,8 +10,20 @@ from app.utils.password_utils import hashear_contraseña, verificar_contraseña
 from app.security.mfa_controller import MFA_Controller
 
 # CONFIGURACIONES LOCALES
-from app.forms.aplication_forms import *
-from app.repositories.aplication_repository import *
+from app.repositories.aplication_repository import (
+    sp_validar_data_user,
+    sp_validar_data_autenticacion,
+    sp_cambiar_contraseña_perfil,
+    sp_obtener_mfa_secret,
+    sp_guardar_mfa_secret_temp,
+    sp_activar_mfa,
+    sp_desactivar_mfa,
+    sp_listar_sesiones,
+    sp_cerrar_todas_sesiones,
+    sp_cerrar_sesion,
+    sp_exito_login,
+)
+from app.forms.aplication_forms import FormCambiarcontraseña, FormVerificarMFA
 
 # ====================================================================================================================================================
 #                                           PAGINA SECURITY.HTML

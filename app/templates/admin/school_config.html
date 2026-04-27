@@ -35,7 +35,7 @@
     </div>
 
     <!-- CABECERA DEL COLEGIO -->
-    <!-- DATA: colegio → sp_admin_colegio_detalle(id_colegio) -->
+    <!-- DATA: colegio = sp_admin_colegio_detalle(id_colegio) -->
     <div class="card border-0 shadow-sm mb-4"
          style="border-left: 4px solid var(--color-primary) !important;">
         <div class="card-body p-4">
@@ -89,7 +89,7 @@
                     {% endif %}
 
                     <!-- Jornadas activas del colegio -->
-                    <!-- DATA: jornadas_activas → sp_admin_colegio_jornadas_activas() -->
+                    <!-- DATA: jornadas_activas = sp_admin_colegio_jornadas_activas() -->
                     <div class="d-flex gap-1 flex-wrap justify-content-md-end">
                         {% for jornada in jornadas_activas %}
                             {% if jornada.Nombre_Jornada == 'Mañana' %}
@@ -516,7 +516,7 @@
     <!-- ║  SECCIÓN 4 — ESTADO DEL COLEGIO                     ║ -->
     <!-- ╚══════════════════════════════════════════════════════╝ -->
     <!--
-        FormCambiarEstadoColegio → POST admin.school_config_estado
+        FormCambiarEstadoColegio = POST admin.school_config_estado
         Procesado por School_Config_Service.cambiar_estado()
         Hace toggle sobre Estado_Colegio (sp_admin_colegio_estado_cambiar).
     -->

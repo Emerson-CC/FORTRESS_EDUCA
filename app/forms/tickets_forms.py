@@ -1,4 +1,6 @@
+# FUNCIONES DE FLASK
 from flask_wtf import FlaskForm
+# FUNCIONES DE FLASK
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 
 from wtforms import SelectField, TextAreaField, BooleanField, DateTimeLocalField

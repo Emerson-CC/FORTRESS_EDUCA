@@ -1,3 +1,4 @@
+# FUNCIONES DE FLASK
 from flask import render_template, redirect, url_for, flash, request
 
 from app.forms.admin_forms import FormFiltroColegios, FormAgregarColegio

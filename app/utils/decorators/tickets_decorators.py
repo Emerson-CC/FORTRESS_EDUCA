@@ -1,4 +1,5 @@
 from functools import wraps, lru_cache
+# FUNCIONES DE FLASK
 from flask import session, abort, redirect, url_for, flash
 
 # Conexión con BD
