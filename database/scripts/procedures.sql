@@ -3113,7 +3113,7 @@ CREATE PROCEDURE sp_tbl_rol_consultar()
 BEGIN
     SELECT ID_Rol, Nombre_Rol
     FROM TBL_ROL
-    WHERE ID_Rol <> 1 AND Estado_Rol = 1 
+    WHERE ID_Rol <> 5 AND Estado_Rol = 1 
     ORDER BY Nombre_Rol;
 END $$
 DELIMITER ;
@@ -3333,7 +3333,7 @@ CREATE PROCEDURE sp_admin_toggle_estado_usuario(
     IN p_nuevo_estado TINYINT,
     IN p_ejecutor_id INT,
     IN p_ip VARCHAR(50),
-    IN p_user_agent   VARCHAR(255)
+    IN p_user_agent VARCHAR(255)
 )
 BEGIN
     DECLARE v_estado_actual TINYINT;

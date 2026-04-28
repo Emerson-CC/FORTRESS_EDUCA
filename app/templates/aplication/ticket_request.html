@@ -1,5 +1,5 @@
-<!-- #Llamar a layout_dashboard.html -->
-{% extends 'layout_dashboard.html' %}
+<!-- #Llamar a layout_aplication.html -->
+{% extends 'layout_aplication.html' %}
 
 {% block titulo %}Nueva Solicitud - Fortress Educa{% endblock %}
 
@@ -499,19 +499,27 @@
         </div>
     </main>
 
-    <script> 
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
-            let currentStep = 1;
+
+            // ── Paso inicial: viene del backend vía sesión (1 por defecto) ────────
+            // Si hubo un POST fallido, el servidor detectó qué paso tiene errores
+            // y lo pasa como variable de template para abrir el wizard ahí directamente.
+            let currentStep = {{ initial_step | default(1) }};
             const totalSteps = 6;
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
+            // ── Función principal de navegación ──────────────────────────────────
             function updateWizard() {
+                // Ocultar todos los pasos y quitar clases activas
                 document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
                 document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active', 'completed'));
 
+                // Mostrar el paso actual
                 document.getElementById('step' + currentStep).classList.add('active');
 
+                // Actualizar indicadores superiores
                 for (let i = 1; i <= totalSteps; i++) {
                     const ind = document.getElementById('stepIndicator' + i);
                     if (i < currentStep) {
@@ -522,8 +530,10 @@
                     }
                 }
 
+                // Botón Anterior deshabilitado en el paso 1
                 prevBtn.disabled = (currentStep === 1);
 
+                // Botón Siguiente cambia a "Enviar" en el último paso
                 if (currentStep === totalSteps) {
                     nextBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Enviar Solicitud';
                     nextBtn.classList.replace('btn-primary', 'btn-success');
@@ -535,6 +545,10 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
+            // Inicializar en el paso correcto al cargar la página
+            updateWizard();
+
+            // ── Navegación siguiente / enviar ─────────────────────────────────────
             nextBtn.addEventListener('click', function () {
                 if (currentStep < totalSteps) {
                     currentStep++;
@@ -544,6 +558,7 @@
                 }
             });
 
+            // ── Navegación anterior ───────────────────────────────────────────────
             prevBtn.addEventListener('click', function () {
                 if (currentStep > 1) {
                     currentStep--;
@@ -551,12 +566,12 @@
                 }
             });
 
-            /* Mostrar nombre de archivo seleccionado — feedback visual */
+            // ── Feedback visual al seleccionar archivos ───────────────────────────
             const fileMap = {
-                'doc_acudiente':   'nombre_doc_acudiente',
-                'doc_menor':       'nombre_doc_menor',
-                'doc_certificados':'nombre_doc_certificados',
-                'doc_victima':     'nombre_doc_victima',
+                'doc_acudiente':    'nombre_doc_acudiente',
+                'doc_menor':        'nombre_doc_menor',
+                'doc_certificados': 'nombre_doc_certificados',
+                'doc_victima':      'nombre_doc_victima',
             };
             Object.entries(fileMap).forEach(([inputId, spanId]) => {
                 const input = document.getElementById(inputId);

@@ -1,9 +1,12 @@
 # FUNCIONES DE FLASK
 from flask_wtf import FlaskForm
 
-from wtforms import SelectField, HiddenField, StringField, SelectMultipleField, EmailField, TelField, IntegerField
-from wtforms.validators import DataRequired, Optional, Length, Email, Regexp, InputRequired, NumberRange
+from wtforms import SelectField, HiddenField, StringField, SelectMultipleField, EmailField, TelField, IntegerField, PasswordField
+from wtforms.validators import DataRequired, Optional, Length, Email, Regexp, InputRequired, NumberRange, EqualTo, ValidationError
 from wtforms.widgets import CheckboxInput, ListWidget
+
+# UTILIDADES
+from app.utils.validation_utils import regex
 
 # Validador reutilizable: asegura que el SelectField no quede en "-- Seleccione --"
 def seleccion_valida(form, field):
@@ -16,11 +19,13 @@ def seleccion_valida(form, field):
 #                                           PAGINA ACCOUNTS.HTML
 # ====================================================================================================================================================
 
+# class FormToggleEstado(FlaskForm):
+#     """Form para cambiar estado de usuario/estudiante/técnico via POST"""
+#     nuevo_estado = HiddenField("nuevo_estado", validators=[DataRequired()])
+
 class FormToggleEstado(FlaskForm):
-    """Form para cambiar estado de usuario/estudiante/técnico via POST"""
-    nuevo_estado = HiddenField("nuevo_estado", validators=[DataRequired()])
-
-
+    """Form para protección CSRF al cambiar estado de usuario/estudiante/técnico"""
+    pass  # Solo proporciona protección CSRF, nuevo_estado se maneja en request.form
 
 # ====================================================================================================================================================
 #                                           PAGINA CASES.HTML
@@ -332,3 +337,40 @@ class FormPrioridadEstrato(FlaskForm):
             NumberRange(min=0, max=99, message="Debe estar entre 0 y 99."),
         ],
     )
+
+
+
+
+# ====================================================================================================================================================
+#                                           PAGINA SECURITY.HTML
+# ====================================================================================================================================================
+
+class FormCambiarcontraseña(FlaskForm):
+    """Formulario para cambiar la contraseña desde el perfil"""
+
+    contraseña_actual = PasswordField(
+        "Contraseña Actual",
+        validators=[DataRequired(message="La contraseña actual es obligatoria.")]
+    )
+
+    nueva_contraseña = PasswordField(
+        "Nueva Contraseña",
+        validators=[
+            DataRequired(message="La nueva contraseña es obligatoria."), 
+            Length(min=10, max=255, message="Mínimo 10 caracteres.")
+        ]
+    )
+
+    confirmar_contraseña = PasswordField(
+        "Confirmar Nueva Contraseña",
+        validators=[
+            DataRequired(message="Confirme la nueva contraseña."),
+            EqualTo("nueva_contraseña", message="Las contraseñas no coinciden.")
+        ]
+    )
+    
+    def validate_nueva_contraseña(self, field):
+        errores = regex.formato_contraseña(field.data)
+        if errores:
+            mensaje = "La contraseña debe cumplir con: " + ", ".join(errores)
+            raise ValidationError(mensaje)

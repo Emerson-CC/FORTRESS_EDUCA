@@ -128,9 +128,12 @@
                                             {# Activar #}
                                             <form method="POST"
                                                 action="{{ url_for('admin.accounts_user_toggle_estado', id_usuario=acu.ID_Usuario) }}"
-                                                style="display:inline;">
+                                                style="display:inline;"
+                                                novalidate>
                                                 {{ form_toggle.hidden_tag() }}
                                                 <input type="hidden" name="nuevo_estado" value="1">
+
+
                                                 <button class="btn btn-outline-success btn-sm" title="Habilitar">
                                                     <i class="fas fa-check"></i>
                                                 </button>
@@ -196,9 +199,10 @@
                                         {% if est.Estado_Estudiante == 1 %}
                                             <form method="POST"
                                                 action="{{ url_for('admin.accounts_estudiante_toggle_estado', id_estudiante=est.ID_Estudiante) }}"
-                                                style="display:inline;">
+                                                style="display:inline;" novalidate>
                                                 {{ form_toggle.hidden_tag() }}
                                                 <input type="hidden" name="nuevo_estado" value="0">
+
                                                 <button class="btn btn-outline-danger btn-sm" title="Eliminar">
                                                     <i class="fas fa-ban"></i>
                                                 </button>

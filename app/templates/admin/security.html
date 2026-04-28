@@ -1,8 +1,8 @@
-{% extends 'layout_technical.html' %}    {# cambia a layout_technical.html según el módulo #}
+{% extends 'layout_admin.html' %}
 
 {% block titulo %}Centro de Seguridad{% endblock %}
 
-{% set admin_header_title = "Centro de Seguridad" %}   {# o header_title para technical #}
+{% set admin_header_title = "Centro de Seguridad" %}
 
 {% block Contenido_Pagina %}
 
@@ -28,8 +28,9 @@
                     {% endfor %}
                 {% endwith %}
 
+
                 <form method="POST"
-                      action="{{ url_for('technical.security_change_password') }}"
+                      action="{{ url_for('admin.security_change_password') }}"
                       class="needs-validation" novalidate>
                     {{ form_password.hidden_tag() }}
 
@@ -156,8 +157,8 @@
                                                 data-bs-target="#modalCerrarUnaSesion"
                                                 data-jti="{{ sesion.JTI }}"
                                                 data-dispositivo="Sesión desde {{ sesion.ip }}"
-                                                data-url="{{ url_for('technical.security_cerrar_sesion', jti_sesion=sesion.JTI) }}">
-                                            {# Cambia technical. → technical. en el módulo técnico #}
+                                                data-url="{{ url_for('admin.security_cerrar_sesion', jti_sesion=sesion.JTI) }}">
+                                            {# Cambia admin. → technical. en el módulo técnico #}
                                             <i class="fas fa-times"></i>
                                         </button>
                                         {% endif %}
@@ -245,9 +246,9 @@
                         data-bs-dismiss="modal">
                     Cancelar
                 </button>
-                {# Cambia technical. → technical. en el módulo técnico #}
+                {# Cambia admin. → technical. en el módulo técnico #}
                 <form method="POST"
-                      action="{{ url_for('technical.security_cerrar_sesiones') }}">
+                      action="{{ url_for('admin.security_cerrar_sesiones') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn logout-btn-confirm px-4 py-2">
                         <i class="fas fa-check me-1"></i>Sí, cerrar todas

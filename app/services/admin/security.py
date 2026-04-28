@@ -1,13 +1,13 @@
 from flask import render_template
 
 from app.services.core.core_security import SharedSecurityService
-from app.forms.technical_forms import FormCambiarcontraseña
+from app.forms.admin_forms import FormCambiarcontraseña
 
 
 class Security_Settings_Service:
-    """Servicio de seguridad para el módulo Technical (contraseña + sesiones)."""
+    """Servicio de seguridad para el módulo Admin (contraseña + sesiones)."""
 
-    _ENDPOINT = "technical.security"
+    _ENDPOINT = "admin.security"
 
     def __init__(self):
         self._shared = SharedSecurityService(self._ENDPOINT, FormCambiarcontraseña)
@@ -19,7 +19,7 @@ class Security_Settings_Service:
         sesiones = self._shared.listar_sesiones()
 
         return render_template(
-            "technical/security.html",
+            "admin/security.html",
             form_password=form_password,
             sesiones=sesiones,
             active_page="security",

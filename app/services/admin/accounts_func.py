@@ -1,5 +1,5 @@
 # FUNCIONES DE FLASK
-from flask import request, render_template, redirect, url_for, flash
+from flask import request, render_template, redirect, url_for, flash, session
 from app.repositories.admin_repository import (
     sp_admin_metricas_funcionarios, 
     sp_admin_tecnicos_listar, 
@@ -54,7 +54,11 @@ class Accounts_Func_Service:
             flash("Estado inválido.", "danger")
             return redirect(url_for("admin.accounts_func"))
 
-        ejecutor_id = 1  # TODO: reemplazar con current_user.ID_Usuario
+        ejecutor_id = session.get("user_id")
+        if not ejecutor_id:
+            flash("No se pudo obtener el usuario autenticado.", "danger")
+            return redirect(url_for("admin.accounts_func"))
+
         ip = request.remote_addr
         user_agent = request.user_agent.string
 

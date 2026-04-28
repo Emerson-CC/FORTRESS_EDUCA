@@ -20,7 +20,7 @@
             <i class="fas fa-history"></i> <span>Historial</span>
         </a>
 
-        <a href="#" class="nav-link{% if active_page == 'security' %} active{% endif %}">
+        <a href="{{ url_for('technical.security') }}" class="nav-link{% if active_page == 'security' %} active{% endif %}">
             <i class="fas fa-lock"></i> <span>Seguridad</span>
         </a>
 

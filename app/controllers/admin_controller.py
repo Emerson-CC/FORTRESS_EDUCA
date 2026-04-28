@@ -8,6 +8,7 @@ from app.services.admin.school_status import School_Status_Service
 from app.services.admin.school_config import School_Config_Service
 from app.services.admin.settings import Settings_Service
 
+from app.services.admin.security import Security_Settings_Service
 
 class AdminController:
     """Controlador de funciones para la parte de admin"""
@@ -22,6 +23,8 @@ class AdminController:
         self.school_status_service = School_Status_Service()
         self.school_config_service = School_Config_Service()
         self.settings_service = Settings_Service()
+        
+        self.security_service = Security_Settings_Service()
         
     # DASHBOARD
     def dashboard(self):
@@ -126,4 +129,20 @@ class AdminController:
         return self.settings_service.actualizar_estrato(id_estrato)
 
     def settings_estrato_estado(self, id_estrato: int):
-        return self.settings_service.cambiar_estado_estrato(id_estrato)    
+        return self.settings_service.cambiar_estado_estrato(id_estrato)
+    
+    
+    # SECURITY
+    def security(self):
+        return self.security_service.cargar_informacion_seguridad() 
+    
+        # CAMBIAR CONTRASEÑA
+    def security_change_password(self):
+        return self.security_service.Change_Password()
+        
+        # SESION CONTROLADOR
+    def security_session_all(self):
+        return self.security_service.cerrar_sesiones()
+    
+    def security_session_one(self, jti_sesion: str):
+        return self.security_service.cerrar_sesion(jti_sesion)

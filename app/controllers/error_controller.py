@@ -79,7 +79,7 @@ def get_layout_for_request():
     if path.startswith("/admin"):
         return "layout_admin.html"
     elif path.startswith("/dashboard"):
-        return "layout_dashboard.html"
+        return "layout_aplication.html"
     return "layout_public.html"
 
 

@@ -145,7 +145,7 @@ INSERT INTO TBL_PERSONA VALUES (
 );
 
 INSERT INTO TBL_ESTUDIANTE VALUES (
-    {estudiante_id}, '3', '{persona_id}', '{random.randint(3,6)}', '{random.randint(7,9)}', '{random.randint(1,10)}', '{random.choice(GENEROS)}', '1', '{acudiente_id}', '{parentesco_est}', 1
+    {estudiante_id}, '3', '{persona_id}', '{random.randint(3,6)}', '{random.randint(7,9)}', '{random.randint(1,30)}', '{random.choice(GENEROS)}', '1', '{acudiente_id}', '{parentesco_est}', 1
 );
 """
         self.id_persona += 1

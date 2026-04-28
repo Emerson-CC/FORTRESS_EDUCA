@@ -13,7 +13,7 @@
         Función: Pagina de visualización global de tickets
     -->
 
-    {# ── Macro: conserva filtros activos en cada URL de paginación/exportar ── #}
+    {#  Macro: conserva filtros activos en cada URL de paginación/exportar  #}
     {% macro qs(extra={}) %}
     {%- set params = [] -%}
     {%- if filtros.estado     -%}{%- set _ = params.append("estado="     ~ filtros.estado)     -%}{%- endif -%}
@@ -106,24 +106,26 @@
 
         <!-- BARRA DE FILTROS -->
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body p-3">
+
+            <div class="card border-0 shadow-sm p-3 mb-4">
                 <form method="GET" action="{{ url_for('admin.cases') }}" id="formFiltro">
+                    
                     <div class="row g-2 align-items-end">
-                        <div class="col-12 col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label small fw-bold">Estado</label>
                             {{ form_filtro.estado(class="form-select form-select-sm") }}
                         </div>
-                        <div class="col-6 col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label small fw-bold">Grado</label>
                             {{ form_filtro.grado(class="form-select form-select-sm") }}
                         </div>
-                        <div class="col-6 col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label small fw-bold">Tipo de Afectación</label>
                             {{ form_filtro.afectacion(class="form-select form-select-sm") }}
                         </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12 d-flex gap-2 justify-content-end">
+
+
+                        <div class="col-md-3 d-flex gap-2">
                             <button type="submit" class="btn btn-outline-secondary btn-sm">
                                 <i class="fas fa-filter me-1"></i>Filtrar
                             </button>
@@ -131,7 +133,9 @@
                                 <i class="fas fa-times me-1"></i>Limpiar
                             </a>
                         </div>
+
                     </div>
+
                 </form>
             </div>
         </div>

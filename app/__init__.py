@@ -56,7 +56,7 @@ def create_app():
     app.register_blueprint(technical_bp)
 
     # Controlador de errores 
-    # register_error_handlers(app)
+    register_error_handlers(app)
     
     # Datos del usuario/admin requiridos en header 
     register_context_processors(app)
@@ -67,6 +67,13 @@ def create_app():
     jwt.expired_token_loader(handle_expired_error)
     jwt.invalid_token_loader(handle_invalid_error)
     
+    @app.after_request
+    def add_no_cache_headers(response):
+        if response.content_type and response.content_type.startswith("text/html"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
     
     # Inicializar en pagina principal
     @app.route("/")
