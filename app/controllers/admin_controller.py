@@ -48,7 +48,7 @@ class AdminController:
     def accounts_exportar_acciones(self):
         return self.accounts_service.exportar_historial_acciones()
     
-        # ACCOUNTS USER
+    # ACCOUNTS USER
     def accounts_user(self):
         return self.accounts_user_service.listar_usuarios()
 
@@ -58,12 +58,24 @@ class AdminController:
     def toggle_estado_estudiante(self, id_estudiante: int):
         return self.accounts_user_service.toggle_estado_estudiante(id_estudiante)
 
+    def accounts_user_exportar_acudientes(self):
+        return self.accounts_user_service.exportar_acudientes()
+
+    def accounts_user_exportar_estudiantes(self):
+        return self.accounts_user_service.exportar_estudiantes()
+
         # ACCOUNTS FUNC
     def accounts_func(self):
         return self.accounts_func_service.listar_funcionarios()
 
-    def toggle_estado_tecnico(self, id_usuario: int):
+    def accounts_func_toggle_estado(self, id_usuario: int):
         return self.accounts_func_service.toggle_estado_tecnico(id_usuario)
+
+    def accounts_func_exportar_tecnicos(self):
+        return self.accounts_func_service.exportar_tecnicos()
+
+    def accounts_func_exportar_admins(self):
+        return self.accounts_func_service.exportar_admins()
 
     
     # HISTORY

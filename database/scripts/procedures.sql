@@ -3100,7 +3100,7 @@ DELIMITER ;
 
 
 -- ====================================================================================================================================================
--- SP PARA LA PAGINA DE ACCOUNTS / ACCOUNTS_USER / ACCOUNTS_FUNC
+-- SP PARA LA PAGINA DE ACCOUNTS
 -- ====================================================================================================================================================
 
 -- --------------------------------------------------------
@@ -3236,6 +3236,53 @@ END $$
 DELIMITER ;
 
 
+
+-- --------------------------------------------------------
+-- SP: Obtener las métricas globales de cuentas
+
+DROP PROCEDURE IF EXISTS sp_admin_metricas_accounts;
+
+DELIMITER $$
+CREATE PROCEDURE sp_admin_metricas_accounts()
+BEGIN
+    SELECT
+        -- Total de usuarios en el sistema
+        (SELECT COUNT(*)
+         FROM TBL_USUARIO
+         WHERE Estado_Usuario = 1) AS total_usuarios,
+
+        -- Acudientes con sesión activa ahora mismo
+        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
+            FROM TBL_SESION_ACTIVA sa
+            INNER JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE sa.Activa = 1
+                AND r.Nombre_Rol = 'Acudiente') AS acudientes_con,
+
+        -- Técnicos con sesión activa ahora mismo
+        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
+            FROM TBL_SESION_ACTIVA sa
+            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE sa.Activa = 1
+                AND r.Nombre_Rol = 'Tecnico') AS tecnicos_con,
+
+        -- Administradores con sesión activa ahora mismo
+        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
+            FROM TBL_SESION_ACTIVA sa
+            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            WHERE sa.Activa = 1
+            AND r.Nombre_Rol = 'Admin') AS administradores_con;
+END $$
+DELIMITER ;
+
+
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA ACCOUNTS_USER
+-- ====================================================================================================================================================
+
+
 -- --------------------------------------------------------
 -- SP: Obtener la lista de acudientes
 
@@ -3282,42 +3329,48 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
--- SP: Obtener las métricas globales de cuentas
+-- SP: Toggle estado de estudiante, registra en TBL_AUDITORIA con JSON
 
-DROP PROCEDURE IF EXISTS sp_admin_metricas_accounts;
+DROP PROCEDURE IF EXISTS sp_admin_toggle_estado_estudiante;
 
 DELIMITER $$
-CREATE PROCEDURE sp_admin_metricas_accounts()
+CREATE PROCEDURE sp_admin_toggle_estado_estudiante(
+    IN p_id_estudiante INT,
+    IN p_nuevo_estado TINYINT,
+    IN p_ejecutor_id INT,
+    IN p_ip VARCHAR(50),
+    IN p_user_agent VARCHAR(255)
+)
 BEGIN
-    SELECT
-        -- Total de usuarios en el sistema
-        (SELECT COUNT(*)
-         FROM TBL_USUARIO
-         WHERE Estado_Usuario = 1) AS total_usuarios,
+    DECLARE v_estado_actual TINYINT;
 
-        -- Acudientes con sesión activa ahora mismo
-        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
-            FROM TBL_SESION_ACTIVA sa
-            INNER JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-            WHERE sa.Activa = 1
-                AND r.Nombre_Rol = 'Acudiente') AS acudientes_con,
+    SELECT Estado_Estudiante INTO v_estado_actual
+    FROM TBL_ESTUDIANTE
+    WHERE ID_Estudiante = p_id_estudiante;
 
-        -- Técnicos con sesión activa ahora mismo
-        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
-            FROM TBL_SESION_ACTIVA sa
-            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-            WHERE sa.Activa = 1
-                AND r.Nombre_Rol = 'Tecnico') AS tecnicos_con,
+    UPDATE TBL_ESTUDIANTE
+    SET Estado_Estudiante = p_nuevo_estado
+    WHERE ID_Estudiante = p_id_estudiante;
 
-        -- Administradores con sesión activa ahora mismo
-        (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
-            FROM TBL_SESION_ACTIVA sa
-            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-            WHERE sa.Activa = 1
-            AND r.Nombre_Rol = 'Admin') AS administradores_con;
+    INSERT INTO TBL_AUDITORIA (
+        Tabla_Afectada,
+        Tipo_Evento,
+        ID_Registro_Afectado,
+        Datos_Antiguo,
+        Datos_Nuevos,
+        IP_Usuario,
+        User_Agent,
+        FK_ID_Usuario
+    ) VALUES (
+        'TBL_ESTUDIANTE',
+        'DELETE',
+        CAST(p_id_estudiante AS CHAR),
+        JSON_OBJECT('Estado_Estudiante', v_estado_actual),
+        JSON_OBJECT('Estado_Estudiante', p_nuevo_estado),
+        p_ip,
+        p_user_agent,
+        p_ejecutor_id
+    );
 END $$
 DELIMITER ;
 
@@ -3375,52 +3428,9 @@ END $$
 DELIMITER ;
 
 
--- --------------------------------------------------------
--- SP: Toggle estado de estudiante, registra en TBL_AUDITORIA con JSON
-
-DROP PROCEDURE IF EXISTS sp_admin_toggle_estado_estudiante;
-
-DELIMITER $$
-CREATE PROCEDURE sp_admin_toggle_estado_estudiante(
-    IN p_id_estudiante INT,
-    IN p_nuevo_estado TINYINT,
-    IN p_ejecutor_id INT,
-    IN p_ip VARCHAR(50),
-    IN p_user_agent VARCHAR(255)
-)
-BEGIN
-    DECLARE v_estado_actual TINYINT;
-
-    SELECT Estado_Estudiante INTO v_estado_actual
-    FROM TBL_ESTUDIANTE
-    WHERE ID_Estudiante = p_id_estudiante;
-
-    UPDATE TBL_ESTUDIANTE
-    SET Estado_Estudiante = p_nuevo_estado
-    WHERE ID_Estudiante = p_id_estudiante;
-
-    INSERT INTO TBL_AUDITORIA (
-        Tabla_Afectada,
-        Tipo_Evento,
-        ID_Registro_Afectado,
-        Datos_Antiguo,
-        Datos_Nuevos,
-        IP_Usuario,
-        User_Agent,
-        FK_ID_Usuario
-    ) VALUES (
-        'TBL_ESTUDIANTE',
-        'DELETE',
-        CAST(p_id_estudiante AS CHAR),
-        JSON_OBJECT('Estado_Estudiante', v_estado_actual),
-        JSON_OBJECT('Estado_Estudiante', p_nuevo_estado),
-        p_ip,
-        p_user_agent,
-        p_ejecutor_id
-    );
-END $$
-DELIMITER ;
-
+-- ====================================================================================================================================================
+-- SP PARA LA PAGINA ACCOUNTS_FUNC
+-- ====================================================================================================================================================
 
 -- --------------------------------------------------------
 -- SP: Listar técnicos con filtro de estado opcional

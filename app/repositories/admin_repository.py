@@ -143,6 +143,14 @@ def sp_admin_toggle_estado_tecnico(id_usuario, nuevo_estado, ejecutor_id, ip, us
         commit=True
     )
     
+def sp_admin_tecnicos_exportar() -> list[dict]:
+    """Retorna TODOS los técnicos sin filtrar (filtrado en Python)."""
+    return db.call_procedure("sp_admin_tecnicos_listar", (None,)) or []
+
+def sp_admin_administradores_exportar() -> list[dict]:
+    """Retorna todos los administradores para exportación."""
+    return db.call_procedure("sp_admin_administradores_listar", ()) or []
+
 
 
 # ====================================================================================================================================================

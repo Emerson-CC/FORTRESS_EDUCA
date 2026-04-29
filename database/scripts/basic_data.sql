@@ -17,6 +17,7 @@ INSERT INTO TBL_BARRIO (ID_Barrio, Nombre_Barrio, FK_ID_Localidad) VALUES
     (1, 'Engativá Centro', 1), 
     (2, 'Garcés Navas', 1), 
     (4, 'Minuto de Dios', 1), 
+    (3, 'San Jorge', 1),
     (5, 'Villas de Granada', 1), 
     (6, 'La Estrada', 1), 
     (7, 'Santa Helenita', 1), 
@@ -47,8 +48,7 @@ INSERT INTO TBL_BARRIO (ID_Barrio, Nombre_Barrio, FK_ID_Localidad) VALUES
     (32, 'Bonanza', 1), 
     (33, 'Quirigua', 1),
     (34, 'La Serena', 1),
-    (35, 'El Muelle', 1),
-    (36, 'San Jorge', 1);
+    (35, 'El Muelle', 1);
 
 -- -----------------------------------------------------
 -- TBL_GENERO

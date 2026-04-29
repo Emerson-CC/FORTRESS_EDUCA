@@ -19,10 +19,6 @@ def seleccion_valida(form, field):
 #                                           PAGINA ACCOUNTS.HTML
 # ====================================================================================================================================================
 
-# class FormToggleEstado(FlaskForm):
-#     """Form para cambiar estado de usuario/estudiante/técnico via POST"""
-#     nuevo_estado = HiddenField("nuevo_estado", validators=[DataRequired()])
-
 class FormToggleEstado(FlaskForm):
     """Form para protección CSRF al cambiar estado de usuario/estudiante/técnico"""
     pass  # Solo proporciona protección CSRF, nuevo_estado se maneja en request.form
