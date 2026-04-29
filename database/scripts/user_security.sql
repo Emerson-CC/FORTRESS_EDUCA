@@ -49,6 +49,10 @@ CREATE USER 'fortress_app'@'localhost'
     FAILED_LOGIN_ATTEMPTS 5
     PASSWORD_LOCK_TIME 1;
 
+-- Si no se cuenta con privilegios
+
+CREATE USER 'fortress_app'@'127.0.0.1' IDENTIFIED BY '6c_@t063!G$V+tCJ8RkqG2*';
+CREATE USER 'fortress_app'@'localhost' IDENTIFIED BY '6c_@t063!G$V+tCJ8RkqG2*';
 
 -- ============================================================
 -- ASIGNAR SOLO LOS PERMISOS NECESARIOS
