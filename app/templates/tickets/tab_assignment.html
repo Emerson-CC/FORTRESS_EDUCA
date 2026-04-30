@@ -50,7 +50,7 @@
 
                     {% if ticket.Estado_Final == 0 %}
 
-                    {# ══ PASO 1: BARRIO ══ #}
+                    <!-- ══ PASO 1: BARRIO ══ -->
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body">
                             <h6 class="fw-bold text-secondary mb-3">
@@ -88,7 +88,7 @@
                         </div>
                     </div>
 
-                    {# ══ PASO 2: COLEGIO + JORNADA ══ #}
+                    <!-- ══ PASO 2: COLEGIO + JORNADA ══ -->
                     {% if barrio_id %}
                         {% if colegios_barrio %}
                         <div class="card border-0 shadow-sm mb-3">
@@ -100,7 +100,7 @@
                                 <form method="POST"
                                     action="{{ url_for('ticket_ad.ticket_filtrar_cupo', id_ticket=ticket.ID_Ticket) }}">
                                     {{ form_confirmar.csrf_token }}
-                                    {# Preserva el barrio seleccionado en el paso anterior #}
+                                    <!-- Preserva el barrio seleccionado en el paso anterior -->
                                     <input type="hidden" name="barrio_id" value="{{ barrio_id }}">
                                     <div class="row g-2 align-items-end">
                                         <div class="col-md-5">
@@ -148,7 +148,7 @@
                         {% endif %}
                     {% endif %}
 
-                    {# ══ PASO 3: RESULTADO + CONFIRMACIÓN ══ #}
+                    <!-- ══ PASO 3: RESULTADO + CONFIRMACIÓN ══ -->
                     {% if barrio_id and colegio_id and jornada_id %}
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body">
@@ -190,7 +190,7 @@
                                 <strong>3 días hábiles</strong>, el ticket se rechazará automáticamente.
                             </div>
 
-                            {# POST de confirmación #}
+                            <!-- POST de confirmación -->
                             <form method="POST"
                                 action="{{ url_for('ticket_ad.ticket_asignar_cupo', id_ticket=ticket.ID_Ticket) }}">
                                 {{ form_confirmar.csrf_token }}

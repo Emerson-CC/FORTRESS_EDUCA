@@ -1,10 +1,12 @@
 # FUNCIONES DE FLASK
 from flask_wtf import FlaskForm
-# FUNCIONES DE FLASK
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 
 from wtforms import SelectField, TextAreaField, BooleanField, DateTimeLocalField
 from wtforms.validators import DataRequired, Optional, Length
+
+# SECURIDAD
+from app.security.forms_controller import SanitizedForm
 
 
 # Validador reutilizable: asegura que el SelectField no quede en "-- Seleccione --"
@@ -18,7 +20,7 @@ def seleccion_valida(form, field):
 # ====================================================================================================================================================
 
 # Cambio de estado del ticket
-class FormCambiarEstado(FlaskForm):
+class FormCambiarEstado(SanitizedForm):
     """Permite al técnico cambiar el estado del ticket"""
     estado = SelectField(
         "Estado",
@@ -44,7 +46,7 @@ class FormCambiarEstado(FlaskForm):
 
 
 # Agregar comentario al ticket
-class FormAgregarComentario(FlaskForm):
+class FormAgregarComentario(SanitizedForm):
     """Permite al técnico agregar un comentario al ticket"""
     comentario = TextAreaField(
         "Comentario",

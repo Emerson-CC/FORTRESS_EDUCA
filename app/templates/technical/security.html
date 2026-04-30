@@ -1,8 +1,8 @@
-{% extends 'layout_technical.html' %}    {# cambia a layout_technical.html según el módulo #}
+{% extends 'layout_technical.html' %}    <!-- cambia a layout_technical.html según el módulo -->
 
 {% block titulo %}Centro de Seguridad{% endblock %}
 
-{% set admin_header_title = "Centro de Seguridad" %}   {# o header_title para technical #}
+{% set admin_header_title = "Centro de Seguridad" %}   <!-- o header_title para technical -->
 
 {% block Contenido_Pagina %}
 
@@ -157,7 +157,7 @@
                                                 data-jti="{{ sesion.JTI }}"
                                                 data-dispositivo="Sesión desde {{ sesion.ip }}"
                                                 data-url="{{ url_for('technical.security_cerrar_sesion', jti_sesion=sesion.JTI) }}">
-                                            {# Cambia technical. → technical. en el módulo técnico #}
+                                            <!-- Cambia technical. → technical. en el módulo técnico -->
                                             <i class="fas fa-times"></i>
                                         </button>
                                         {% endif %}
@@ -245,7 +245,7 @@
                         data-bs-dismiss="modal">
                     Cancelar
                 </button>
-                {# Cambia technical. → technical. en el módulo técnico #}
+                <!-- Cambia technical. → technical. en el módulo técnico -->
                 <form method="POST"
                       action="{{ url_for('technical.security_cerrar_sesiones') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

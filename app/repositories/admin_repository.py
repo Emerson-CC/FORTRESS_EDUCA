@@ -89,6 +89,72 @@ def sp_admin_historial_acciones_listar(id_rol=None, evento=None):
 
 
 # ====================================================================================================================================================
+#                                           PAGINA ACCOUNTS_NEW
+# ====================================================================================================================================================
+
+def sp_obtener_tipos_documento_admin():
+    """Todos los tipos de identificación (sin filtro de Tipo_Usuario)."""
+    return db.call_procedure("sp_tbl_tipo_iden_consultar_admin", ()) or []
+
+def sp_obtener_tipos_documento_est():
+    return db.call_procedure("sp_tbl_tipo_identificacion_consultar_est", ()) or []
+
+def sp_obtener_parentesco_admin():
+    """Todos los tipos de parentesco activos."""
+    return db.call_procedure("sp_tbl_parentesco_consultar_admin", ()) or []
+
+def sp_obtener_parentesco_est():
+    return db.call_procedure("sp_tbl_parentesco_consultar_est", ()) or []
+
+
+def sp_obtener_barrios_admin():
+    """Reutiliza el mismo SP de la pantalla de registro público."""
+    return db.call_procedure("sp_tbl_barrio_consultar", ()) or []
+
+
+def sp_obtener_grados():
+    return db.call_procedure("sp_tbl_grado_consultar", ()) or []
+
+
+def sp_obtener_colegios():
+    return db.call_procedure("sp_tbl_colegio_consultar", ()) or []
+
+
+def sp_obtener_generos():
+    return db.call_procedure("sp_tbl_genero_consultar", ()) or []
+
+
+def sp_obtener_grupos_preferenciales():
+    return db.call_procedure("sp_tbl_grupo_pref_consultar", ()) or []
+
+
+def sp_obtener_acudientes_activos():
+    """Lista de acudientes activos para vincular con un estudiante."""
+    return db.call_procedure("sp_tbl_acudientes_activos_consultar", ()) or []
+
+#  VERIFICACIONES
+
+def sp_verificar_usuario_admin(email: str, documento: str):
+    """Verifica si ya existe un usuario con ese email o documento."""
+    return db.call_procedure("sp_usuario_verificar_existente", (email, documento))
+
+
+def sp_verificar_estudiante_admin(documento: str):
+    """Verifica si ya existe un estudiante registrado con ese documento."""
+    return db.call_procedure("sp_estudiante_verificar_existente", (documento,))
+
+# CREACIÓN
+
+def sp_registrar_usuario_admin(data: tuple):
+    return db.call_procedure("sp_registrar_usuario_por_admin", data, commit=False)
+
+
+def sp_registrar_estudiante_admin(data: tuple):
+    return db.call_procedure("sp_registrar_estudiante_admin", data, commit=False)
+
+
+
+# ====================================================================================================================================================
 #                                           PAGINA ACCOUNTS_USER.HTML
 # ====================================================================================================================================================
 

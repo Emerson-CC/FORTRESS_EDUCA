@@ -5,7 +5,7 @@ import unicodedata
 from markupsafe import escape
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, PasswordField, EmailField
+from wtforms import StringField, TextAreaField, PasswordField, EmailField, HiddenField
 from wtforms.validators import ValidationError
 
 
@@ -24,13 +24,13 @@ MAX_FIELD_LENGTH: int = 2048
 SQL_INJECTION_PATTERNS: list[str] = [
     r"(\b)(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|CAST|CONVERT)(\b)",
     r"(--|;|\/\*|\*\/|xp_|@@|char\(|nchar\(|varchar\()",
-    r"(\bOR\b|\bAND\b)\s+[\w'\"]+\s*=\s*[\w'\"]+",   # OR 1=1 / AND 'a'='a'
+    r"(\bOR\b|\bAND\b)\s+[\w'\"]+\s*=\s*[\w'\"]+", # OR 1=1 / AND 'a'='a'
 ]
 
 # Patrones que indican intentos de inyección de comandos del sistema
-CMD_INJECTION_PATTERNS: list[str] = [
-    r"[;&|`$]", # Separadores de shell
-    r"\$\(.*\)", # Sustitución de comandos $(...)
+CMD_INJECTION_PATTERNS = [
+    r"[;`$]", # Separadores de shell
+    r"\$\(.*\)", # Sustitución de comandos
     r"\.\./|\.\.\\", # Path traversal
 ]
 
@@ -191,7 +191,7 @@ def validate_only_printable(form, field):
 VALIDATORS_TEXT = [
     validate_no_html,
     validate_no_sql_injection,
-    validate_no_cmd_injection,
+    # validate_no_cmd_injection,
     validate_no_xss,
     validate_only_printable,
 ]
@@ -218,38 +218,91 @@ VALIDATORS_PASSWORD = [
 
 
 class AutoSanitizeMixin:
-    """Mixin que sanitiza automáticamente todos los campos de texto.
 
-    Formularios donde NO quieras configurar filtros manualmente:
-        class MyForm(AutoSanitizeMixin, FlaskForm): ...
+    _SECURITY_VALIDATORS: dict = {
+        "password": VALIDATORS_PASSWORD,
+        "email":    [],
+        "textarea": VALIDATORS_TEXTAREA + [validate_no_cmd_injection],
+        "text":     VALIDATORS_TEXT,
+    }
 
-    """
+    def _get_field_type(self, field) -> str | None:
+        if isinstance(field, HiddenField):
+            return None
+        if isinstance(field, PasswordField):
+            return "password"
+        if isinstance(field, EmailField) or "email" in field.name.lower():
+            return "email"
+        if isinstance(field, TextAreaField):
+            return "textarea"
+        if isinstance(field, StringField):
+            return "text"
+        return None
 
-    def _sanitize_all_fields(self):
+    def _run_security_validators(self):
+        """
+        Corre validadores sobre el input crudo y guarda los errores
+        en un dict propio. NO intenta modificar field.errors directamente
+        porque es una tupla inmutable en este punto del ciclo de WTForms.
+        """
+        from wtforms.validators import ValidationError
+
+        self._security_error_map = {}  # {field_name: [error1, error2, ...]}
+
         for field in self:
             if not field.data or not isinstance(field.data, str):
                 continue
 
-            if isinstance(field, PasswordField):
-                # Contraseñas: solo limpiar bytes peligrosos
-                for f in FILTERS_PASSWORD:
-                    field.data = f(field.data)
+            field_type = self._get_field_type(field)
+            if field_type is None:
+                continue
 
-            elif isinstance(field, (EmailField,)) or "email" in field.name.lower():
-                for f in FILTERS_EMAIL:
-                    field.data = f(field.data)
+            validators = self._SECURITY_VALIDATORS.get(field_type, [])
+            for validator in validators:
+                try:
+                    validator(self, field)
+                except ValidationError as e:
+                    # Guardar en el mapa, nunca tocar field.errors aquí
+                    if field.name not in self._security_error_map:
+                        self._security_error_map[field.name] = []
+                    self._security_error_map[field.name].append(str(e))
 
-            elif isinstance(field, TextAreaField):
-                for f in FILTERS_TEXTAREA:
-                    field.data = f(field.data)
+    def _sanitize_all_fields(self):
+        FILTER_MAP = {
+            "password": FILTERS_PASSWORD,
+            "email":    FILTERS_EMAIL,
+            "textarea": FILTERS_TEXTAREA,
+            "text":     FILTERS_TEXT,
+        }
 
-            elif isinstance(field, StringField):
-                for f in FILTERS_TEXT:
-                    field.data = f(field.data)
+        for field in self:
+            if not field.data or not isinstance(field.data, str):
+                continue
+
+            field_type = self._get_field_type(field)
+            if field_type is None:
+                continue
+
+            for f in FILTER_MAP.get(field_type, []):
+                field.data = f(field.data)
 
     def validate(self, extra_validators=None):
+        # ① Validar input crudo — errores van al mapa interno, no a field.errors
+        self._run_security_validators()
+        has_security_errors = bool(self._security_error_map)
+
+        # ② Sanitizar para almacenamiento
         self._sanitize_all_fields()
-        return super().validate(extra_validators)
+
+        # ③ Validadores normales de WTForms
+        wtforms_result = super().validate(extra_validators)
+
+        # ④ Ahora sí field.errors ya es una lista mutable — inyectar errores de seguridad
+        for field in self:
+            if field.name in self._security_error_map:
+                field.errors = list(field.errors) + self._security_error_map[field.name]
+
+        return wtforms_result and not has_security_errors
 
 
 

@@ -70,7 +70,7 @@
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                {# Botón editar — abre modal y pasa datos vía data-* #}
+                                <!-- Botón editar — abre modal y pasa datos vía data-* -->
                                 <button type="button"
                                         class="btn btn-sm btn-outline-secondary"
                                         data-bs-toggle="modal"
@@ -83,7 +83,7 @@
                                         title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                {# Toggle estado — formulario POST independiente por fila #}
+                                <!-- Toggle estado — formulario POST independiente por fila -->
                                 <form method="POST"
                                     action="{{ url_for('admin.settings_afectacion_estado', id_afectacion=a.ID_Tipo_Afectacion) }}">
                                     {{ form_afectacion.hidden_tag() }}

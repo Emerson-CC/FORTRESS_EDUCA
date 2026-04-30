@@ -1,4 +1,4 @@
-from app.data_structures.report_nodo import ReporteNodo
+from app.models.report_nodo import ReporteNodo
 
 class ReporteFila:
     """Estructura de datos: Cola (Queue) de registros de log"""

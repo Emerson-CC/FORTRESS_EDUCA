@@ -13,7 +13,7 @@
         Función: Pagina de visualización global de tickets
     -->
 
-    {#  Macro: conserva filtros activos en cada URL de paginación/exportar  #}
+    <!--  Macro: conserva filtros activos en cada URL de paginación/exportar  -->
     {% macro qs(extra={}) %}
     {%- set params = [] -%}
     {%- if filtros.estado     -%}{%- set _ = params.append("estado="     ~ filtros.estado)     -%}{%- endif -%}

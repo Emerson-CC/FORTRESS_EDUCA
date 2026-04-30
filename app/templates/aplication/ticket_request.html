@@ -112,7 +112,7 @@
                                 <span class="text-danger">*</span>
                             </label>
 
-                            {# Radio buttons generados dinámicamente desde la BD #}
+                            <!-- Radio buttons generados dinámicamente desde la BD -->
                             <div class="row g-2">
                                 {% for afectacion in tipos_afectacion %}
                                 <div class="col-md-6">
@@ -329,7 +329,7 @@
                                 Documento del Acudiente
                                 <span class="badge bg-danger">Obligatorio</span>
                             </label>
-                            {# label envuelve el área — clic nativo sin JS #}
+                            <!-- label envuelve el área — clic nativo sin JS -->
                             <label for="{{ form_p5.doc_acudiente.id }}"
                                 class="upload-area d-block {% if form_p5.doc_acudiente.errors %}border-danger{% endif %}"
                                 style="cursor:pointer;">
@@ -339,7 +339,7 @@
                                 <span class="small text-muted fst-italic" id="nombre_doc_acudiente">
                                     Ningún archivo seleccionado
                                 </span>
-                                {# Input oculto — el label activa el clic #}
+                                <!-- Input oculto — el label activa el clic -->
                                 {{ form_p5.doc_acudiente(class="d-none") }}
                             </label>
                             {% for error in form_p5.doc_acudiente.errors %}

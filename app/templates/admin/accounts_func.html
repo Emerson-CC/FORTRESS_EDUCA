@@ -13,7 +13,7 @@
         Función: Pagina de visualización especifica de funcionarios (tecnicos y admin)
     -->
 
-{# ── Macro tab técnicos: preserva estado + pagina_tec ── #}
+<!-- ── Macro tab técnicos: preserva estado + pagina_tec ── -->
 {% macro qs_tec(extra={}) %}
   {%- set params = ["tab=funcionarios"] -%}
   {%- if filtros.estado is not none -%}{%- set _ = params.append("estado=" ~ filtros.estado) -%}{%- endif -%}
@@ -21,7 +21,7 @@
   ?{{ params | join("&") }}
 {%- endmacro %}
 
-{# ── Macro tab admins: preserva pagina_adm ── #}
+<!-- ── Macro tab admins: preserva pagina_adm ── -->
 {% macro qs_adm(extra={}) %}
   {%- set params = ["tab=admins"] -%}
   {%- for k, v in extra.items() -%}{%- set _ = params.append(k ~ "=" ~ v) -%}{%- endfor -%}

@@ -213,8 +213,8 @@ class Accounts_User_Service:
     # Exportar Estudiantes
     # ------------------------------------------------------------------
     def exportar_estudiantes(self):
-        formato   = request.args.get("formato", "csv").lower()
-        todos     = sp_admin_estudiantes_listar()
+        formato = request.args.get("formato", "csv").lower()
+        todos = sp_admin_estudiantes_listar()
         ordenados = _selection_sort_id_desc(todos, "ID_Estudiante")
 
         def mapeador(r):

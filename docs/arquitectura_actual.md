@@ -1,15 +1,16 @@
 Proyecto actual - estructura de carpetas y archivos
 
+Se excluyen las carpetas `docs/`, `database/` y `env/` de la raíz.
+
 root/
+    .env
+    .gitignore
+    README.md
     requirements.txt
     run.py
     app/
         __init__.py
         settings.py
-        archive/
-            BLUEPRINTS_PAGINAS.md
-            PENDIENTE.md
-            README.md
         blueprints/
             __init__.py
             admin/
@@ -24,37 +25,45 @@ root/
             home/
                 __init__.py
                 routes.py
+            technical/
+                __init__.py
+                routes.py
+            tickets/
+                __init__.py
+                routes.py
         controllers/
             __init__.py
-            admin.py
-            aplication.py
-            auth.py
+            admin_controller.py
+            aplication_controller.py
+            auth_controller.py
             error_controller.py
-            home.py
-        data_structures/
-            admin_structures.py
-            aplicacion_structures.py
-            auth_structures.py
-            pagina_structures.py
+            home_controller.py
+            technical_controller.py
+            tickets_controller.py
         forms/
             __init__.py
             admin_forms.py
             aplication_forms.py
             auth_forms.py
-            home_forms.py
+            technical_forms.py
+            tickets_forms.py
         models/
+            __init__.py
+            report_nodo.py
+            report_row.py
         repositories/
             __init__.py
             admin_repository.py
             aplication_repository.py
             auth_repository.py
+            core_repository.py
             home_repository.py
+            technical_repository.py
+            tickets_repository.py
             utils_repository.py
-        scripts/
-            inicializar_proyecto.py
-            install_requirements.py
         security/
             __init__.py
+            forms_controller.py
             jwt_controller.py
             mfa_controller.py
             recaptcha_controller.py
@@ -62,67 +71,181 @@ root/
             session_controller.py
         services/
             __init__.py
-            admin_service.py
-            aplication_service.py
             admin/
-                accounts_func.py
-                accounts_user.py
                 accounts.py
+                accounts_func.py
+                accounts_new.py
+                accounts_user.py
                 cases.py
                 dashboard.py
                 history.py
-                ...
+                school_config.py
+                school_status.py
+                security.py
+                settings.py
             aplication/
+                __init__.py
+                dashboard.py
+                profile.py
+                register_student.py
+                security.py
+                settings.py
+                ticket_request.py
+                ticket_status.py
             auth/
+                __init__.py
+                config_mfa.py
+                login_admin.py
+                login_technical.py
+                login_user.py
+                password_recovery.py
+                register.py
+                verify_mfa.py
+            core/
+                __init__.py
+                core_security.py
             home/
+                __init__.py
+            technical/
+                cases.py
+                dashboard.py
+                history.py
+                security.py
+            tickets/
+                ticket_panel.py
         static/
             css/
+                admin.css
+                dashboard_home.css
+                dashboard_users.css
+                error_handler.css
+                home.css
+                modal.css
+                style.css
+                technical.css
+                tickets.css
             img/
+                shield.ico
+                shield.png
+                shield.svg
+                shield_gear.ico
+                shield_user.ico
             js/
+                admin.js
+                dashboard_users.js
+                home.js
+                main.js
+                profile.js
+                security.js
+                technical.js
+                tickets.js
             lib/
+                bootstrap/
+                    css/
+                        bootstrap.min.css
+                        bootstrap.min.css.map
+                    js/
+                        bootstrap.bundle.min.js
+                        bootstrap.bundle.min.js.map
+                chartjs/
+                    chart.umd.min.js
+                fontawesome/
+                    css/
+                        all.min.css
+                    webfonts/
+                        fa-brands-400.woff2
+                        fa-regular-400.woff2
+                        fa-solid-900.woff2
+                        fa-v4compatibility.woff2
         templates/
             layout_admin.html
-            layout_dashboard.html
+            layout_aplication.html
             layout_public.html
+            layout_technical.html
+            layout_tickets.html
             admin/
+                accounts.html
+                accounts_func.html
+                accounts_new.html
+                accounts_user.html
+                cases.html
+                dashboard.html
+                history.html
+                school_config.html
+                school_status.html
+                security.html
+                settings.html
             aplication/
+                index.html
+                profile.html
+                register_student.html
+                security.html
+                settings.html
+                ticket_detail.html
+                ticket_request.html
+                ticket_status.html
             auth/
+                config_mfa.html
+                login_admin.html
+                login_technical.html
+                login_user.html
+                recover_password.html
+                register.html
+                verify_mfa.html
             errors/
+                error.html
             home/
+                home.html
+                privacy_policy.html
+                terms_of_use.html
             includes/
+                admin_header.html
+                admin_sidebar.html
+                home_fotter.html
+                home_navbar_1.html
+                home_navbar_2.html
+                logout_modal.html
+                logout_modal_ad.html
+                logout_modal_tec.html
+                modal_after_logout.html
+                modal_global.html
+                modal_informative.html
+                modal_mandatory.html
+                technical_header.html
+                technical_sidebar.html
+                tickets_header.html
+                tickets_sidebar.html
+                user_header.html
+                user_sidebar.html
+            technical/
+                cases.html
+                dashboard.html
+                history.html
+                security.html
+            tickets/
+                tab_assignment.html
+                tab_assignment_info.html
+                tab_comments.html
+                tab_documents.html
+                tab_info_student.html
+                tab_info_user.html
+                ticket_panel.html
         utils/
             __init__.py
             audit_utils.py
             database_utils.py
             dataframe_utils.py
+            export_doc_utils.py
             extensions_utils.py
             password_utils.py
             response_utils.py
             validation_utils.py
             decorators/
+                __init__.py
+                admin_decorators.py
+                aplication_decorators.py
+                auth_decorators.py
+                technical_decorator.py
+                tickets_decorators.py
     aws/
-    database/
-        backups/
-            fortress_educa_db_backup_17-04-2026.sql
-            fortress_educa_db_backup_19-04-2026.sql
-        scripts/
-            data.sql
-            functions.sql
-            index.sql
-            procedures_all.sql
-            procedures_use.sql
-            script_prueba.sql
-            tables.sql
-            triggers.sql
-            views.sql
-    test/
-    env/
-        pyvenv.cfg
-        Include/
-        Lib/
-            site-packages/
-        Scripts/
-            activate
-            activate.bat
-            Activate.ps1
-            deactivate.bat
+        commants.txt

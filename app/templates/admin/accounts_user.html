@@ -5,14 +5,14 @@
 
 {% block Contenido_Pagina %}
 
-{# ── Macro tab acudientes: preserva tab + pagina_acu ── #}
+<!-- ── Macro tab acudientes: preserva tab + pagina_acu ── -->
 {% macro qs_acu(extra={}) %}
   {%- set params = ["tab=acudientes"] -%}
   {%- for k, v in extra.items() -%}{%- set _ = params.append(k ~ "=" ~ v) -%}{%- endfor -%}
   ?{{ params | join("&") }}
 {%- endmacro %}
 
-{# ── Macro tab estudiantes: preserva tab + pagina_est ── #}
+<!-- ── Macro tab estudiantes: preserva tab + pagina_est ── -->
 {% macro qs_est(extra={}) %}
   {%- set params = ["tab=estudiantes"] -%}
   {%- for k, v in extra.items() -%}{%- set _ = params.append(k ~ "=" ~ v) -%}{%- endfor -%}

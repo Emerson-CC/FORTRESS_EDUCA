@@ -4,7 +4,7 @@ from datetime import datetime
 
 # FUNCIONES DE FLASK
 from flask import Response
-from app.data_structures.report_row import ReporteFila
+from app.models.report_row import ReporteFila
 
 from reportlab.lib import colors
 from reportlab.lib.units import cm

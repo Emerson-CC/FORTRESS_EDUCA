@@ -7,6 +7,8 @@ from wtforms.validators import DataRequired, Length, Optional, EqualTo, Validati
 
 # UTILIDADES
 from app.utils.validation_utils import regex
+# SECURIDAD
+from app.security.forms_controller import SanitizedForm
 
 # FUNCIÓN PARA VALIDAR SI EL ID = 0
 def seleccion_valida(form, field):
@@ -29,7 +31,7 @@ class FormTicketPaso1(FlaskForm):
     )
 
 
-class FormTicketPaso2(FlaskForm):
+class FormTicketPaso2(SanitizedForm):
     """Paso 2 — Vulnerabilidad"""
     
     id_tipo_afectacion = SelectField(
@@ -44,7 +46,7 @@ class FormTicketPaso2(FlaskForm):
     )
 
 
-class FormTicketPaso3(FlaskForm):
+class FormTicketPaso3(SanitizedForm):
     """Paso 3 — Ubicación"""
     
     id_barrio = SelectField(
@@ -143,7 +145,7 @@ class FormSubirDocumento(FlaskForm):
     )
 
 # Agregar comentario desde la vista del usuario (sin toggle interno)
-class FormAgregarComentarioUsuario(FlaskForm):
+class FormAgregarComentarioUsuario(SanitizedForm):
     """Permite al usuario registrado agregar un comentario público a su ticket"""
     comentario = TextAreaField(
         "Comentario",
@@ -173,7 +175,7 @@ class FormAcudienteDatosPersonales(FlaskForm):
     fecha_creacion = StringField("Fecha de Registro")
     email = StringField("Correo Electrónico")
 
-class FormAcudienteDatosEditables(FlaskForm):
+class FormAcudienteDatosEditables(SanitizedForm):
     """Campos editables del acudiente"""
 
     telefono = TelField(
@@ -216,7 +218,7 @@ class FormEstudianteDatosPersonales(FlaskForm):
     numero_documento = StringField("Número de Documento")
 
 
-class FormEstudianteDatosEditables(FlaskForm):
+class FormEstudianteDatosEditables(SanitizedForm):
     """Campos editables del estudiante en perfil"""
     
     id_estudiante = HiddenField(
@@ -285,7 +287,7 @@ class FormEstudianteDatosEditables(FlaskForm):
 #                                           PAGINA REGISTER_STUDENT.HTML
 # ====================================================================================================================================================
 
-class FormRegistroEstudiante(FlaskForm):
+class FormRegistroEstudiante(SanitizedForm):
     """Formulario completo para registrar un nuevo estudiante"""
 
     # Datos de identidad (TBL_PERSONA)
@@ -383,7 +385,7 @@ class FormRegistroEstudiante(FlaskForm):
 # ====================================================================================================================================================
 
 
-class FormCambiarcontraseña(FlaskForm):
+class FormCambiarcontraseña(SanitizedForm):
     """Formulario para cambiar la contraseña desde el perfil"""
 
     contraseña_actual = PasswordField(

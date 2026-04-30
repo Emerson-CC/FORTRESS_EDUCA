@@ -5,13 +5,16 @@ from datetime import date, datetime
 from wtforms import StringField, PasswordField, SelectField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
+# UTILIDADES
 from app.utils.validation_utils import regex
+# SECURIDAD
+from app.security.forms_controller import SanitizedForm
 
 # ====================================================================================================================================================
 #                                           PAGINA LOGIN_USER.HTML
 # ====================================================================================================================================================
 
-class LoginUserForm(FlaskForm):
+class LoginUserForm(SanitizedForm):
 
     username = StringField(
         "Usuario",
@@ -29,7 +32,7 @@ class LoginUserForm(FlaskForm):
 #                                           PAGINA LOGIN_ADMIN.HTML
 # ====================================================================================================================================================
 
-class LoginAdminForm(FlaskForm):
+class LoginAdminForm(SanitizedForm):
 
     username_admin = StringField(
         "Usuario",
@@ -47,7 +50,7 @@ class LoginAdminForm(FlaskForm):
 #                                           PAGINA LOGIN_TECHNICAL.HTML
 # ====================================================================================================================================================
 
-class LoginTecForm(FlaskForm):
+class LoginTecForm(SanitizedForm):
 
     username_technical = StringField(
         "Usuario",
@@ -115,7 +118,7 @@ def seleccion_valida(form, field):
     if not field.data or field.data == 0 or field.data == "0":
         raise ValidationError("Debe seleccionar una opción válida.")
     
-class RegisterForm(FlaskForm):
+class RegisterForm(SanitizedForm):
     
     # SECCIÓN 1: DATOS DEL ACUDIENTE
         
@@ -390,7 +393,7 @@ class RegisterForm(FlaskForm):
 #                                           PAGINA RECOVER_PASSWORD.HTML
 # ====================================================================================================================================================
 
-class RecuperarcontraseñaForm(FlaskForm):
+class RecuperarcontraseñaForm(SanitizedForm):
     username = StringField(
         "Correo Electrónico",
         validators = [DataRequired(), Length(min=3, max=100), Email()]
@@ -403,7 +406,7 @@ class VerificarCodigoForm(FlaskForm):
     )
 
 
-class NuevacontraseñaForm(FlaskForm):
+class NuevacontraseñaForm(SanitizedForm):
     password = PasswordField(
         "Nueva Contraseña",
         validators = [DataRequired(), Length(min=6, max=255)]

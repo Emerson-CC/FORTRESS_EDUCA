@@ -158,7 +158,7 @@
                                                 data-jti="{{ sesion.JTI }}"
                                                 data-dispositivo="Sesión desde {{ sesion.ip }}"
                                                 data-url="{{ url_for('admin.security_cerrar_sesion', jti_sesion=sesion.JTI) }}">
-                                            {# Cambia admin. → technical. en el módulo técnico #}
+                                            <!-- Cambia admin. → technical. en el módulo técnico -->
                                             <i class="fas fa-times"></i>
                                         </button>
                                         {% endif %}
@@ -246,7 +246,7 @@
                         data-bs-dismiss="modal">
                     Cancelar
                 </button>
-                {# Cambia admin. → technical. en el módulo técnico #}
+                <!-- Cambia admin. → technical. en el módulo técnico -->
                 <form method="POST"
                       action="{{ url_for('admin.security_cerrar_sesiones') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

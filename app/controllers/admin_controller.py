@@ -1,6 +1,7 @@
 from app.services.admin.dashboard import Dashboard_Service
 from app.services.admin.cases import Cases_Service
 from app.services.admin.accounts import Accounts_Service
+from app.services.admin.accounts_new import AdminCreateService
 from app.services.admin.accounts_user import Accounts_User_Service
 from app.services.admin.accounts_func import Accounts_Func_Service
 from app.services.admin.history import History_Service
@@ -17,6 +18,7 @@ class AdminController:
         self.dashboard_service = Dashboard_Service()        
         self.cases_service = Cases_Service()
         self.accounts_service = Accounts_Service()
+        self.accounts_new_service = AdminCreateService()
         self.accounts_user_service = Accounts_User_Service()
         self.accounts_func_service = Accounts_Func_Service()
         self.history_service = History_Service()
@@ -47,6 +49,10 @@ class AdminController:
 
     def accounts_exportar_acciones(self):
         return self.accounts_service.exportar_historial_acciones()
+    
+    # ACCOUNTS NEW|
+    def accounts_new(self):
+        return self.accounts_new_service.Accounts_New()
     
     # ACCOUNTS USER
     def accounts_user(self):

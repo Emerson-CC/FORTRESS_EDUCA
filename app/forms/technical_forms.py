@@ -6,6 +6,8 @@ from wtforms.validators import DataRequired, Length, Optional, EqualTo, Validati
 
 # UTILIDADES
 from app.utils.validation_utils import regex
+# SECURIDAD
+from app.security.forms_controller import SanitizedForm
 
 # ====================================================================================================================================================
 #                                           PAGINA CASES.HTML
@@ -41,7 +43,7 @@ class FormFiltroTicketsTecnico(FlaskForm):
 #                                           PAGINA SECURITY.HTML
 # ====================================================================================================================================================
 
-class FormCambiarcontraseña(FlaskForm):
+class FormCambiarcontraseña(SanitizedForm):
     """Formulario para cambiar la contraseña desde el perfil"""
 
     contraseña_actual = PasswordField(
