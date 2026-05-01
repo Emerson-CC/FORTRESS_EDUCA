@@ -45,6 +45,7 @@ class MFA_Controller:
                 codigo = codigo.decode("utf-8")
 
             totp = pyotp.TOTP(secret.strip())
+            
             return totp.verify(codigo.strip(), valid_window=6)
         except Exception as e:
             print(f"[ERROR] verificar_codigo: {e}")

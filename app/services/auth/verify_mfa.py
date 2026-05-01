@@ -77,7 +77,7 @@ class Verify_MFA_Service:
                     flash("Error de sesión. Inicie sesión nuevamente.", "danger")
                     return redirect(login_url, 303)
 
-                row    = data[0]
+                row = data[0]
                 secret = row.get("MFA_Secret") or row.get("mfa_secret")
                 if isinstance(secret, (bytes, bytearray)):
                     secret = secret.decode("utf-8")
