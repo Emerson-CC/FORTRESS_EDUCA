@@ -11,14 +11,14 @@ DROP TRIGGER IF EXISTS trg_auditoria_estudiante_update;
 
 DELIMITER $$
 CREATE TRIGGER trg_auditoria_estudiante_update
-AFTER UPDATE ON TBL_ESTUDIANTE
+AFTER UPDATE ON tbl_estudiante
 FOR EACH ROW
 BEGIN
-    INSERT INTO TBL_AUDITORIA(
+    INSERT INTO tbl_auditoria(
         Tabla, Accion, Registro_ID, Fecha
     )
     VALUES (
-        'TBL_ESTUDIANTE',
+        'tbl_estudiante',
         'UPDATE',
         NEW.ID_Estudiante,
         NOW()
@@ -38,7 +38,7 @@ DROP TRIGGER IF EXISTS trg_asignar_tecnico_ticket;
 DELIMITER $$
 
 CREATE TRIGGER trg_asignar_tecnico_ticket
-BEFORE INSERT ON TBL_TICKET
+BEFORE INSERT ON tbl_ticket
 FOR EACH ROW
 BEGIN
     -- Solo asigna si no viene ya asignado
@@ -58,7 +58,7 @@ DROP TRIGGER IF EXISTS trg_asignar_tickets_a_nuevo_tecnico;
 DELIMITER $$
 
 CREATE TRIGGER trg_asignar_tickets_a_nuevo_tecnico
-AFTER INSERT ON TBL_USUARIO
+AFTER INSERT ON tbl_usuario
 FOR EACH ROW
 BEGIN
     DECLARE v_tecnico_id INT;
@@ -67,7 +67,7 @@ BEGIN
 
         SET v_tecnico_id = fn_obtener_tecnico_disponible();
 
-        UPDATE TBL_TICKET
+        UPDATE tbl_ticket
         SET FK_ID_Usuario_Tecnico = v_tecnico_id
         WHERE FK_ID_Usuario_Tecnico IS NULL
           AND Estado_Ticket = 1;
@@ -79,14 +79,14 @@ DELIMITER ;
 
 -- --------------------------------------------------------
 -- TRG: Se activa depues de la eliminación de un usuario técnico. Reasigna sus tickets a otros tecnicos (FK_ID_Usuario_Tecnico)
--- Además, deja un comentario en TBL_TICKET_COMENTARIO para contexto al usuario.
+-- Además, deja un comentario en tbl_ticket_comentario para contexto al usuario.
 
 DROP TRIGGER IF EXISTS trg_reasignar_tickets_tecnico_inactivo;
 
 DELIMITER $$
 
 CREATE TRIGGER trg_reasignar_tickets_tecnico_inactivo
-AFTER UPDATE ON TBL_USUARIO
+AFTER UPDATE ON tbl_usuario
 FOR EACH ROW
 BEGIN
     DECLARE done INT DEFAULT 0;
@@ -99,7 +99,7 @@ BEGIN
     -- Cursor para recorrer tickets afectados
     DECLARE cur_tickets CURSOR FOR
         SELECT ID_Ticket
-        FROM TBL_TICKET
+        FROM tbl_ticket
         WHERE FK_ID_Usuario_Tecnico = OLD.ID_Usuario
           AND Estado_Ticket = 1;
 
@@ -111,7 +111,7 @@ BEGIN
         -- Obtener nombre técnico anterior
         SELECT CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido)
         INTO v_nombre_anterior
-        FROM TBL_PERSONA p
+        FROM tbl_persona p
         WHERE p.ID_Persona = OLD.FK_ID_Persona;
 
         OPEN cur_tickets;
@@ -126,7 +126,7 @@ BEGIN
             SET v_nuevo_tecnico = fn_obtener_tecnico_disponible();
 
             -- Actualizar ticket
-            UPDATE TBL_TICKET
+            UPDATE tbl_ticket
             SET FK_ID_Usuario_Tecnico = v_nuevo_tecnico
             WHERE ID_Ticket = v_ticket_id;
 
@@ -134,8 +134,8 @@ BEGIN
             IF v_nuevo_tecnico IS NOT NULL THEN
                 SELECT CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido)
                 INTO v_nombre_nuevo
-                FROM TBL_USUARIO u
-                INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+                FROM tbl_usuario u
+                INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
                 WHERE u.ID_Usuario = v_nuevo_tecnico;
             ELSE
                 SET v_nombre_nuevo = 'Sin asignar';
@@ -150,7 +150,7 @@ BEGIN
             );
 
             -- Insertar comentario (VISIBLE al usuario)
-            INSERT INTO TBL_TICKET_COMENTARIO (
+            INSERT INTO tbl_ticket_comentario (
                 Comentario,
                 Es_Interno,
                 FK_ID_Usuario,
@@ -181,7 +181,7 @@ DROP TRIGGER IF EXISTS trg_respuesta_usuario_cupo;
 
 DELIMITER $$
 CREATE TRIGGER trg_respuesta_usuario_cupo
-AFTER INSERT ON TBL_TICKET_COMENTARIO
+AFTER INSERT ON tbl_ticket_comentario
 FOR EACH ROW
 BEGIN
     DECLARE v_estado  TINYINT;
@@ -190,11 +190,11 @@ BEGIN
     IF NEW.Tipo_Evento IN ('Comentario', 'Documento Subido') THEN
         SELECT FK_ID_Estado_Ticket, FK_ID_Usuario_Creador
         INTO   v_estado, v_creador
-        FROM   TBL_TICKET
+        FROM   tbl_ticket
         WHERE  ID_Ticket = NEW.FK_ID_Ticket;
 
         IF v_estado = 4 AND NEW.FK_ID_Usuario = v_creador THEN
-            UPDATE TBL_TICKET
+            UPDATE tbl_ticket
             SET FK_ID_Estado_Ticket = 5   -- Asignación de Cupo
             WHERE ID_Ticket = NEW.FK_ID_Ticket;
         END IF;
@@ -214,7 +214,7 @@ DROP TRIGGER IF EXISTS trg_validar_fecha_estudiante;
 
 DELIMITER $$
 CREATE TRIGGER trg_validar_fecha_estudiante
-BEFORE INSERT ON TBL_PERSONA
+BEFORE INSERT ON tbl_persona
 FOR EACH ROW
 BEGIN
     IF NEW.Fecha_Nacimiento > CURDATE() THEN

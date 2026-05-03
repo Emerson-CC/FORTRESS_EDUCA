@@ -31,7 +31,7 @@ CREATE PROCEDURE sp_tbl_sesion_activa_verificar_jti(
 )
 BEGIN
     SELECT COUNT(*) AS activo
-    FROM TBL_SESION_ACTIVA
+    FROM tbl_sesion_activa
     WHERE JTI = p_jti AND Activa = 1;
 END $$
 DELIMITER ;
@@ -53,7 +53,7 @@ CREATE PROCEDURE sp_insertar_auditoria(
     IN p_id_usuario INT
 )
 BEGIN
-    INSERT INTO TBL_AUDITORIA (
+    INSERT INTO tbl_auditoria (
         Tabla_Afectada,
         Tipo_Evento,
         ID_Registro_Afectado,
@@ -90,7 +90,7 @@ BEGIN
     SELECT 
         Doble_Factor_Activo,
         MFA_Secret
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario
       AND Estado_Usuario = 1
     LIMIT 1;
@@ -125,8 +125,8 @@ BEGIN
         p.Primer_Apellido,
         CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo
 
-    FROM TBL_USUARIO u
-    INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+    FROM tbl_usuario u
+    INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
     
     WHERE u.Nombre_Usuario = p_nombre_usuario
     AND u.Estado_Usuario = 1
@@ -150,7 +150,7 @@ BEGIN
         ID_Usuario, 
         Contraseña_Hash, 
         Intentos_Fallidos
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE Nombre_Usuario = p_nombre_usuario
     LIMIT 1;
 END $$
@@ -165,7 +165,7 @@ DROP PROCEDURE IF EXISTS sp_registrar_exito_login;
 DELIMITER $$
 CREATE PROCEDURE sp_registrar_exito_login(IN p_id_usuario INT)
 BEGIN
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET Ultimo_Login = NOW(), Intentos_Fallidos = 0
     WHERE ID_Usuario = p_id_usuario;
 END $$
@@ -184,7 +184,7 @@ CREATE PROCEDURE sp_auditoria_sesion(
     IN p_user_agent VARCHAR(255)
 )
 BEGIN
-    INSERT INTO TBL_AUDITORIA_SESION(
+    INSERT INTO tbl_auditoria_sesion(
         FK_ID_Usuario,
         IP_Usuario,
         Tipo_Evento,
@@ -219,7 +219,7 @@ BEGIN
         MFA_Secret,
         MFA_Secret_Temp,
         Doble_Factor_Activo
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario;
 END $$
 DELIMITER ;
@@ -240,7 +240,7 @@ BEGIN
     SELECT
         ID_Barrio,
         Nombre_Barrio
-    FROM TBL_BARRIO
+    FROM tbl_barrio
     WHERE Estado_Barrio = 1
     ORDER BY Nombre_Barrio;
 END $$
@@ -257,7 +257,7 @@ BEGIN
     SELECT 
         ID_Parentesco,
         Nombre_Parentesco
-    FROM TBL_PARENTESCO
+    FROM tbl_parentesco
     WHERE Estado_Parentesco = 1 AND Tipo_Usuario = 'ACUDIENTE'
     ORDER BY ID_Parentesco;
 END $$
@@ -274,7 +274,7 @@ BEGIN
     SELECT 
         ID_Tipo_Iden,
         Nombre_Tipo_Iden
-    FROM TBL_TIPO_IDENTIFICACION
+    FROM tbl_tipo_identificacion
     WHERE Estado_Identificacion = 1 AND Tipo_Usuario = 'ACUDIENTE'
     ORDER BY Nombre_Tipo_Iden;
 END $$
@@ -294,8 +294,8 @@ BEGIN
     SELECT 
         u.Nombre_Usuario,
         p.ID_Persona
-    FROM TBL_USUARIO u
-    JOIN TBL_PERSONA p
+    FROM tbl_usuario u
+    JOIN tbl_persona p
     ON u.FK_ID_Persona = p.ID_Persona
     WHERE u.Nombre_Usuario = p_Email
     OR p.ID_Persona = p_Documento;
@@ -351,7 +351,7 @@ BEGIN
     START TRANSACTION;
 
     -- INSERT PERSONA
-    INSERT INTO TBL_PERSONA (
+    INSERT INTO tbl_persona (
         Num_Doc_Persona, Primer_Nombre, Segundo_Nombre, 
         Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona
     ) VALUES (
@@ -362,13 +362,13 @@ BEGIN
     SET v_ID_Persona = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_PERSONA', 'CREATE', CAST(v_ID_Persona AS CHAR),
+        'tbl_persona', 'CREATE', CAST(v_ID_Persona AS CHAR),
         NULL, JSON_OBJECT('Doc', p_Num_Doc_Persona, 'Nombre', p_Primer_Nombre), 
         p_IP, p_User_Agent, 1
     );
 
     -- DATOS ADICIONALES
-    INSERT INTO TBL_DATOS_ADICIONALES (
+    INSERT INTO tbl_datos_adicionales (
         Email, Telefono, FK_ID_Parentesco, FK_ID_Tipo_Iden, 
         FK_ID_Persona, FK_ID_Genero, FK_ID_Grupo_Preferencial, 
         FK_ID_Estrato, FK_ID_Barrio, Estado_Datos_Adicionales
@@ -381,13 +381,13 @@ BEGIN
     SET v_ID_Datos_Adicionales = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_DATOS_ADICIONALES', 'CREATE', CAST(v_ID_Datos_Adicionales AS CHAR),
+        'tbl_datos_adicionales', 'CREATE', CAST(v_ID_Datos_Adicionales AS CHAR),
         NULL, JSON_OBJECT('Email', p_Email, 'Tel', p_Telefono), 
         p_IP, p_User_Agent, 1
     );
 
     -- USUARIO
-    INSERT INTO TBL_USUARIO (
+    INSERT INTO tbl_usuario (
         Nombre_Usuario, Contraseña_Hash, 
         Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos,
         Fecha_Creacion, Doble_Factor_Activo, MFA_Fecha_Configuracion,
@@ -406,7 +406,7 @@ BEGIN
     SET v_ID_Usuario = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_USUARIO', 'CREATE_ACCOUNT', CAST(v_ID_Usuario AS CHAR),
+        'tbl_usuario', 'CREATE_ACCOUNT', CAST(v_ID_Usuario AS CHAR),
         NULL, JSON_OBJECT('Username', p_Nombre_Usuario), 
         p_IP, p_User_Agent, 1
     );
@@ -432,8 +432,8 @@ CREATE PROCEDURE sp_usuario_obtener_email(
 BEGIN
     SELECT 
         DA.Email
-    FROM TBL_USUARIO U
-    INNER JOIN TBL_DATOS_ADICIONALES DA ON U.FK_ID_Persona = DA.FK_ID_Persona
+    FROM tbl_usuario U
+    INNER JOIN tbl_datos_adicionales DA ON U.FK_ID_Persona = DA.FK_ID_Persona
     WHERE U.Nombre_Usuario = p_Nombre_Usuario 
     AND DA.Email = p_Nombre_Usuario;
 END $$
@@ -457,16 +457,16 @@ BEGIN
     START TRANSACTION;
 
     SELECT ID_Usuario INTO v_id_usuario
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE Nombre_Usuario = p_username;
 
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET Contraseña_Hash = p_nuevo_hash,
         Ultimo_Cambio_Contraseña = CURRENT_TIMESTAMP
     WHERE Nombre_Usuario = p_username;
 
     CALL sp_insertar_auditoria(
-        'TBL_USUARIO',
+        'tbl_usuario',
         'PASSWORD_CHANGE',
         v_id_usuario,
         JSON_OBJECT('evento','recuperacion_password'),
@@ -529,7 +529,7 @@ BEGIN
         -- Conteo total de tickets del usuario
         (
             SELECT COUNT(*)
-            FROM TBL_TICKET t2
+            FROM tbl_ticket t2
             WHERE t2.FK_ID_Usuario_Creador = p_id_usuario
               AND t2.Estado_Ticket = 1
         ) AS Total_Tickets,
@@ -537,40 +537,40 @@ BEGIN
         -- Conteo de documentos pendientes (tickets abiertos sin documentos)
         (
             SELECT COUNT(*)
-            FROM TBL_TICKET t3
+            FROM tbl_ticket t3
             WHERE t3.FK_ID_Usuario_Creador = p_id_usuario
               AND t3.Estado_Ticket = 1
               AND t3.FK_ID_Estado_Ticket NOT IN (
-                  SELECT ID_Estado_Ticket FROM TBL_ESTADO_TICKET WHERE Estado_Final = 1
+                  SELECT ID_Estado_Ticket FROM tbl_estado_ticket WHERE Estado_Final = 1
               )
               AND NOT EXISTS (
-                  SELECT 1 FROM TBL_DOCUMENTO_TICKET dt
+                  SELECT 1 FROM tbl_documento_ticket dt
                   WHERE dt.FK_ID_Ticket = t3.ID_Ticket
                     AND dt.Estado_Documentos = 1
               )
         ) AS Tickets_Sin_Documentos
 
-    FROM TBL_USUARIO u
-    INNER JOIN TBL_PERSONA pa ON u.FK_ID_Persona = pa.ID_Persona
+    FROM tbl_usuario u
+    INNER JOIN tbl_persona pa ON u.FK_ID_Persona = pa.ID_Persona
     -- Estudiante vinculado al acudiente
-    INNER JOIN TBL_ESTUDIANTE est ON est.FK_ID_Acudiente = u.ID_Usuario
-    INNER JOIN TBL_PERSONA pe ON est.FK_ID_Persona = pe.ID_Persona
-    INNER JOIN TBL_GRADO g_act ON est.FK_ID_Grado_Actual = g_act.ID_Grado
-    LEFT  JOIN TBL_GRADO g_prox ON est.FK_ID_Grado_Proximo = g_prox.ID_Grado
+    INNER JOIN tbl_estudiante est ON est.FK_ID_Acudiente = u.ID_Usuario
+    INNER JOIN tbl_persona pe ON est.FK_ID_Persona = pe.ID_Persona
+    INNER JOIN tbl_grado g_act ON est.FK_ID_Grado_Actual = g_act.ID_Grado
+    LEFT  JOIN tbl_grado g_prox ON est.FK_ID_Grado_Proximo = g_prox.ID_Grado
     -- Ticket más reciente
-    LEFT JOIN TBL_TICKET t ON t.FK_ID_Usuario_Creador = u.ID_Usuario 
+    LEFT JOIN tbl_ticket t ON t.FK_ID_Usuario_Creador = u.ID_Usuario 
         AND t.Estado_Ticket = 1
         AND t.Fecha_Creacion = (
             SELECT MAX(t_inner.Fecha_Creacion)
-            FROM TBL_TICKET t_inner
+            FROM tbl_ticket t_inner
             WHERE t_inner.FK_ID_Usuario_Creador = u.ID_Usuario
               AND t_inner.Estado_Ticket = 1
         )
 
-    LEFT JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-    LEFT JOIN TBL_TIPO_AFECTACION ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afectacion
-    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-    LEFT JOIN TBL_COLEGIO c ON cu.FK_ID_Colegio = c.ID_Colegio
+    LEFT JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    LEFT JOIN tbl_tipo_afectacion ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afectacion
+    LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+    LEFT JOIN tbl_colegio c ON cu.FK_ID_Colegio = c.ID_Colegio
 
     WHERE u.ID_Usuario  = p_id_usuario
       AND u.Estado_Usuario = 1
@@ -594,7 +594,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_tipo_afectacion_consultar()
 BEGIN
     SELECT ID_Tipo_Afectacion, Nombre_Afectacion, Nivel_Prioridad_TC
-    FROM TBL_TIPO_AFECTACION
+    FROM tbl_tipo_afectacion
     WHERE Estado_Afectacion = 1
     ORDER BY Nivel_Prioridad_TC DESC;
 END $$
@@ -609,7 +609,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_jornada_consultar()
 BEGIN
     SELECT ID_Jornada, Nombre_Jornada
-    FROM TBL_JORNADA
+    FROM tbl_jornada
     WHERE Estado_Jornada = 1;
 END $$
 DELIMITER ;
@@ -623,7 +623,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_tiempo_residencia_consultar()
 BEGIN
     SELECT ID_Tiempo_Residencia, Nombre_Tiempo
-    FROM TBL_TIEMPO_RESIDENCIA;
+    FROM tbl_tiempo_residencia;
 END $$
 DELIMITER ;
 
@@ -640,8 +640,8 @@ CREATE PROCEDURE sp_ticket_verificar_activo(
 )
 BEGIN
     SELECT COUNT(*) AS total_activos
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET e ON t.FK_ID_Estado_Ticket = e.ID_Estado_Ticket
+    FROM tbl_ticket t
+    INNER JOIN tbl_estado_ticket e ON t.FK_ID_Estado_Ticket = e.ID_Estado_Ticket
     WHERE t.FK_ID_Estudiante = p_id_estudiante
       AND t.FK_ID_Usuario_Creador = p_id_usuario
       AND e.Estado_Final = 0
@@ -662,7 +662,7 @@ BEGIN
         MAX(CAST(SUBSTRING(ID_Ticket, 5) AS UNSIGNED)), 
         0
     ) AS ultimo_numero
-    FROM TBL_TICKET;
+    FROM tbl_ticket;
 END $$
 DELIMITER ;
 
@@ -708,21 +708,21 @@ BEGIN
     SELECT CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido),
            gr.Nombre_Grado
     INTO   v_nombre_est, v_grado
-    FROM   TBL_ESTUDIANTE e
-    INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_GRADO gr ON e.FK_ID_Grado_Proximo = gr.ID_Grado
+    FROM   tbl_estudiante e
+    INNER JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_grado gr ON e.FK_ID_Grado_Proximo = gr.ID_Grado
     WHERE  e.ID_Estudiante = p_id_estudiante;
 
     SET v_titulo = CONCAT('Solicitud de Cupo — ', v_nombre_est, ' — ', v_grado);
 
     -- Puntaje de prioridad
     SELECT Nivel_Prioridad_TC INTO v_nivel_afectacion
-    FROM TBL_TIPO_AFECTACION
+    FROM tbl_tipo_afectacion
     WHERE ID_Tipo_Afectacion = p_id_tipo_afectacion;
 
     SELECT gp.Nivel_Prioridad_GP INTO v_nivel_gp
-    FROM TBL_ESTUDIANTE e
-    INNER JOIN TBL_GRUPO_PREFERENCIAL gp 
+    FROM tbl_estudiante e
+    INNER JOIN tbl_grupo_preferencial gp 
         ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
     WHERE e.ID_Estudiante = p_id_estudiante;
 
@@ -730,13 +730,13 @@ BEGIN
 
     -- Estado inicial
     SELECT ID_Estado_Ticket INTO v_id_estado_inicial
-    FROM TBL_ESTADO_TICKET
+    FROM tbl_estado_ticket
     WHERE Estado_Final = 0 AND Estado_Estado_Ticket = 1
     ORDER BY ID_Estado_Ticket ASC
     LIMIT 1;
 
     -- Insertar ticket
-    INSERT INTO TBL_TICKET (
+    INSERT INTO tbl_ticket (
         ID_Ticket, Titulo_Ticket, Descripcion_Ticket, Puntaje_Prioridad,
         FK_ID_Usuario_Creador, FK_ID_Estudiante, FK_ID_Tipo_Afectacion,
         FK_ID_Colegio_Preferencia, FK_ID_Jornada_Preferencia,
@@ -755,7 +755,7 @@ BEGIN
     );
 
     -- Insertar comentario automático
-    INSERT INTO TBL_TICKET_COMENTARIO (
+    INSERT INTO tbl_ticket_comentario (
         Tipo_Evento,
         Comentario,
         Es_Interno,
@@ -793,7 +793,7 @@ CREATE PROCEDURE sp_documento_ticket_insertar(
     IN p_nombre_original VARCHAR(100)
 )
 BEGIN
-    INSERT INTO TBL_DOCUMENTO_TICKET (
+    INSERT INTO tbl_documento_ticket (
         FK_ID_Ticket,
         FK_ID_Tipo_Doc,
         Archivo,
@@ -833,13 +833,13 @@ BEGIN
         g.Nombre_Grado,
         CONCAT(p.Primer_Nombre, ' ', COALESCE(p.Segundo_Nombre, ''), ' ', p.Primer_Apellido, ' ', COALESCE(p.Segundo_Apellido, '')) AS Nombre_Estudiante,
         COALESCE(c.Nombre_Colegio, 'Sin asignar') AS Nombre_Colegio
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-    INNER JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
-    INNER JOIN TBL_PERSONA p ON est.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_GRADO g ON est.FK_ID_Grado_Actual = g.ID_Grado
-    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-    LEFT JOIN TBL_COLEGIO c ON cu.FK_ID_Colegio = c.ID_Colegio
+    FROM tbl_ticket t
+    INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    INNER JOIN tbl_estudiante est ON t.FK_ID_Estudiante = est.ID_Estudiante
+    INNER JOIN tbl_persona p ON est.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_grado g ON est.FK_ID_Grado_Actual = g.ID_Grado
+    LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+    LEFT JOIN tbl_colegio c ON cu.FK_ID_Colegio = c.ID_Colegio
 
     WHERE t.FK_ID_Usuario_Creador = p_id_usuario 
         AND t.Estado_Ticket = 1
@@ -868,13 +868,13 @@ BEGIN
         g.Nombre_Grado,
         CONCAT(p.Primer_Nombre, ' ', COALESCE(p.Segundo_Nombre, ''), ' ', p.Primer_Apellido, ' ', COALESCE(p.Segundo_Apellido, '')) AS Nombre_Estudiante,
         COALESCE(c.Nombre_Colegio, 'Sin asignar') AS Nombre_Colegio
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-    INNER JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
-    INNER JOIN TBL_PERSONA p ON est.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_GRADO g ON est.FK_ID_Grado_Actual = g.ID_Grado
-    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-    LEFT JOIN TBL_COLEGIO c ON cu.FK_ID_Colegio = c.ID_Colegio
+    FROM tbl_ticket t
+    INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    INNER JOIN tbl_estudiante est ON t.FK_ID_Estudiante = est.ID_Estudiante
+    INNER JOIN tbl_persona p ON est.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_grado g ON est.FK_ID_Grado_Actual = g.ID_Grado
+    LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+    LEFT JOIN tbl_colegio c ON cu.FK_ID_Colegio = c.ID_Colegio
 
     WHERE t.FK_ID_Usuario_Creador = p_id_usuario 
         AND t.Estado_Ticket = 1
@@ -926,14 +926,14 @@ BEGIN
 
     FROM vw_ticket_detalle t
     INNER JOIN vw_estudiante_detalle e ON t.FK_ID_Estudiante = e.ID_Estudiante
-    INNER JOIN TBL_JORNADA j ON t.FK_ID_Jornada_Preferencia = j.ID_Jornada
-    INNER JOIN TBL_BARRIO b ON t.FK_ID_Barrio = b.ID_Barrio
-    LEFT JOIN TBL_TIEMPO_RESIDENCIA tr ON t.FK_ID_Tiempo_Residencia = tr.ID_Tiempo_Residencia
-    LEFT JOIN TBL_COLEGIO cp ON t.FK_ID_Colegio_Preferencia = cp.ID_Colegio
-    LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-    LEFT JOIN TBL_COLEGIO c_asig ON cu.FK_ID_Colegio = c_asig.ID_Colegio
-    LEFT JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
-    LEFT JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
+    INNER JOIN tbl_jornada j ON t.FK_ID_Jornada_Preferencia = j.ID_Jornada
+    INNER JOIN tbl_barrio b ON t.FK_ID_Barrio = b.ID_Barrio
+    LEFT JOIN tbl_tiempo_residencia tr ON t.FK_ID_Tiempo_Residencia = tr.ID_Tiempo_Residencia
+    LEFT JOIN tbl_colegio cp ON t.FK_ID_Colegio_Preferencia = cp.ID_Colegio
+    LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+    LEFT JOIN tbl_colegio c_asig ON cu.FK_ID_Colegio = c_asig.ID_Colegio
+    LEFT JOIN tbl_usuario ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
+    LEFT JOIN tbl_persona pt ON ut.FK_ID_Persona = pt.ID_Persona
 
     WHERE t.ID_Ticket = p_id_ticket
     AND t.FK_ID_Usuario_Creador = p_id_usuario
@@ -954,7 +954,7 @@ CREATE PROCEDURE sp_tbl_ticket_comentarios_consultar(
 BEGIN
     SELECT *
     FROM vw_ticket_comentarios vc
-    INNER JOIN TBL_TICKET t ON vc.FK_ID_Ticket = t.ID_Ticket
+    INNER JOIN tbl_ticket t ON vc.FK_ID_Ticket = t.ID_Ticket
 
     WHERE vc.FK_ID_Ticket = p_id_ticket
       AND t.FK_ID_Usuario_Creador = p_id_usuario
@@ -981,9 +981,9 @@ BEGIN
         dt.Nombre_Original,
         dt.Fecha_Subida,
         tdoc.Nombre_Tipo_Doc
-    FROM TBL_DOCUMENTO_TICKET dt
-    INNER JOIN TBL_TIPO_DOCUMENTO tdoc ON dt.FK_ID_Tipo_Doc = tdoc.ID_Tipo_Doc
-    INNER JOIN TBL_TICKET t ON dt.FK_ID_Ticket = t.ID_Ticket
+    FROM tbl_documento_ticket dt
+    INNER JOIN tbl_tipo_documento tdoc ON dt.FK_ID_Tipo_Doc = tdoc.ID_Tipo_Doc
+    INNER JOIN tbl_ticket t ON dt.FK_ID_Ticket = t.ID_Ticket
     WHERE dt.FK_ID_Ticket = p_id_ticket AND t.FK_ID_Usuario_Creador = p_id_usuario
       AND dt.Estado_Documentos = 1
     ORDER BY dt.Fecha_Subida DESC;
@@ -1000,7 +1000,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_tipo_documento_consultar()
 BEGIN
     SELECT ID_Tipo_Doc, Nombre_Tipo_Doc
-    FROM TBL_TIPO_DOCUMENTO
+    FROM tbl_tipo_documento
     WHERE Estado_Documentos = 1
     ORDER BY Nombre_Tipo_Doc ASC;
 END $$
@@ -1020,7 +1020,7 @@ CREATE PROCEDURE sp_tbl_documento_ticket_insertar(
     IN p_nombre_original VARCHAR(100)
 )
 BEGIN
-    INSERT INTO TBL_DOCUMENTO_TICKET (
+    INSERT INTO tbl_documento_ticket (
         FK_ID_Ticket,
         FK_ID_Tipo_Doc,
         Archivo,
@@ -1050,9 +1050,9 @@ BEGIN
         dt.Archivo,
         dt.Nombre_Original,
         tdoc.Nombre_Tipo_Doc
-    FROM TBL_DOCUMENTO_TICKET dt
-    INNER JOIN TBL_TIPO_DOCUMENTO tdoc ON dt.FK_ID_Tipo_Doc = tdoc.ID_Tipo_Doc
-    INNER JOIN TBL_TICKET t ON dt.FK_ID_Ticket = t.ID_Ticket
+    FROM tbl_documento_ticket dt
+    INNER JOIN tbl_tipo_documento tdoc ON dt.FK_ID_Tipo_Doc = tdoc.ID_Tipo_Doc
+    INNER JOIN tbl_ticket t ON dt.FK_ID_Ticket = t.ID_Ticket
     WHERE dt.ID_Doc_Ticket = p_id_doc AND t.FK_ID_Usuario_Creador = p_id_usuario
       AND dt.Estado_Documentos = 1;
 END $$
@@ -1076,7 +1076,7 @@ BEGIN
     SELECT
         ID_Genero,
         Nombre_Genero
-    FROM TBL_GENERO
+    FROM tbl_genero
     WHERE Estado_Genero = 1
     ORDER BY Nombre_Genero;
 END $$
@@ -1093,7 +1093,7 @@ BEGIN
     SELECT
         ID_Grupo_Preferencial,
         Nombre_Grupo_Preferencial
-    FROM TBL_GRUPO_PREFERENCIAL
+    FROM tbl_grupo_preferencial
     WHERE Estado_Grupo_Preferencial = 1
     ORDER BY ID_Grupo_Preferencial;
 END $$
@@ -1110,7 +1110,7 @@ BEGIN
     SELECT
         ID_Grado,
         Nombre_Grado
-    FROM TBL_GRADO
+    FROM tbl_grado
     WHERE Estado_Grado = 1
     ORDER BY ID_Grado;
 END $$
@@ -1127,7 +1127,7 @@ BEGIN
     SELECT
         ID_Colegio,
         Nombre_Colegio
-    FROM TBL_COLEGIO
+    FROM tbl_colegio
     WHERE Estado_Colegio = 1
     ORDER BY Nombre_Colegio;
 END $$
@@ -1144,7 +1144,7 @@ BEGIN
     SELECT 
         ID_Tipo_Iden,
         Nombre_Tipo_Iden
-    FROM TBL_TIPO_IDENTIFICACION
+    FROM tbl_tipo_identificacion
     WHERE Estado_Identificacion = 1 AND Tipo_Usuario = 'ESTUDIANTE'
     ORDER BY Nombre_Tipo_Iden;
 END $$
@@ -1178,7 +1178,7 @@ BEGIN
     SELECT
         ID_Localidad,
         Nombre_Localidad
-    FROM TBL_LOCALIDAD
+    FROM tbl_localidad
     WHERE Estado_Localidad = 1
     ORDER BY Nombre_Localidad;
 END $$
@@ -1195,7 +1195,7 @@ BEGIN
     SELECT
     ID_Barrio,
     Nombre_Barrio
-    FROM TBL_BARRIO
+    FROM tbl_barrio
     WHERE Estado_Barrio = 1
     ORDER BY Nombre_Barrio;
 END $$
@@ -1212,7 +1212,7 @@ BEGIN
     SELECT 
         ID_Parentesco,
         Nombre_Parentesco
-    FROM TBL_PARENTESCO
+    FROM tbl_parentesco
     WHERE Estado_Parentesco = 1 AND Tipo_Usuario = 'ESTUDIANTE'
     ORDER BY ID_Parentesco;
 END $$
@@ -1260,12 +1260,12 @@ BEGIN
         -- Metadatos
         par.Nombre_Parentesco,
         u.Fecha_Creacion
-    FROM TBL_USUARIO u
-    INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_DATOS_ADICIONALES da ON da.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_TIPO_IDENTIFICACION ti ON da.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
-    INNER JOIN TBL_BARRIO b ON da.FK_ID_Barrio = b.ID_Barrio
-    INNER JOIN TBL_PARENTESCO par ON da.FK_ID_Parentesco = par.ID_Parentesco
+    FROM tbl_usuario u
+    INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_datos_adicionales da ON da.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_tipo_identificacion ti ON da.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
+    INNER JOIN tbl_barrio b ON da.FK_ID_Barrio = b.ID_Barrio
+    INNER JOIN tbl_parentesco par ON da.FK_ID_Parentesco = par.ID_Parentesco
     WHERE u.ID_Usuario = p_id_usuario
     LIMIT 1;
 END $$
@@ -1302,10 +1302,10 @@ BEGIN
         'Estrato', FK_ID_Estrato,
         'Barrio', FK_ID_Barrio
     ) INTO v_old
-    FROM TBL_DATOS_ADICIONALES
+    FROM tbl_datos_adicionales
     WHERE ID_Datos_Adicionales = p_id_datos;
 
-    UPDATE TBL_DATOS_ADICIONALES
+    UPDATE tbl_datos_adicionales
     SET
         Telefono = p_telefono,
         FK_ID_Genero = p_genero,
@@ -1316,7 +1316,7 @@ BEGIN
       AND FK_ID_Persona = p_id_persona;
 
     CALL sp_insertar_auditoria(
-        'TBL_DATOS_ADICIONALES', 'UPDATE', CAST(p_id_datos AS CHAR),
+        'tbl_datos_adicionales', 'UPDATE', CAST(p_id_datos AS CHAR),
         v_old, 
         JSON_OBJECT('Telefono', p_telefono, 'Genero', p_genero, 'Barrio', p_barrio),
         p_ip, p_user_agent, p_id_usuario
@@ -1375,9 +1375,9 @@ BEGIN
         ti.Nombre_Tipo_Iden,
         p.Num_Doc_Persona AS Numero_Documento
 
-    FROM TBL_ESTUDIANTE e
-    INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
+    FROM tbl_estudiante e
+    INNER JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_tipo_identificacion ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
     WHERE e.ID_Estudiante = p_id_estudiante
       AND e.FK_ID_Acudiente = p_id_usuario
       AND e.Estado_Estudiante = 1;
@@ -1394,7 +1394,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_estudiante_verificar_por_acudiente(IN p_id_acudiente INT)
 BEGIN
     SELECT COUNT(*) AS total_estudiantes
-    FROM TBL_ESTUDIANTE
+    FROM tbl_estudiante
     WHERE FK_ID_Acudiente   = p_id_acudiente
       AND Estado_Estudiante = 1;
 END $$
@@ -1436,9 +1436,9 @@ BEGIN
         e.FK_ID_Grado_Proximo AS ID_Grado_Proximo,
         e.FK_ID_Colegio_Anterior AS ID_Colegio_Anterior
         
-    FROM TBL_ESTUDIANTE e
-    INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
+    FROM tbl_estudiante e
+    INNER JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_tipo_identificacion ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
     WHERE e.FK_ID_Acudiente = p_id_acudiente
       AND e.Estado_Estudiante = 1
     LIMIT 1;
@@ -1482,7 +1482,7 @@ BEGIN
 
     -- VALIDAR EXISTENCIA
     IF NOT EXISTS (
-        SELECT 1 FROM TBL_PERSONA WHERE ID_Persona = p_id_persona
+        SELECT 1 FROM tbl_persona WHERE ID_Persona = p_id_persona
     ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Persona no existe';
@@ -1497,11 +1497,11 @@ BEGIN
         'Fecha_Nacimiento', Fecha_Nacimiento
     )
     INTO v_old
-    FROM TBL_PERSONA
+    FROM tbl_persona
     WHERE ID_Persona = p_id_persona;
 
     -- UPDATE
-    UPDATE TBL_PERSONA
+    UPDATE tbl_persona
     SET
         Primer_Nombre = p_primer_nombre,
         Segundo_Nombre = p_segundo_nombre,
@@ -1521,7 +1521,7 @@ BEGIN
 
     -- AUDITORÍA
     CALL sp_insertar_auditoria(
-        'TBL_PERSONA',
+        'tbl_persona',
         'UPDATE',
         p_id_persona,
         v_old,
@@ -1572,7 +1572,7 @@ BEGIN
     -- VALIDAR EXISTENCIA
     SELECT ID_Estudiante
     INTO v_id_estudiante
-    FROM TBL_ESTUDIANTE
+    FROM tbl_estudiante
     WHERE FK_ID_Persona = p_id_persona
     LIMIT 1;
 
@@ -1591,11 +1591,11 @@ BEGIN
     )
     
     INTO v_old
-    FROM TBL_ESTUDIANTE
+    FROM tbl_estudiante
     WHERE ID_Estudiante = v_id_estudiante;
 
     -- UPDATE
-    UPDATE TBL_ESTUDIANTE
+    UPDATE tbl_estudiante
     SET
         FK_ID_Grado_Actual = p_grado_actual,
         FK_ID_Grado_Proximo = p_grado_proximo,
@@ -1615,7 +1615,7 @@ BEGIN
 
     -- AUDITORÍA
     CALL sp_insertar_auditoria(
-        'TBL_ESTUDIANTE',
+        'tbl_estudiante',
         'UPDATE',
         v_id_estudiante,
         v_old,
@@ -1677,7 +1677,7 @@ BEGIN
     START TRANSACTION;
 
     -- INSERT PERSONA
-    INSERT INTO TBL_PERSONA(
+    INSERT INTO tbl_persona(
         Num_Doc_Persona,
         Primer_Nombre,
         Segundo_Nombre,
@@ -1700,7 +1700,7 @@ BEGIN
     SET v_ID_Persona_New = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_PERSONA',
+        'tbl_persona',
         'CREATE',
         CAST(v_ID_Persona_New AS CHAR),
         NULL,
@@ -1711,7 +1711,7 @@ BEGIN
     );
 
     -- INSERT ESTUDIANTE
-    INSERT INTO TBL_ESTUDIANTE (
+    INSERT INTO tbl_estudiante (
         FK_ID_Tipo_Iden,
         FK_ID_Persona,
         FK_ID_Grado_Actual,
@@ -1740,7 +1740,7 @@ BEGIN
     SET v_ID_Estudiante_New = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_ESTUDIANTE',
+        'tbl_estudiante',
         'CREATE',
         CAST(v_ID_Estudiante_New AS CHAR),
         NULL,
@@ -1768,8 +1768,8 @@ CREATE PROCEDURE sp_tbl_estudiante_verificar_existente (
 BEGIN
 
     SELECT COUNT(*) AS existe 
-    FROM TBL_ESTUDIANTE e
-    INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
+    FROM tbl_estudiante e
+    INNER JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
     WHERE p.Num_Doc_Persona = p_num_doc 
       AND e.FK_ID_Acudiente = p_fk_id_acudiente 
       AND e.Estado_Estudiante = 1; 
@@ -1800,14 +1800,14 @@ BEGIN
     START TRANSACTION;
 
         -- Actualización de credenciales
-        UPDATE TBL_USUARIO
+        UPDATE tbl_usuario
         SET Contraseña_Hash = p_nuevo_hash,
             Ultimo_Cambio_Contraseña = CURRENT_TIMESTAMP
         WHERE ID_Usuario = p_id_usuario;
 
         -- Registro de auditoría
         CALL sp_insertar_auditoria(
-            'TBL_USUARIO', 
+            'tbl_usuario', 
             'PASSWORD_CHANGE', 
             CAST(p_id_usuario AS CHAR),
             JSON_OBJECT('evento', 'cambio_password_perfil'),
@@ -1840,7 +1840,7 @@ CREATE PROCEDURE sp_tbl_usuario_guardar_mfa_secret_temp(
     IN p_secret VARCHAR(64)
 )
 BEGIN
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET MFA_Secret_Temp = p_secret
     WHERE ID_Usuario = p_id_usuario;
 END $$
@@ -1857,7 +1857,7 @@ CREATE PROCEDURE sp_tbl_usuario_activar_mfa(
     IN p_id_usuario INT
 )
 BEGIN
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET MFA_Fecha_Configuracion = CURRENT_TIMESTAMP,
         MFA_Secret = MFA_Secret_Temp,
         MFA_Secret_Temp = NULL,
@@ -1877,7 +1877,7 @@ CREATE PROCEDURE sp_tbl_usuario_desactivar_mfa(
     IN p_id_usuario INT
 )
 BEGIN
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET MFA_Fecha_Configuracion = CURRENT_TIMESTAMP,
         MFA_Secret = NULL,
         MFA_Secret_Temp = NULL,
@@ -1898,7 +1898,7 @@ CREATE PROCEDURE sp_tbl_usuario_obtener_mfa_secret(
 )
 BEGIN
     SELECT MFA_Secret, MFA_Secret_Temp, Doble_Factor_Activo
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario;
 END $$
 DELIMITER ;
@@ -1918,7 +1918,7 @@ CREATE PROCEDURE sp_tbl_sesion_activa_registrar_sesion(
     IN p_ip VARCHAR(50)
 )
 BEGIN
-    INSERT INTO TBL_SESION_ACTIVA (FK_ID_Usuario, JTI, Dispositivo, IP)
+    INSERT INTO tbl_sesion_activa (FK_ID_Usuario, JTI, Dispositivo, IP)
     VALUES (p_id_usuario, p_jti, p_dispositivo, p_ip)
     ON DUPLICATE KEY UPDATE Ultimo_Acceso = CURRENT_TIMESTAMP;
 END $$
@@ -1936,7 +1936,7 @@ CREATE PROCEDURE sp_tbl_sesion_activa_listar_sesiones(
 )
 BEGIN
     SELECT ID_Sesion, JTI, Dispositivo, IP, Fecha_Inicio, Ultimo_Acceso
-    FROM TBL_SESION_ACTIVA
+    FROM tbl_sesion_activa
     WHERE FK_ID_Usuario = p_id_usuario
       AND Activa = 1
     ORDER BY Ultimo_Acceso DESC;
@@ -1954,7 +1954,7 @@ CREATE PROCEDURE sp_tbl_sesion_activa_cerrar_sesion(
     IN p_jti VARCHAR(64)
 )
 BEGIN
-    UPDATE TBL_SESION_ACTIVA
+    UPDATE tbl_sesion_activa
     SET Activa = 0
     WHERE JTI = p_jti;
 END $$
@@ -1972,7 +1972,7 @@ CREATE PROCEDURE sp_tbl_sesion_activa_cerrar_todas_sesiones(
     IN p_jti_actual VARCHAR(64)   -- excluir la sesión actual
 )
 BEGIN
-    UPDATE TBL_SESION_ACTIVA
+    UPDATE tbl_sesion_activa
     SET Activa = 0
     WHERE FK_ID_Usuario = p_id_usuario
       AND JTI <> p_jti_actual;
@@ -2001,7 +2001,7 @@ BEGIN
     SELECT
         Notificaciones_Email,
         Notificaciones_Navegador
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario
       AND Estado_Usuario = 1;
 END $$
@@ -2022,7 +2022,7 @@ BEGIN
     DECLARE v_existe INT DEFAULT 0;
  
     SELECT COUNT(*) INTO v_existe
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario   = p_id_usuario
       AND Estado_Usuario = 1;
  
@@ -2031,13 +2031,13 @@ BEGIN
             SET MESSAGE_TEXT = 'Usuario no encontrado o inactivo.';
     END IF;
  
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET Notificaciones_Email = p_activo
     WHERE ID_Usuario = p_id_usuario;
  
     -- Devuelve el estado actualizado para confirmación
     SELECT Notificaciones_Email AS notif_email_activo
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario;
 END $$
 DELIMITER ;
@@ -2057,7 +2057,7 @@ BEGIN
     DECLARE v_existe INT DEFAULT 0;
  
     SELECT COUNT(*) INTO v_existe
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario    = p_id_usuario
       AND Estado_Usuario = 1;
  
@@ -2066,13 +2066,13 @@ BEGIN
             SET MESSAGE_TEXT = 'Usuario no encontrado o inactivo.';
     END IF;
  
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET Notificaciones_Navegador = p_activo
     WHERE ID_Usuario = p_id_usuario;
  
     -- Devuelve el estado actualizado para confirmación
     SELECT Notificaciones_Navegador AS notif_navegador_activo
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario;
 END $$
 DELIMITER ;
@@ -2112,28 +2112,28 @@ BEGIN
     START TRANSACTION;
         
         -- OFUSCAR Y DESACTIVAR PERSONAS DE LOS ESTUDIANTES 
-        UPDATE TBL_PERSONA 
+        UPDATE tbl_persona 
         SET Num_Doc_Persona = CONCAT('DEL_', v_Timestamp, '_', Num_Doc_Persona),
             Estado_Persona = 0
         WHERE ID_Persona IN (
-            SELECT FK_ID_Persona FROM TBL_ESTUDIANTE WHERE FK_ID_Acudiente = p_ID_Usuario
+            SELECT FK_ID_Persona FROM tbl_estudiante WHERE FK_ID_Acudiente = p_ID_Usuario
         );
 
-        -- INACTIVAR REGISTROS EN TBL_ESTUDIANTE
-        UPDATE TBL_ESTUDIANTE 
+        -- INACTIVAR REGISTROS EN tbl_estudiante
+        UPDATE tbl_estudiante 
         SET Estado_Estudiante = 0
         WHERE FK_ID_Acudiente = p_ID_Usuario;
 
         -- Registro de auditoría para los estudiantes
         CALL sp_insertar_auditoria(
-            'TBL_ESTUDIANTE', 'DELETE_STUDENT', CAST(p_ID_Usuario AS CHAR),
+            'tbl_estudiante', 'DELETE_STUDENT', CAST(p_ID_Usuario AS CHAR),
             NULL, JSON_OBJECT('Accion', 'Baja masiva por retiro de acudiente'),
             p_IP, p_User_Agent, p_ID_Usuario
         );
 
         -- LOGICA DE OFUSCACIÓN DE USUARIO Y DATOS ADICIONALES
-        UPDATE TBL_USUARIO u
-        JOIN TBL_DATOS_ADICIONALES d ON u.FK_ID_Persona = d.FK_ID_Persona
+        UPDATE tbl_usuario u
+        JOIN tbl_datos_adicionales d ON u.FK_ID_Persona = d.FK_ID_Persona
         SET u.Estado_Usuario = 0,
             u.Nombre_Usuario = CONCAT('del_', v_Timestamp, '_', u.Nombre_Usuario),
             d.Estado_Datos_Adicionales = 0,
@@ -2142,8 +2142,8 @@ BEGIN
         WHERE u.ID_Usuario = p_ID_Usuario;
 
         -- INACTIVAR Y OFUSCAR PERSONA DEL USUARIO
-        UPDATE TBL_PERSONA p
-        JOIN TBL_USUARIO u ON p.ID_Persona = u.FK_ID_Persona
+        UPDATE tbl_persona p
+        JOIN tbl_usuario u ON p.ID_Persona = u.FK_ID_Persona
         SET p.Estado_Persona = 0,
             p.Num_Doc_Persona = CONCAT('DEL_', v_Timestamp, '_', p.Num_Doc_Persona)
         WHERE u.ID_Usuario = p_ID_Usuario;
@@ -2188,28 +2188,28 @@ BEGIN
     SELECT
         -- Total de solicitudes activas
         (SELECT COUNT(*) 
-            FROM TBL_TICKET 
+            FROM tbl_ticket 
             WHERE Estado_Ticket = 1) AS total_solicitudes,
         
         -- Total de usuarios activos (Acudientes, Técnicos, Administradores)
         (SELECT COUNT(*) 
-            FROM TBL_USUARIO 
+            FROM tbl_usuario 
             WHERE Estado_Usuario = 1 
             AND FK_ID_Rol IN (2, 3, 4)) AS total_usuarios,
         
         -- Cupos asignados (tickets con estado 'Solucionado')
         (SELECT COUNT(*) 
-            FROM TBL_TICKET t
-            JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+            FROM tbl_ticket t
+            JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
             WHERE t.Estado_Ticket = 1 
             AND et.Nombre_Estado = 'Solucionado') AS cupos_asignados,
         
         -- Cupos disponibles en Engativá (suma de cupos disponibles en colegios de barrios de Engativá)
         (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)
-            FROM TBL_CUPOS c
-            JOIN TBL_COLEGIO co ON c.FK_ID_Colegio = co.ID_Colegio
-            JOIN TBL_BARRIO b ON co.FK_ID_Barrio = b.ID_Barrio
-            JOIN TBL_LOCALIDAD l ON b.FK_ID_Localidad = l.ID_Localidad
+            FROM tbl_cupos c
+            JOIN tbl_colegio co ON c.FK_ID_Colegio = co.ID_Colegio
+            JOIN tbl_barrio b ON co.FK_ID_Barrio = b.ID_Barrio
+            JOIN tbl_localidad l ON b.FK_ID_Localidad = l.ID_Localidad
             WHERE c.Estado_Cupos = 1 
             AND l.ID_Localidad = 1  -- Engativá ID_Localidad = 1
             AND co.Estado_Colegio = 1
@@ -2242,10 +2242,10 @@ BEGIN
         COUNT(DISTINCT CASE WHEN DATE(t.Fecha_Creacion) = d.fecha
                             AND et.Nombre_Estado = 'Solucionado' THEN t.ID_Ticket END) AS cupos_asignados
     FROM dias d
-    LEFT JOIN TBL_TICKET t
+    LEFT JOIN tbl_ticket t
         ON DATE(t.Fecha_Creacion) = d.fecha
         AND t.Estado_Ticket = 1
-    LEFT JOIN TBL_ESTADO_TICKET et
+    LEFT JOIN tbl_estado_ticket et
         ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
     GROUP BY d.fecha
     ORDER BY d.fecha ASC;
@@ -2290,14 +2290,14 @@ BEGIN
         -- Tickets con estado final = 1 (Solucionado, Rechazado, Cancelado)
         SUM(et.Estado_Final = 1) AS solucionados,
 
-        -- Cupos disponibles: suma de Cupos_Disponibles en TBL_CUPOS activos
-        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)FROM TBL_CUPOS c WHERE c.Estado_Cupos = 1) AS cupos_disponibles,
+        -- Cupos disponibles: suma de Cupos_Disponibles en tbl_cupos activos
+        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)FROM tbl_cupos c WHERE c.Estado_Cupos = 1) AS cupos_disponibles,
 
         -- Tickets con cupo asignado (FK_ID_Cupo_Asignado no nulo)
         SUM(t.FK_ID_Cupo_Asignado IS NOT NULL) AS cupos_asignados
 
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    FROM tbl_ticket t
+    INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
     WHERE t.Estado_Ticket = 1;
 END $$
 DELIMITER ;
@@ -2315,7 +2315,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_estados_ticket()
 BEGIN
     SELECT ID_Estado_Ticket, Nombre_Estado
-    FROM TBL_ESTADO_TICKET
+    FROM tbl_estado_ticket
     WHERE Estado_Estado_Ticket = 1
     ORDER BY ID_Estado_Ticket;
 END $$
@@ -2331,7 +2331,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_grados()
 BEGIN
     SELECT ID_Grado, Nombre_Grado
-    FROM TBL_GRADO
+    FROM tbl_grado
     ORDER BY ID_Grado;
 END $$
 DELIMITER ;
@@ -2351,7 +2351,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_rol_consultar()
 BEGIN
     SELECT ID_Rol, Nombre_Rol
-    FROM TBL_ROL
+    FROM tbl_rol
     WHERE ID_Rol <> 5 AND Estado_Rol = 1 
     ORDER BY Nombre_Rol;
 END $$
@@ -2396,7 +2396,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_admin_eventos_auditoria_consultar()
 BEGIN
     SELECT DISTINCT Tipo_Evento AS Nombre_Evento
-    FROM TBL_AUDITORIA
+    FROM tbl_auditoria
     WHERE Estado_Auditoria = 1
     ORDER BY Tipo_Evento;
 END $$
@@ -2404,7 +2404,7 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
--- SP: Navegadores distintos extraídos de User_Agent en TBL_AUDITORIA_SESION
+-- SP: Navegadores distintos extraídos de User_Agent en tbl_auditoria_sesion
 
 DROP PROCEDURE IF EXISTS sp_admin_navegadores_consultar;
 
@@ -2424,7 +2424,7 @@ BEGIN
             WHEN User_Agent LIKE '%MSIE %' OR User_Agent LIKE '%Trident/%' THEN 'Internet Explorer'
             ELSE 'Otro'
         END AS Nombre_Navegador
-    FROM TBL_AUDITORIA_SESION
+    FROM tbl_auditoria_sesion
     WHERE Estado_Auditoria_Sesion = 1
     ORDER BY Nombre_Navegador;
 END $$
@@ -2487,30 +2487,30 @@ BEGIN
     SELECT
         -- Total de usuarios en el sistema
         (SELECT COUNT(*)
-         FROM TBL_USUARIO
+         FROM tbl_usuario
          WHERE Estado_Usuario = 1) AS total_usuarios,
 
         -- Acudientes con sesión activa ahora mismo
         (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
-            FROM TBL_SESION_ACTIVA sa
-            INNER JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            FROM tbl_sesion_activa sa
+            INNER JOIN tbl_usuario u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
             WHERE sa.Activa = 1
                 AND r.Nombre_Rol = 'Acudiente') AS acudientes_con,
 
         -- Técnicos con sesión activa ahora mismo
         (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
-            FROM TBL_SESION_ACTIVA sa
-            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            FROM tbl_sesion_activa sa
+            INNER JOIN tbl_usuario  u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
             WHERE sa.Activa = 1
                 AND r.Nombre_Rol = 'Tecnico') AS tecnicos_con,
 
         -- Administradores con sesión activa ahora mismo
         (SELECT COUNT(DISTINCT sa.FK_ID_Usuario)
-            FROM TBL_SESION_ACTIVA sa
-            INNER JOIN TBL_USUARIO  u ON sa.FK_ID_Usuario = u.ID_Usuario
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+            FROM tbl_sesion_activa sa
+            INNER JOIN tbl_usuario  u ON sa.FK_ID_Usuario = u.ID_Usuario
+            INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
             WHERE sa.Activa = 1
             AND r.Nombre_Rol = 'Admin') AS administradores_con;
 END $$
@@ -2531,7 +2531,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_tipo_iden_consultar_admin()
 BEGIN
     SELECT ID_Tipo_Iden, Nombre_Tipo_Iden
-    FROM TBL_TIPO_IDENTIFICACION
+    FROM tbl_tipo_identificacion
     WHERE Estado_Identificacion = 1
     ORDER BY Nombre_Tipo_Iden;
 END $$
@@ -2547,7 +2547,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_parentesco_consultar_admin()
 BEGIN
     SELECT ID_Parentesco, Nombre_Parentesco
-    FROM TBL_PARENTESCO
+    FROM tbl_parentesco
     WHERE Estado_Parentesco = 1
     ORDER BY ID_Parentesco;
 END $$
@@ -2563,7 +2563,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_grado_consultar()
 BEGIN
     SELECT ID_Grado, Nombre_Grado
-    FROM TBL_GRADO
+    FROM tbl_grado
     ORDER BY ID_Grado;
 END $$
 DELIMITER ;
@@ -2578,7 +2578,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_colegio_consultar()
 BEGIN
     SELECT ID_Colegio, Nombre_Colegio
-    FROM TBL_COLEGIO
+    FROM tbl_colegio
     WHERE Estado_Colegio = 1
     ORDER BY Nombre_Colegio;
 END $$
@@ -2594,7 +2594,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_genero_consultar()
 BEGIN
     SELECT ID_Genero, Nombre_Genero
-    FROM TBL_GENERO
+    FROM tbl_genero
     ORDER BY ID_Genero;
 END $$
 DELIMITER ;
@@ -2609,7 +2609,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_tbl_grupo_pref_consultar()
 BEGIN
     SELECT ID_Grupo_Preferencial, Nombre_Grupo_Preferencial
-    FROM TBL_GRUPO_PREFERENCIAL
+    FROM tbl_grupo_preferencial
     ORDER BY ID_Grupo_Preferencial;
 END $$
 DELIMITER ;
@@ -2627,8 +2627,8 @@ BEGIN
         u.ID_Usuario,
         CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo,
         p.Num_Doc_Persona
-    FROM TBL_USUARIO u
-    JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+    FROM tbl_usuario u
+    JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
     WHERE u.FK_ID_Rol = 2
       AND u.Estado_Usuario = 1
     ORDER BY p.Primer_Apellido, p.Primer_Nombre;
@@ -2647,8 +2647,8 @@ CREATE PROCEDURE sp_estudiante_verificar_existente(
 )
 BEGIN
     SELECT e.ID_Estudiante
-    FROM TBL_ESTUDIANTE e
-    JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
+    FROM tbl_estudiante e
+    JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
     WHERE p.Num_Doc_Persona = p_Documento;
 END $$
 DELIMITER ;
@@ -2699,7 +2699,7 @@ BEGIN
 
     START TRANSACTION;
 
-    INSERT INTO TBL_PERSONA (
+    INSERT INTO tbl_persona (
         Num_Doc_Persona, Primer_Nombre, Segundo_Nombre,
         Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona
     ) VALUES (
@@ -2708,7 +2708,7 @@ BEGIN
     );
     SET v_ID_Persona = LAST_INSERT_ID();
 
-    INSERT INTO TBL_DATOS_ADICIONALES (
+    INSERT INTO tbl_datos_adicionales (
         Email, Telefono, FK_ID_Parentesco, FK_ID_Tipo_Iden,
         FK_ID_Persona, FK_ID_Genero, FK_ID_Grupo_Preferencial,
         FK_ID_Estrato, FK_ID_Barrio, Estado_Datos_Adicionales
@@ -2719,7 +2719,7 @@ BEGIN
     );
     SET v_ID_Datos = LAST_INSERT_ID();
 
-    INSERT INTO TBL_USUARIO (
+    INSERT INTO tbl_usuario (
         Nombre_Usuario, Contraseña_Hash,
         Ultimo_Cambio_Contraseña, Ultimo_Login, Intentos_Fallidos,
         Fecha_Creacion, Doble_Factor_Activo,
@@ -2735,7 +2735,7 @@ BEGIN
     SET v_ID_Usuario = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_USUARIO', 'CREATE_ACCOUNT', CAST(v_ID_Usuario AS CHAR),
+        'tbl_usuario', 'CREATE_ACCOUNT', CAST(v_ID_Usuario AS CHAR),
         NULL,
         JSON_OBJECT('Username', p_Nombre_Usuario, 'Rol', p_ID_Rol, 'CreadoPor', p_ID_Admin),
         p_IP, p_User_Agent, p_ID_Admin
@@ -2786,7 +2786,7 @@ BEGIN
 
     START TRANSACTION;
 
-    INSERT INTO TBL_PERSONA (
+    INSERT INTO tbl_persona (
         Num_Doc_Persona, Primer_Nombre, Segundo_Nombre,
         Primer_Apellido, Segundo_Apellido, Fecha_Nacimiento, Estado_Persona
     ) VALUES (
@@ -2795,7 +2795,7 @@ BEGIN
     );
     SET v_ID_Persona = LAST_INSERT_ID();
 
-    INSERT INTO TBL_ESTUDIANTE (
+    INSERT INTO tbl_estudiante (
         FK_ID_Tipo_Iden, FK_ID_Persona, FK_ID_Grado_Actual,
         FK_ID_Grado_Proximo, FK_ID_Colegio_Anterior,
         FK_ID_Genero, FK_ID_Grupo_Preferencial,
@@ -2809,7 +2809,7 @@ BEGIN
     SET v_ID_Estudiante = LAST_INSERT_ID();
 
     CALL sp_insertar_auditoria(
-        'TBL_ESTUDIANTE', 'CREATE', CAST(v_ID_Estudiante AS CHAR),
+        'tbl_estudiante', 'CREATE', CAST(v_ID_Estudiante AS CHAR),
         NULL,
         JSON_OBJECT('Doc', p_Num_Doc, 'Nombre', p_Primer_Nombre, 'Acudiente', p_ID_Acudiente),
         p_IP, p_User_Agent, p_ID_Admin
@@ -2862,9 +2862,9 @@ CREATE PROCEDURE sp_admin_metricas_usuarios()
 BEGIN
     SELECT
         (SELECT COUNT(*) FROM VW_ADMIN_ACUDIENTES) AS acudientes,
-        (SELECT COUNT(*) FROM TBL_ESTUDIANTE) AS estudiantes,
-        (SELECT COUNT(*) FROM TBL_USUARIO u
-            INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+        (SELECT COUNT(*) FROM tbl_estudiante) AS estudiantes,
+        (SELECT COUNT(*) FROM tbl_usuario u
+            INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
             WHERE r.Nombre_Rol = 'Acudiente'
                 AND u.Doble_Factor_Activo = 'ACTIVE') AS usuarios_mfa;
 END $$
@@ -2872,7 +2872,7 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
--- SP: Toggle estado de estudiante, registra en TBL_AUDITORIA con JSON
+-- SP: Toggle estado de estudiante, registra en tbl_auditoria con JSON
 
 DROP PROCEDURE IF EXISTS sp_admin_toggle_estado_estudiante;
 
@@ -2888,14 +2888,14 @@ BEGIN
     DECLARE v_estado_actual TINYINT;
 
     SELECT Estado_Estudiante INTO v_estado_actual
-    FROM TBL_ESTUDIANTE
+    FROM tbl_estudiante
     WHERE ID_Estudiante = p_id_estudiante;
 
-    UPDATE TBL_ESTUDIANTE
+    UPDATE tbl_estudiante
     SET Estado_Estudiante = p_nuevo_estado
     WHERE ID_Estudiante = p_id_estudiante;
 
-    INSERT INTO TBL_AUDITORIA (
+    INSERT INTO tbl_auditoria (
         Tabla_Afectada,
         Tipo_Evento,
         ID_Registro_Afectado,
@@ -2905,7 +2905,7 @@ BEGIN
         User_Agent,
         FK_ID_Usuario
     ) VALUES (
-        'TBL_ESTUDIANTE',
+        'tbl_estudiante',
         'DELETE',
         CAST(p_id_estudiante AS CHAR),
         JSON_OBJECT('Estado_Estudiante', v_estado_actual),
@@ -2919,7 +2919,7 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
--- SP: Toggle estado de usuario, registra en TBL_AUDITORIA con JSON
+-- SP: Toggle estado de usuario, registra en tbl_auditoria con JSON
 
 DROP PROCEDURE IF EXISTS sp_admin_toggle_estado_usuario;
 
@@ -2937,18 +2937,18 @@ BEGIN
 
     -- Estado actual antes del cambio
     SELECT Estado_Usuario INTO v_estado_actual
-    FROM TBL_USUARIO
+    FROM tbl_usuario
     WHERE ID_Usuario = p_id_usuario;
 
     SET v_evento = IF(p_nuevo_estado = 1, 'UPDATE', 'DELETE');
 
     -- Aplicar cambio
-    UPDATE TBL_USUARIO
+    UPDATE tbl_usuario
     SET Estado_Usuario = p_nuevo_estado
     WHERE ID_Usuario = p_id_usuario;
 
     -- Registrar en auditoría con JSON estructurado
-    INSERT INTO TBL_AUDITORIA (
+    INSERT INTO tbl_auditoria (
         Tabla_Afectada,
         Tipo_Evento,
         ID_Registro_Afectado,
@@ -2958,7 +2958,7 @@ BEGIN
         User_Agent,
         FK_ID_Usuario
     ) VALUES (
-        'TBL_USUARIO',
+        'tbl_usuario',
         v_evento,
         CAST(p_id_usuario AS CHAR),
         JSON_OBJECT('Estado_Usuario', v_estado_actual),
@@ -3176,7 +3176,7 @@ CREATE PROCEDURE sp_admin_colegio_insertar(
     OUT p_nuevo_id INT
 )
 BEGIN
-    INSERT INTO TBL_COLEGIO (
+    INSERT INTO tbl_colegio (
         Nombre_Colegio, Codigo_DANE, Email, Telefono,
         Direccion_Colegio, FK_ID_Barrio, Estado_Colegio
     )
@@ -3210,7 +3210,7 @@ CREATE PROCEDURE sp_admin_colegio_actualizar(
     IN p_id_barrio INT
 )
 BEGIN
-    UPDATE TBL_COLEGIO
+    UPDATE tbl_colegio
     SET
         Nombre_Colegio = p_nombre,
         Codigo_DANE = p_dane,
@@ -3231,13 +3231,13 @@ DROP PROCEDURE IF EXISTS sp_admin_colegio_estado_cambiar;
 DELIMITER $$
 CREATE PROCEDURE sp_admin_colegio_estado_cambiar(IN p_id_colegio INT)
 BEGIN
-    UPDATE TBL_COLEGIO
+    UPDATE tbl_colegio
     SET Estado_Colegio = CASE WHEN Estado_Colegio = 1 THEN 0 ELSE 1 END
     WHERE ID_Colegio = p_id_colegio;
 
     -- Retorna el nuevo estado para que el servicio pueda armar el mensaje
     SELECT Estado_Colegio AS Nuevo_Estado
-    FROM   TBL_COLEGIO
+    FROM   tbl_colegio
     WHERE  ID_Colegio = p_id_colegio;
 END $$
 DELIMITER ;
@@ -3255,8 +3255,8 @@ BEGIN
         j.ID_Jornada,
         j.Nombre_Jornada,
         COUNT(cu.ID_Cupos) AS Grados_Configurados
-    FROM TBL_JORNADA j
-    INNER JOIN TBL_CUPOS cu
+    FROM tbl_jornada j
+    INNER JOIN tbl_cupos cu
            ON j.ID_Jornada = cu.FK_ID_Jornada
           AND cu.FK_ID_Colegio = p_id_colegio
           AND cu.Estado_Cupos  = 1
@@ -3268,7 +3268,7 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
--- SP: Agrega una jornada al colegio insertando filas vacías en TBL_CUPOS
+-- SP: Agrega una jornada al colegio insertando filas vacías en tbl_cupos
 
 DROP PROCEDURE IF EXISTS sp_admin_colegio_jornada_agregar;
 
@@ -3278,13 +3278,13 @@ CREATE PROCEDURE sp_admin_colegio_jornada_agregar(
     IN p_id_jornada TINYINT
 )
 BEGIN
-    INSERT IGNORE INTO TBL_CUPOS (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles, Estado_Cupos)
+    INSERT IGNORE INTO tbl_cupos (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles, Estado_Cupos)
     SELECT g.ID_Grado, p_id_colegio, p_id_jornada, 0, 1
-    FROM TBL_GRADO g
+    FROM tbl_grado g
     WHERE g.Estado_Grado = 1;
     
     -- Si el registro ya existía pero estaba inactivo, reactivarlo
-    UPDATE TBL_CUPOS
+    UPDATE tbl_cupos
     SET Estado_Cupos = 1
     WHERE FK_ID_Colegio = p_id_colegio
       AND FK_ID_Jornada = p_id_jornada;
@@ -3303,7 +3303,7 @@ CREATE PROCEDURE sp_admin_colegio_jornada_quitar(
     IN p_id_jornada TINYINT
 )
 BEGIN
-    UPDATE TBL_CUPOS
+    UPDATE tbl_cupos
     SET Estado_Cupos = 0
     WHERE FK_ID_Colegio = p_id_colegio
       AND FK_ID_Jornada = p_id_jornada;
@@ -3327,9 +3327,9 @@ BEGIN
         j.Nombre_Jornada,
         COALESCE(cu.Cupos_Disponibles, 0) AS Cupos_Disponibles,
         COALESCE(cu.Cupos_Reservados,  0) AS Cupos_Reservados
-    FROM TBL_GRADO g
-    CROSS JOIN TBL_JORNADA j
-    LEFT JOIN TBL_CUPOS cu
+    FROM tbl_grado g
+    CROSS JOIN tbl_jornada j
+    LEFT JOIN tbl_cupos cu
            ON cu.FK_ID_Grado = g.ID_Grado
           AND cu.FK_ID_Colegio = p_id_colegio
           AND cu.FK_ID_Jornada = j.ID_Jornada
@@ -3339,7 +3339,7 @@ BEGIN
       -- Solo jornadas activas del colegio
       AND j.ID_Jornada IN (
           SELECT DISTINCT FK_ID_Jornada
-          FROM TBL_CUPOS
+          FROM tbl_cupos
           WHERE FK_ID_Colegio = p_id_colegio
             AND Estado_Cupos = 1
       )
@@ -3361,7 +3361,7 @@ CREATE PROCEDURE sp_admin_colegio_cupo_guardar(
     IN p_cupos_disponibles TINYINT
 )
 BEGIN
-    INSERT INTO TBL_CUPOS (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles, Estado_Cupos)
+    INSERT INTO tbl_cupos (FK_ID_Grado, FK_ID_Colegio, FK_ID_Jornada, Cupos_Disponibles, Estado_Cupos)
     VALUES (p_id_grado, p_id_colegio, p_id_jornada, p_cupos_disponibles, 1)
     ON DUPLICATE KEY UPDATE
         Cupos_Disponibles = p_cupos_disponibles,
@@ -3379,7 +3379,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_barrios_activos()
 BEGIN
     SELECT ID_Barrio, Nombre_Barrio
-    FROM TBL_BARRIO
+    FROM tbl_barrio
     WHERE Estado_Barrio = 1
     ORDER BY Nombre_Barrio;
 END $$
@@ -3395,7 +3395,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_jornadas_activas()
 BEGIN
     SELECT ID_Jornada, Nombre_Jornada
-    FROM TBL_JORNADA
+    FROM tbl_jornada
     WHERE Estado_Jornada = 1
     ORDER BY ID_Jornada;
 END $$
@@ -3411,7 +3411,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_grados_activos()
 BEGIN
     SELECT ID_Grado, Nombre_Grado, Nivel_Educativo
-    FROM TBL_GRADO
+    FROM tbl_grado
     WHERE Estado_Grado = 1
     ORDER BY ID_Grado;
 END $$
@@ -3438,7 +3438,7 @@ BEGIN
            Descripcion_Afectacion,
            Nivel_Prioridad_TC,
            Estado_Afectacion
-    FROM TBL_TIPO_AFECTACION
+    FROM tbl_tipo_afectacion
     ORDER BY Nivel_Prioridad_TC DESC;
 END $$
 DELIMITER ;
@@ -3457,7 +3457,7 @@ CREATE PROCEDURE sp_admin_prioridad_afectacion_insertar(
     OUT p_nuevo_id TINYINT
 )
 BEGIN
-    INSERT INTO TBL_TIPO_AFECTACION
+    INSERT INTO tbl_tipo_afectacion
         (Nombre_Afectacion, Descripcion_Afectacion, Nivel_Prioridad_TC)
     VALUES (p_nombre, p_descripcion, p_nivel);
     SET p_nuevo_id = LAST_INSERT_ID();
@@ -3478,7 +3478,7 @@ CREATE PROCEDURE sp_admin_prioridad_afectacion_actualizar(
     IN p_nivel TINYINT
 )
 BEGIN
-    UPDATE TBL_TIPO_AFECTACION
+    UPDATE tbl_tipo_afectacion
     SET Nombre_Afectacion = p_nombre,
            Descripcion_Afectacion = p_descripcion,
            Nivel_Prioridad_TC = p_nivel
@@ -3497,12 +3497,12 @@ CREATE PROCEDURE sp_admin_prioridad_afectacion_estado_cambiar(
     IN p_id TINYINT
 )
 BEGIN
-    UPDATE TBL_TIPO_AFECTACION
+    UPDATE tbl_tipo_afectacion
     SET Estado_Afectacion = IF(Estado_Afectacion = 1, 0, 1)
     WHERE ID_Tipo_Afectacion = p_id;
 
     SELECT Estado_Afectacion AS Nuevo_Estado
-    FROM TBL_TIPO_AFECTACION
+    FROM tbl_tipo_afectacion
     WHERE ID_Tipo_Afectacion = p_id;
 END $$
 DELIMITER ;
@@ -3523,7 +3523,7 @@ BEGIN
            Descripcion_Grupo_Preferencial,
            Nivel_Prioridad_GP,
            Estado_Grupo_Preferencial
-    FROM   TBL_GRUPO_PREFERENCIAL
+    FROM   tbl_grupo_preferencial
     ORDER  BY Nivel_Prioridad_GP DESC;
 END $$
 DELIMITER ;
@@ -3541,7 +3541,7 @@ CREATE PROCEDURE sp_admin_prioridad_grupo_insertar(
     OUT p_nuevo_id TINYINT
 )
 BEGIN
-    INSERT INTO TBL_GRUPO_PREFERENCIAL
+    INSERT INTO tbl_grupo_preferencial
         (Nombre_Grupo_Preferencial, Descripcion_Grupo_Preferencial, Nivel_Prioridad_GP)
     VALUES (p_nombre, p_descripcion, p_nivel);
     SET p_nuevo_id = LAST_INSERT_ID();
@@ -3562,7 +3562,7 @@ CREATE PROCEDURE sp_admin_prioridad_grupo_actualizar(
     IN p_nivel TINYINT
 )
 BEGIN
-    UPDATE TBL_GRUPO_PREFERENCIAL
+    UPDATE tbl_grupo_preferencial
     SET    Nombre_Grupo_Preferencial = p_nombre,
            Descripcion_Grupo_Preferencial = p_descripcion,
            Nivel_Prioridad_GP = p_nivel
@@ -3581,12 +3581,12 @@ CREATE PROCEDURE sp_admin_prioridad_grupo_estado_cambiar(
     IN p_id TINYINT
 )
 BEGIN
-    UPDATE TBL_GRUPO_PREFERENCIAL
+    UPDATE tbl_grupo_preferencial
     SET Estado_Grupo_Preferencial = IF(Estado_Grupo_Preferencial = 1, 0, 1)
     WHERE ID_Grupo_Preferencial = p_id;
 
     SELECT Estado_Grupo_Preferencial AS Nuevo_Estado
-    FROM TBL_GRUPO_PREFERENCIAL
+    FROM tbl_grupo_preferencial
     WHERE ID_Grupo_Preferencial = p_id;
 END $$
 DELIMITER ;
@@ -3607,7 +3607,7 @@ BEGIN
            Descripcion_Estrato,
            Nivel_Prioridad_E,
            Estado_Estrato
-    FROM   TBL_ESTRATO
+    FROM   tbl_estrato
     ORDER  BY Nivel_Prioridad_E DESC;
 END $$
 DELIMITER ;
@@ -3626,7 +3626,7 @@ CREATE PROCEDURE sp_admin_prioridad_estrato_insertar(
     OUT p_nuevo_id TINYINT
 )
 BEGIN
-    INSERT INTO TBL_ESTRATO
+    INSERT INTO tbl_estrato
         (Nombre_Estrato, Descripcion_Estrato, Nivel_Prioridad_E)
     VALUES (p_nombre, p_descripcion, p_nivel);
     SET p_nuevo_id = LAST_INSERT_ID();
@@ -3647,7 +3647,7 @@ CREATE PROCEDURE sp_admin_prioridad_estrato_actualizar(
     IN p_nivel TINYINT
 )
 BEGIN
-    UPDATE TBL_ESTRATO
+    UPDATE tbl_estrato
     SET    Nombre_Estrato = p_nombre,
            Descripcion_Estrato = p_descripcion,
            Nivel_Prioridad_E = p_nivel
@@ -3667,12 +3667,12 @@ CREATE PROCEDURE sp_admin_prioridad_estrato_estado_cambiar(
     IN p_id TINYINT
 )
 BEGIN
-    UPDATE TBL_ESTRATO
+    UPDATE tbl_estrato
     SET    Estado_Estrato = IF(Estado_Estrato = 1, 0, 1)
     WHERE  ID_Estrato = p_id;
 
     SELECT Estado_Estrato AS Nuevo_Estado
-    FROM   TBL_ESTRATO
+    FROM   tbl_estrato
     WHERE  ID_Estrato = p_id;
 END $$
 DELIMITER ;
@@ -3700,8 +3700,8 @@ BEGIN
     SELECT
         -- Tickets activos asignados al técnico que aún no tienen solución
         (SELECT COUNT(*)
-            FROM TBL_TICKET t
-            JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+            FROM tbl_ticket t
+            JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
             WHERE t.FK_ID_Usuario_Tecnico = p_id_usuario
               AND t.Estado_Ticket = 1
               AND et.Estado_Final = 0
@@ -3709,8 +3709,8 @@ BEGIN
 
         -- Tickets resueltos por el técnico (Estado_Final = 1)
         (SELECT COUNT(*)
-            FROM TBL_TICKET t
-            JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+            FROM tbl_ticket t
+            JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
             WHERE t.FK_ID_Usuario_Tecnico = p_id_usuario
               AND t.Estado_Ticket = 1
               AND et.Estado_Final = 1
@@ -3718,17 +3718,17 @@ BEGIN
 
         -- Total de tickets asignados al técnico (cualquier estado de ticket)
         (SELECT COUNT(*)
-            FROM TBL_TICKET
+            FROM tbl_ticket
             WHERE FK_ID_Usuario_Tecnico = p_id_usuario
               AND Estado_Ticket = 1
         ) AS total_solicitudes,
 
         -- Cupos disponibles en Engativá — dato global (igual que admin)
         (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)
-            FROM TBL_CUPOS c
-            JOIN TBL_COLEGIO co ON c.FK_ID_Colegio = co.ID_Colegio
-            JOIN TBL_BARRIO b  ON co.FK_ID_Barrio = b.ID_Barrio
-            JOIN TBL_LOCALIDAD l ON b.FK_ID_Localidad = l.ID_Localidad
+            FROM tbl_cupos c
+            JOIN tbl_colegio co ON c.FK_ID_Colegio = co.ID_Colegio
+            JOIN tbl_barrio b  ON co.FK_ID_Barrio = b.ID_Barrio
+            JOIN tbl_localidad l ON b.FK_ID_Localidad = l.ID_Localidad
             WHERE c.Estado_Cupos = 1
               AND co.Estado_Colegio = 1
               AND b.Estado_Barrio = 1
@@ -3792,11 +3792,11 @@ BEGIN
              AND et.Nombre_Estado = 'Solucionado' THEN t.ID_Ticket
         END) AS cupos_asignados
     FROM dias d
-    LEFT JOIN TBL_TICKET t
+    LEFT JOIN tbl_ticket t
            ON DATE(t.Fecha_Creacion)      = d.fecha
           AND t.Estado_Ticket             = 1
           AND t.FK_ID_Usuario_Tecnico     = p_id_usuario   -- filtro técnico
-    LEFT JOIN TBL_ESTADO_TICKET et
+    LEFT JOIN tbl_estado_ticket et
            ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
     GROUP BY d.fecha
     ORDER BY d.fecha ASC;
@@ -3844,7 +3844,7 @@ BEGIN
         SUM(Nombre_Estado = 'Solucionado') AS solucionados,
 
         -- Global (cupos disponibles en el sistema, sin importar técnico)
-        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)FROM TBL_CUPOS c WHERE c.Estado_Cupos = 1) AS cupos_disponibles
+        (SELECT COALESCE(SUM(c.Cupos_Disponibles), 0)FROM tbl_cupos c WHERE c.Estado_Cupos = 1) AS cupos_disponibles
 
     FROM vw_technical_cases
     WHERE FK_ID_Usuario_Tecnico = p_id_tecnico;
@@ -3962,10 +3962,10 @@ BEGIN
         tc.Es_Interno,
         CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Usuario,
         r.Nombre_Rol
-    FROM TBL_TICKET_COMENTARIO tc
-    INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
-    INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-    INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+    FROM tbl_ticket_comentario tc
+    INNER JOIN tbl_usuario u ON tc.FK_ID_Usuario = u.ID_Usuario
+    INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+    INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
     WHERE tc.FK_ID_Ticket = p_id_ticket
       AND tc.Estado_Comentario_Ticket = 1
     ORDER BY tc.Fecha_Comentario DESC;
@@ -3987,7 +3987,7 @@ CREATE PROCEDURE sp_ticket_panel_comentario_insertar(
     IN p_es_interno TINYINT(1)
 )
 BEGIN
-    INSERT INTO TBL_TICKET_COMENTARIO (
+    INSERT INTO tbl_ticket_comentario (
         Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
     ) VALUES (
         p_tipo_evento, p_comentario, p_es_interno, p_id_usuario, p_id_ticket
@@ -4017,26 +4017,26 @@ BEGIN
 
     -- Capturar el nombre del estado anterior para la auditoría
     SELECT et.Nombre_Estado INTO v_estado_anterior
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    FROM tbl_ticket t
+    INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
     WHERE t.ID_Ticket = p_id_ticket
     LIMIT 1;
 
     -- Capturar el nombre del nuevo estado
     SELECT Nombre_Estado INTO v_estado_nuevo
-    FROM TBL_ESTADO_TICKET
+    FROM tbl_estado_ticket
     WHERE ID_Estado_Ticket = p_id_estado_nuevo
     LIMIT 1;
 
     -- Obtener si es estado final
     SELECT Estado_Final 
     INTO v_es_final
-    FROM TBL_ESTADO_TICKET
+    FROM tbl_estado_ticket
     WHERE ID_Estado_Ticket = p_id_estado_nuevo
     LIMIT 1;
     
     -- Actualizar el ticket
-    UPDATE TBL_TICKET
+    UPDATE tbl_ticket
     SET FK_ID_Estado_Ticket = p_id_estado_nuevo,
         Fecha_Cierre = p_fecha_cierre
     WHERE ID_Ticket = p_id_ticket;
@@ -4053,7 +4053,7 @@ BEGIN
     );
 
     -- Registrar el cambio como comentario interno automático
-    INSERT INTO TBL_TICKET_COMENTARIO (
+    INSERT INTO tbl_ticket_comentario (
         Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
     ) VALUES (
         v_tipo_evento, v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
@@ -4080,13 +4080,13 @@ BEGIN
 
     -- Obtener el nombre del colegio para la auditoría
     SELECT col.Nombre_Colegio INTO v_nombre_colegio
-    FROM TBL_CUPOS c
-    INNER JOIN TBL_COLEGIO col ON c.FK_ID_Colegio = col.ID_Colegio
+    FROM tbl_cupos c
+    INNER JOIN tbl_colegio col ON c.FK_ID_Colegio = col.ID_Colegio
     WHERE c.ID_Cupos = p_id_cupo
     LIMIT 1;
 
     -- Asignar el cupo al ticket
-    UPDATE TBL_TICKET
+    UPDATE tbl_ticket
     SET FK_ID_Cupo_Asignado = p_id_cupo
     WHERE ID_Ticket = p_id_ticket;
 
@@ -4099,7 +4099,7 @@ BEGIN
         ' | Cupo ID: ', p_id_cupo
     );
 
-    INSERT INTO TBL_TICKET_COMENTARIO (
+    INSERT INTO tbl_ticket_comentario (
         Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket
     ) VALUES (
         v_tipo_evento, v_msg_auditoria, 1, p_id_tecnico, p_id_ticket
@@ -4123,8 +4123,8 @@ BEGIN
         dt.Nombre_Original,
         dt.Fecha_Subida,
         td.Nombre_Tipo_Doc
-    FROM TBL_DOCUMENTO_TICKET dt
-    INNER JOIN TBL_TIPO_DOCUMENTO td ON dt.FK_ID_Tipo_Doc = td.ID_Tipo_Doc
+    FROM tbl_documento_ticket dt
+    INNER JOIN tbl_tipo_documento td ON dt.FK_ID_Tipo_Doc = td.ID_Tipo_Doc
     WHERE dt.FK_ID_Ticket = p_id_ticket
       AND dt.Estado_Documentos = 1
     ORDER BY dt.Fecha_Subida DESC;
@@ -4144,7 +4144,7 @@ BEGIN
     SELECT
         dt.Archivo,
         dt.Nombre_Original
-    FROM TBL_DOCUMENTO_TICKET dt
+    FROM tbl_documento_ticket dt
     WHERE dt.ID_Doc_Ticket = p_id_doc
       AND dt.Estado_Documentos = 1
     LIMIT 1;
@@ -4204,7 +4204,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_estados_ticket()
 BEGIN
     SELECT ID_Estado_Ticket, Nombre_Estado
-    FROM TBL_ESTADO_TICKET
+    FROM tbl_estado_ticket
     ORDER BY ID_Estado_Ticket;
 END $$
 DELIMITER ;
@@ -4219,7 +4219,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_colegios()
 BEGIN
     SELECT ID_Colegio, Nombre_Colegio
-    FROM TBL_COLEGIO
+    FROM tbl_colegio
     ORDER BY Nombre_Colegio;
 END $$
 DELIMITER ;
@@ -4234,7 +4234,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_jornadas()
 BEGIN
     SELECT ID_Jornada, Nombre_Jornada
-    FROM TBL_JORNADA
+    FROM tbl_jornada
     WHERE Estado_Jornada = 1
     ORDER BY ID_Jornada;
 END $$
@@ -4250,7 +4250,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_tipo_afectacion()
 BEGIN
     SELECT ID_Tipo_Afectacion, Nombre_Afectacion
-    FROM TBL_TIPO_AFECTACION
+    FROM tbl_tipo_afectacion
     WHERE Estado_Afectacion = 1
     ORDER BY ID_Tipo_Afectacion;
 END $$
@@ -4270,16 +4270,16 @@ BEGIN
     SELECT
         cu.ID_Cupos,
         CONCAT(col.Nombre_Colegio, ' — ', jor.Nombre_Jornada, ' — Grado: ', g.Nombre_Grado) AS Label_Cupo
-    FROM TBL_CUPOS cu
-    INNER JOIN TBL_COLEGIO col ON cu.FK_ID_Colegio = col.ID_Colegio
-    INNER JOIN TBL_JORNADA jor ON cu.FK_ID_Jornada = jor.ID_Jornada
-    INNER JOIN TBL_GRADO g ON cu.FK_ID_Grado = g.ID_Grado
+    FROM tbl_cupos cu
+    INNER JOIN tbl_colegio col ON cu.FK_ID_Colegio = col.ID_Colegio
+    INNER JOIN tbl_jornada jor ON cu.FK_ID_Jornada = jor.ID_Jornada
+    INNER JOIN tbl_grado g ON cu.FK_ID_Grado = g.ID_Grado
     WHERE cu.Estado_Cupos = 1   -- activo/disponible
       AND (
           -- Cupos sin asignar a ningún ticket
           cu.ID_Cupos NOT IN (
               SELECT FK_ID_Cupo_Asignado
-              FROM TBL_TICKET
+              FROM tbl_ticket
               WHERE FK_ID_Cupo_Asignado IS NOT NULL
                 AND ID_Ticket != p_id_ticket
           )
@@ -4322,7 +4322,7 @@ BEGIN
         Direccion_Colegio,
         IFNULL(Telefono, 'No disponible') AS Telefono,
         IFNULL(Email, 'No disponible') AS Email
-    FROM TBL_COLEGIO
+    FROM tbl_colegio
     WHERE FK_ID_Barrio = p_id_barrio
       AND Estado_Colegio = 1
     ORDER BY Nombre_Colegio;
@@ -4351,18 +4351,18 @@ BEGIN
         IFNULL(c.Email, 'No disponible') AS Email,
         j.Nombre_Jornada,
         g.Nombre_Grado
-    FROM TBL_TICKET t
-    INNER JOIN TBL_ESTUDIANTE e
+    FROM tbl_ticket t
+    INNER JOIN tbl_estudiante e
         ON e.ID_Estudiante = t.FK_ID_Estudiante
-    INNER JOIN TBL_CUPOS cu
+    INNER JOIN tbl_cupos cu
         ON  cu.FK_ID_Colegio = p_id_colegio
         AND cu.FK_ID_Jornada = p_id_jornada
         AND cu.FK_ID_Grado = e.FK_ID_Grado_Proximo
         AND cu.Cupos_Disponibles > 0
         AND cu.Estado_Cupos = 1
-    INNER JOIN TBL_COLEGIO c ON c.ID_Colegio = cu.FK_ID_Colegio
-    INNER JOIN TBL_JORNADA j ON j.ID_Jornada = cu.FK_ID_Jornada
-    INNER JOIN TBL_GRADO g ON g.ID_Grado = cu.FK_ID_Grado
+    INNER JOIN tbl_colegio c ON c.ID_Colegio = cu.FK_ID_Colegio
+    INNER JOIN tbl_jornada j ON j.ID_Jornada = cu.FK_ID_Jornada
+    INNER JOIN tbl_grado g ON g.ID_Grado = cu.FK_ID_Grado
     WHERE t.ID_Ticket = p_id_ticket
     LIMIT 1;
 END $$
@@ -4400,10 +4400,10 @@ BEGIN
         j.Nombre_Jornada,
         g.Nombre_Grado
     INTO v_colegio, v_dir, v_tel, v_email, v_jornada, v_grado
-    FROM TBL_CUPOS cu
-    INNER JOIN TBL_COLEGIO c ON c.ID_Colegio = cu.FK_ID_Colegio
-    INNER JOIN TBL_JORNADA j ON j.ID_Jornada = cu.FK_ID_Jornada
-    INNER JOIN TBL_GRADO g ON g.ID_Grado = cu.FK_ID_Grado
+    FROM tbl_cupos cu
+    INNER JOIN tbl_colegio c ON c.ID_Colegio = cu.FK_ID_Colegio
+    INNER JOIN tbl_jornada j ON j.ID_Jornada = cu.FK_ID_Jornada
+    INNER JOIN tbl_grado g ON g.ID_Grado = cu.FK_ID_Grado
     WHERE cu.ID_Cupos = p_id_cupo;
 
     SET v_msg = CONCAT(
@@ -4421,19 +4421,19 @@ BEGIN
     );
 
     -- Actualizar ticket: vincular cupo + cambiar estado
-    UPDATE TBL_TICKET
+    UPDATE tbl_ticket
     SET FK_ID_Cupo_Asignado = p_id_cupo,
         FK_ID_Estado_Ticket = 4          -- Pendiente Acción de Usuario
     WHERE ID_Ticket = p_id_ticket;
 
     -- Comentario público automático
-    INSERT INTO TBL_TICKET_COMENTARIO
+    INSERT INTO tbl_ticket_comentario
         (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
     VALUES
         ('Cupo Asignado', v_msg, 0, p_id_tecnico, p_id_ticket);
 
     -- Lógica de reserva: bloquea el cupo para que nadie más lo use
-    UPDATE TBL_CUPOS
+    UPDATE tbl_cupos
     SET Cupos_Disponibles = Cupos_Disponibles - 1,
         Cupos_Reservados = Cupos_Reservados + 1
     WHERE ID_Cupos = p_id_cupo 
@@ -4455,25 +4455,25 @@ BEGIN
         t.FK_ID_Cupo_Asignado,
         IFNULL(t.FK_ID_Usuario_Tecnico,
                t.FK_ID_Usuario_Creador) AS ID_Responsable
-    FROM TBL_TICKET t
+    FROM tbl_ticket t
     WHERE t.FK_ID_Estado_Ticket = 4
         AND t.Estado_Ticket = 1
         -- El último comentario del ticket tiene más de 3 días
         AND (
             SELECT MAX(tc.Fecha_Comentario)
-            FROM TBL_TICKET_COMENTARIO tc
+            FROM tbl_ticket_comentario tc
             WHERE tc.FK_ID_Ticket = t.ID_Ticket
         ) < DATE_SUB(NOW(), INTERVAL 3 DAY)
         -- El usuario creador NO ha respondido tras la asignación del cupo
         AND NOT EXISTS (
             SELECT 1
-            FROM TBL_TICKET_COMENTARIO tc2
+            FROM tbl_ticket_comentario tc2
             WHERE tc2.FK_ID_Ticket  = t.ID_Ticket
                 AND tc2.FK_ID_Usuario = t.FK_ID_Usuario_Creador
                 AND tc2.Tipo_Evento   IN ('Comentario', 'Documento Subido')
                 AND tc2.Fecha_Comentario > (
                     SELECT MAX(tc3.Fecha_Comentario)
-                    FROM TBL_TICKET_COMENTARIO tc3
+                    FROM tbl_ticket_comentario tc3
                     WHERE tc3.FK_ID_Ticket = t.ID_Ticket
                     AND tc3.Tipo_Evento  = 'Cupo Asignado'
                 )
@@ -4493,19 +4493,19 @@ CREATE PROCEDURE sp_ticket_rechazar_abandonado(
     IN p_id_responsable INT
 )
 BEGIN
-    UPDATE TBL_CUPOS cu
-    INNER JOIN TBL_TICKET t ON cu.ID_Cupos = t.FK_ID_Cupo_Asignado
+    UPDATE tbl_cupos cu
+    INNER JOIN tbl_ticket t ON cu.ID_Cupos = t.FK_ID_Cupo_Asignado
     SET cu.Cupos_Reservados = cu.Cupos_Reservados - 1,
         cu.Cupos_Disponibles = cu.Cupos_Disponibles + 1
     WHERE t.ID_Ticket = p_id_ticket;
 
-    UPDATE TBL_TICKET
+    UPDATE tbl_ticket
     SET FK_ID_Estado_Ticket = 6,
         FK_ID_Cupo_Asignado = NULL,
         Fecha_Cierre = NOW()
     WHERE ID_Ticket = p_id_ticket;
 
-    INSERT INTO TBL_TICKET_COMENTARIO
+    INSERT INTO tbl_ticket_comentario
         (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
     VALUES (
         'Cierre Solicitud',
@@ -4545,7 +4545,7 @@ BEGIN
 
     -- Obtener cupo asignado al ticket
     SELECT FK_ID_Cupo_Asignado INTO v_id_cupo
-    FROM TBL_TICKET WHERE ID_Ticket = p_id_ticket;
+    FROM tbl_ticket WHERE ID_Ticket = p_id_ticket;
 
     -- Datos del cupo para el comentario
     SELECT
@@ -4556,25 +4556,25 @@ BEGIN
         j.Nombre_Jornada,
         g.Nombre_Grado
     INTO v_colegio, v_dir, v_tel, v_email, v_jornada, v_grado
-    FROM TBL_CUPOS cu
-    INNER JOIN TBL_COLEGIO c ON c.ID_Colegio = cu.FK_ID_Colegio
-    INNER JOIN TBL_JORNADA j ON j.ID_Jornada = cu.FK_ID_Jornada
-    INNER JOIN TBL_GRADO g ON g.ID_Grado = cu.FK_ID_Grado
+    FROM tbl_cupos cu
+    INNER JOIN tbl_colegio c ON c.ID_Colegio = cu.FK_ID_Colegio
+    INNER JOIN tbl_jornada j ON j.ID_Jornada = cu.FK_ID_Jornada
+    INNER JOIN tbl_grado g ON g.ID_Grado = cu.FK_ID_Grado
     WHERE cu.ID_Cupos = v_id_cupo;
 
     -- Descontar cupo reservado (ahora es definitivo)
-    UPDATE TBL_CUPOS
+    UPDATE tbl_cupos
     SET Cupos_Reservados = Cupos_Reservados - 1
     WHERE ID_Cupos = v_id_cupo;
 
     -- Cerrar el ticket como Solucionado
-    UPDATE TBL_TICKET
+    UPDATE tbl_ticket
     SET FK_ID_Estado_Ticket = 8,
         Fecha_Cierre = NOW()
     WHERE ID_Ticket = p_id_ticket;
 
     -- Comentario público de cierre
-    INSERT INTO TBL_TICKET_COMENTARIO
+    INSERT INTO tbl_ticket_comentario
         (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
     VALUES (
         'Cierre Solicitud',
@@ -4614,22 +4614,22 @@ BEGIN
     DECLARE v_id_cupo INT;
 
     SELECT FK_ID_Cupo_Asignado INTO v_id_cupo
-    FROM TBL_TICKET WHERE ID_Ticket = p_id_ticket;
+    FROM tbl_ticket WHERE ID_Ticket = p_id_ticket;
 
     -- Liberar reserva
-    UPDATE TBL_CUPOS
+    UPDATE tbl_cupos
     SET Cupos_Disponibles = Cupos_Disponibles + 1,
         Cupos_Reservados  = Cupos_Reservados  - 1
     WHERE ID_Cupos = v_id_cupo;
 
     -- Revertir ticket: sin cupo, volver a Asignación de Cupo
-    UPDATE TBL_TICKET
+    UPDATE tbl_ticket
     SET FK_ID_Cupo_Asignado = NULL,
         FK_ID_Estado_Ticket = 5
     WHERE ID_Ticket = p_id_ticket;
 
     -- Comentario público
-    INSERT INTO TBL_TICKET_COMENTARIO
+    INSERT INTO tbl_ticket_comentario
         (Tipo_Evento, Comentario, Es_Interno, FK_ID_Usuario, FK_ID_Ticket)
     VALUES (
         'Cupo Cancelado',
@@ -4668,13 +4668,13 @@ BEGIN
         IFNULL(c.Email,    'No disponible') AS Email,
         b.Nombre_Barrio,
         l.Nombre_Localidad
-    FROM TBL_TICKET t
-    INNER JOIN TBL_CUPOS   cu ON cu.ID_Cupos   = t.FK_ID_Cupo_Asignado
-    INNER JOIN TBL_GRADO    g ON g.ID_Grado    = cu.FK_ID_Grado
-    INNER JOIN TBL_JORNADA  j ON j.ID_Jornada  = cu.FK_ID_Jornada
-    INNER JOIN TBL_COLEGIO  c ON c.ID_Colegio  = cu.FK_ID_Colegio
-    INNER JOIN TBL_BARRIO   b ON b.ID_Barrio   = c.FK_ID_Barrio
-    INNER JOIN TBL_LOCALIDAD l ON l.ID_Localidad = b.FK_ID_Localidad
+    FROM tbl_ticket t
+    INNER JOIN tbl_cupos   cu ON cu.ID_Cupos   = t.FK_ID_Cupo_Asignado
+    INNER JOIN tbl_grado    g ON g.ID_Grado    = cu.FK_ID_Grado
+    INNER JOIN tbl_jornada  j ON j.ID_Jornada  = cu.FK_ID_Jornada
+    INNER JOIN tbl_colegio  c ON c.ID_Colegio  = cu.FK_ID_Colegio
+    INNER JOIN tbl_barrio   b ON b.ID_Barrio   = c.FK_ID_Barrio
+    INNER JOIN tbl_localidad l ON l.ID_Localidad = b.FK_ID_Localidad
     WHERE t.ID_Ticket = p_id_ticket
         AND t.FK_ID_Cupo_Asignado IS NOT NULL;
 END $$

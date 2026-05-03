@@ -1,0 +1,128 @@
+ls98.93.29.16
+
+// VALIDAR PYTHON
+python3 --version
+
+	// SI PIP NO ESTA INSTALADO
+sudo yum install python3-pip
+
+	// ACTUALIZAR PYTHON
+sudo dnf update -y
+sudo dnf install python3.12 -y
+python3.12 --version
+
+
+// COMPROVAR INGRESO
+ping 8.8.8.8
+
+// GIT
+sudo yum install git -y 
+git --version
+	// CLONAR REPOSITORIO
+git clone https://github.com/jofsanchezci/Cloud_ComP_SM_2026.git
+
+
+// CARPETA FLASK
+
+	// INICIALIZAR EL ENTORNO VIRTUAL
+- python3.12 -m venv env (Si no funciona usar virtualenv env)
+- source env/bin/activate
+- pip install Flask
+
+- deactivate //parar entorno virtual
+
+lab-passw	ord
+
+
+
+- Seguridad
+- Gurpo de seguridad
+- Editar reglas de entrada
+- Agregar reglas de entrada
+
+sudo dnf install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+
+export MAIL_PORT=587
+
+http://127.0.0.1:5000
+
+
+// CONECTAR CON RDS
+	//ENDPOINT DE RDS
+fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com
+	6rW(86J2nFW!$p44qKt
+
+
+	//Verificar conectividad
+sudo yum update -y
+sudo dnf update -y
+sudo dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+sudo dnf install -y mysql-community-client
+sudo dnf install -y nmap-ncat
+
+//USURAIO PUTTY - WINSCP
+ec2-user
+
+//WINSCP
+Pasar el archivo SQL a la instancia EC2
+
+// VALIDAR ACCESO A CONSOLA DE SQL
+mysql -h fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com -u admin_fortress -p
+
+
+	//Pasar base de datos - PUTTY
+sudo yum install mariadb105 -y 
+mysql -h fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com -u admin_fortress -p fortress_educa_db < /home/ec2-user/fortress.sql
+Usuario: admin_fortress 
+Contraseña: Fortress0099
+// NOTA: Si el comando no funciona validar que no exista ninguna sentencia DEFINER en el script de la BD. De lo cantrario borrarlo
+
+
+
+
+
+
+
+
+
+// SERVICIO PARA QUE LA INSTACIA SE MANTENGA
+	// Crear un archivo de configuracion
+sudo nano /etc/systemd/system/mi_app.service
+
+
+	// Codigo del servicio
+[Unit]
+Description=Servicio Flask con Variables de Entorno
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user/FORTRESS_EDUCA_PRODUCTION
+# Carga todas las variables del archivo .env automáticamente
+EnvironmentFile=/home/ec2-user/FORTRESS_EDUCA_PRODUCTION/.env
+# Ejecuta usando el python del entorno virtual
+ExecStart=/home/ec2-user/FORTRESS_EDUCA_PRODUCTION/env/bin/python3.12 run.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+	// Activar servicio
+sudo systemctl start mi_app
+sudo systemctl enable mi_app
+
+	// Si se modifica
+sudo systemctl daemon-reload
+sudo systemctl restart mi_app
+	
+	// Validar estado si no funciona
+sudo systemctl status mi_app
+	
+	// Editar el archivo
+sudo nano /etc/systemd/system/mi_app.service
+

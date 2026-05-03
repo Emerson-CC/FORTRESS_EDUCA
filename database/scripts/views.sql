@@ -49,14 +49,14 @@ SELECT
     e.FK_ID_Tipo_Iden AS ID_Tipo_Iden,
     e.FK_ID_Parentesco_Es AS ID_Parentesco
 
-FROM TBL_ESTUDIANTE e
-INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
-INNER JOIN TBL_GENERO g ON e.FK_ID_Genero = g.ID_Genero
-INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
-INNER JOIN TBL_GRADO gr_a ON e.FK_ID_Grado_Actual = gr_a.ID_Grado
-LEFT JOIN TBL_GRADO gr_p ON e.FK_ID_Grado_Proximo = gr_p.ID_Grado
-INNER JOIN TBL_COLEGIO c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio;
+FROM tbl_estudiante e
+INNER JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_tipo_identificacion ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
+INNER JOIN tbl_genero g ON e.FK_ID_Genero = g.ID_Genero
+INNER JOIN tbl_grupo_preferencial gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
+INNER JOIN tbl_grado gr_a ON e.FK_ID_Grado_Actual = gr_a.ID_Grado
+LEFT JOIN tbl_grado gr_p ON e.FK_ID_Grado_Proximo = gr_p.ID_Grado
+INNER JOIN tbl_colegio c ON e.FK_ID_Colegio_Anterior = c.ID_Colegio;
 
 
 
@@ -83,10 +83,10 @@ SELECT
     CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Usuario,
     r.Nombre_Rol
 
-FROM TBL_TICKET_COMENTARIO tc
-INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;
+FROM tbl_ticket_comentario tc
+INNER JOIN tbl_usuario u ON tc.FK_ID_Usuario = u.ID_Usuario
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol;
 
 
 -- --------------------------------------------------------
@@ -118,9 +118,9 @@ SELECT
     ta.Nombre_Afectacion,
     ta.Nivel_Prioridad_TC
 
-FROM TBL_TICKET t
-INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-INNER JOIN TBL_TIPO_AFECTACION ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afectacion;
+FROM tbl_ticket t
+INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+INNER JOIN tbl_tipo_afectacion ta ON t.FK_ID_Tipo_Afectacion = ta.ID_Tipo_Afectacion;
 
 
 
@@ -156,9 +156,9 @@ SELECT
     END AS Navegador,
     sa.User_Agent,
     sa.Fecha_Evento
-FROM TBL_AUDITORIA_SESION sa
-LEFT JOIN TBL_USUARIO u ON sa.FK_ID_Usuario = u.ID_Usuario
-LEFT JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
+FROM tbl_auditoria_sesion sa
+LEFT JOIN tbl_usuario u ON sa.FK_ID_Usuario = u.ID_Usuario
+LEFT JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
 WHERE sa.Estado_Auditoria_Sesion = 1;
 
 
@@ -191,9 +191,9 @@ SELECT
     COALESCE(CAST(a.Datos_Antiguo AS CHAR), 'No aplica') AS Dato_Antiguo,
     COALESCE(CAST(a.Datos_Nuevos  AS CHAR), 'No aplica') AS Dato_Nuevo,
     a.Fecha_Auditoria AS Fecha_Evento
-FROM TBL_AUDITORIA a
-LEFT JOIN TBL_USUARIO u ON a.FK_ID_Usuario = u.ID_Usuario   -- LEFT: muestra aunque el user no exista
-LEFT JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol       -- LEFT: muestra aunque no tenga rol
+FROM tbl_auditoria a
+LEFT JOIN tbl_usuario u ON a.FK_ID_Usuario = u.ID_Usuario   -- LEFT: muestra aunque el user no exista
+LEFT JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol       -- LEFT: muestra aunque no tenga rol
 WHERE a.Estado_Auditoria = 1;
 
 
@@ -213,16 +213,16 @@ SELECT
     )) AS Nombre_Completo,
     u.Doble_Factor_Activo AS MFA,
     da.Email,
-    (SELECT COUNT(*) FROM TBL_TICKET t
+    (SELECT COUNT(*) FROM tbl_ticket t
      WHERE t.FK_ID_Usuario_Creador = u.ID_Usuario
        AND t.Estado_Ticket = 1) AS Total_Solicitudes,
     u.Estado_Usuario,
     CASE u.Estado_Usuario WHEN 1 THEN 'Activo' ELSE 'Eliminado' END AS Estado_Texto,
     u.Ultimo_Login
-FROM TBL_USUARIO u
-INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-LEFT JOIN TBL_DATOS_ADICIONALES da ON da.FK_ID_Persona = p.ID_Persona
+FROM tbl_usuario u
+INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+LEFT JOIN tbl_datos_adicionales da ON da.FK_ID_Persona = p.ID_Persona
 WHERE r.Nombre_Rol = 'Acudiente';
 
 -- --------------------------------------------------------
@@ -239,11 +239,11 @@ SELECT
     g.Nombre_Genero AS Genero,
     e.Estado_Estudiante,
     CASE e.Estado_Estudiante WHEN 1 THEN 'Activo' ELSE 'Eliminado' END AS Estado_Texto
-FROM TBL_ESTUDIANTE e
-INNER JOIN TBL_PERSONA pe ON e.FK_ID_Persona = pe.ID_Persona
-INNER JOIN TBL_USUARIO ua ON e.FK_ID_Acudiente = ua.ID_Usuario
-INNER JOIN TBL_PERSONA pa ON ua.FK_ID_Persona = pa.ID_Persona
-INNER JOIN TBL_GENERO g ON e.FK_ID_Genero = g.ID_Genero;
+FROM tbl_estudiante e
+INNER JOIN tbl_persona pe ON e.FK_ID_Persona = pe.ID_Persona
+INNER JOIN tbl_usuario ua ON e.FK_ID_Acudiente = ua.ID_Usuario
+INNER JOIN tbl_persona pa ON ua.FK_ID_Persona = pa.ID_Persona
+INNER JOIN tbl_genero g ON e.FK_ID_Genero = g.ID_Genero;
 
 
 -- --------------------------------------------------------
@@ -256,21 +256,21 @@ SELECT
     CONCAT('TEC-', u.ID_Usuario) AS ID_Formateado,
     CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo,
     da.Email,
-    (SELECT COUNT(*) FROM TBL_TICKET t
-     INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    (SELECT COUNT(*) FROM tbl_ticket t
+     INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
      WHERE t.FK_ID_Usuario_Tecnico = u.ID_Usuario
        AND et.Estado_Final = 0) AS Casos_Asignados,
-    (SELECT COUNT(*) FROM TBL_TICKET t
-     INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+    (SELECT COUNT(*) FROM tbl_ticket t
+     INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
      WHERE t.FK_ID_Usuario_Tecnico = u.ID_Usuario
        AND et.Estado_Final = 1) AS Casos_Cerrados,
     u.Estado_Usuario,
     CASE u.Estado_Usuario WHEN 1 THEN 'Activo' ELSE 'Desactivado' END AS Estado_Texto,
     u.Ultimo_Login
-FROM TBL_USUARIO u
-INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-LEFT  JOIN TBL_DATOS_ADICIONALES da ON da.FK_ID_Persona = p.ID_Persona
+FROM tbl_usuario u
+INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+LEFT  JOIN tbl_datos_adicionales da ON da.FK_ID_Persona = p.ID_Persona
 WHERE r.Nombre_Rol = 'Tecnico';
 
 
@@ -286,9 +286,9 @@ SELECT
     u.Ultimo_Login,
     u.Estado_Usuario,
     CASE u.Estado_Usuario WHEN 1 THEN 'Activo' ELSE 'Desactivado' END AS Estado_Texto
-FROM TBL_USUARIO u
-INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
+FROM tbl_usuario u
+INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
 WHERE r.Nombre_Rol = 'Admin';
 
 
@@ -313,10 +313,10 @@ SELECT
     u.ID_Usuario,
     r.Nombre_Rol,
     CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo_Usuario
-FROM TBL_TICKET_COMENTARIO tc
-INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;
+FROM tbl_ticket_comentario tc
+INNER JOIN tbl_usuario u ON tc.FK_ID_Usuario = u.ID_Usuario
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol;
 
 
 
@@ -347,10 +347,10 @@ SELECT
             SEPARATOR ','
         ), ''
     ) AS Jornadas_Activas
-FROM TBL_COLEGIO c
-INNER JOIN TBL_BARRIO b ON c.FK_ID_Barrio = b.ID_Barrio
-LEFT JOIN TBL_CUPOS cu ON c.ID_Colegio = cu.FK_ID_Colegio
-LEFT JOIN TBL_JORNADA j ON cu.FK_ID_Jornada = j.ID_Jornada
+FROM tbl_colegio c
+INNER JOIN tbl_barrio b ON c.FK_ID_Barrio = b.ID_Barrio
+LEFT JOIN tbl_cupos cu ON c.ID_Colegio = cu.FK_ID_Colegio
+LEFT JOIN tbl_jornada j ON cu.FK_ID_Jornada = j.ID_Jornada
 GROUP BY
     c.ID_Colegio, c.Nombre_Colegio, c.Codigo_DANE,
     c.Email, c.Telefono, c.Direccion_Colegio,
@@ -402,15 +402,15 @@ SELECT
     -- Colegio anterior
     col.Nombre_Colegio AS Nombre_Colegio_Anterior
 
-FROM TBL_TICKET t
-INNER JOIN TBL_ESTUDIANTE e ON t.FK_ID_Estudiante = e.ID_Estudiante
-INNER JOIN TBL_PERSONA p ON e.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_TIPO_IDENTIFICACION ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
-INNER JOIN TBL_GENERO gen ON e.FK_ID_Genero = gen.ID_Genero
-INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
-INNER JOIN TBL_GRADO g_act ON e.FK_ID_Grado_Actual = g_act.ID_Grado
-LEFT JOIN TBL_GRADO g_prx ON e.FK_ID_Grado_Proximo = g_prx.ID_Grado
-INNER JOIN TBL_COLEGIO col ON e.FK_ID_Colegio_Anterior = col.ID_Colegio;
+FROM tbl_ticket t
+INNER JOIN tbl_estudiante e ON t.FK_ID_Estudiante = e.ID_Estudiante
+INNER JOIN tbl_persona p ON e.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_tipo_identificacion ti ON e.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
+INNER JOIN tbl_genero gen ON e.FK_ID_Genero = gen.ID_Genero
+INNER JOIN tbl_grupo_preferencial gp ON e.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
+INNER JOIN tbl_grado g_act ON e.FK_ID_Grado_Actual = g_act.ID_Grado
+LEFT JOIN tbl_grado g_prx ON e.FK_ID_Grado_Proximo = g_prx.ID_Grado
+INNER JOIN tbl_colegio col ON e.FK_ID_Colegio_Anterior = col.ID_Colegio;
 
 
 -- --------------------------------------------------------
@@ -454,17 +454,17 @@ SELECT
     CONCAT(LEFT(p.Primer_Nombre,1), LEFT(p.Primer_Apellido,1)) AS Iniciales,
     CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo
 
-FROM TBL_TICKET t
-INNER JOIN TBL_USUARIO u ON t.FK_ID_Usuario_Creador = u.ID_Usuario
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_DATOS_ADICIONALES da ON da.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_TIPO_IDENTIFICACION ti ON da.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
-INNER JOIN TBL_BARRIO b ON da.FK_ID_Barrio = b.ID_Barrio
-INNER JOIN TBL_LOCALIDAD loc ON b.FK_ID_Localidad = loc.ID_Localidad
-INNER JOIN TBL_ESTRATO est ON da.FK_ID_Estrato = est.ID_Estrato
-INNER JOIN TBL_GENERO gen ON da.FK_ID_Genero = gen.ID_Genero
-INNER JOIN TBL_GRUPO_PREFERENCIAL gp ON da.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
-INNER JOIN TBL_PARENTESCO par ON da.FK_ID_Parentesco = par.ID_Parentesco;
+FROM tbl_ticket t
+INNER JOIN tbl_usuario u ON t.FK_ID_Usuario_Creador = u.ID_Usuario
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_datos_adicionales da ON da.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_tipo_identificacion ti ON da.FK_ID_Tipo_Iden = ti.ID_Tipo_Iden
+INNER JOIN tbl_barrio b ON da.FK_ID_Barrio = b.ID_Barrio
+INNER JOIN tbl_localidad loc ON b.FK_ID_Localidad = loc.ID_Localidad
+INNER JOIN tbl_estrato est ON da.FK_ID_Estrato = est.ID_Estrato
+INNER JOIN tbl_genero gen ON da.FK_ID_Genero = gen.ID_Genero
+INNER JOIN tbl_grupo_preferencial gp ON da.FK_ID_Grupo_Preferencial = gp.ID_Grupo_Preferencial
+INNER JOIN tbl_parentesco par ON da.FK_ID_Parentesco = par.ID_Parentesco;
 
 
 -- --------------------------------------------------------
@@ -508,21 +508,21 @@ SELECT
     -- Estado final
     CASE WHEN t.Fecha_Cierre IS NOT NULL THEN 1 ELSE 0 END AS Estado_Final
 
-FROM TBL_TICKET t
-INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-INNER JOIN TBL_ESTUDIANTE es ON t.FK_ID_Estudiante = es.ID_Estudiante
-INNER JOIN TBL_PERSONA pe ON es.FK_ID_Persona = pe.ID_Persona
-INNER JOIN TBL_GRADO g_act ON es.FK_ID_Grado_Actual = g_act.ID_Grado
-LEFT JOIN TBL_GRADO g_prx ON es.FK_ID_Grado_Proximo = g_prx.ID_Grado
-INNER JOIN TBL_JORNADA jor ON t.FK_ID_Jornada_Preferencia = jor.ID_Jornada
-INNER JOIN TBL_TIPO_AFECTACION afec ON t.FK_ID_Tipo_Afectacion = afec.ID_Tipo_Afectacion
-INNER JOIN TBL_BARRIO b ON t.FK_ID_Barrio = b.ID_Barrio
-LEFT JOIN TBL_TIEMPO_RESIDENCIA tres ON t.FK_ID_Tiempo_Residencia = tres.ID_Tiempo_Residencia
-LEFT JOIN TBL_COLEGIO col_pref ON t.FK_ID_Colegio_Preferencia = col_pref.ID_Colegio
-LEFT JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
-LEFT JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
-LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-LEFT JOIN TBL_COLEGIO col_asig ON cu.FK_ID_Colegio = col_asig.ID_Colegio
+FROM tbl_ticket t
+INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+INNER JOIN tbl_estudiante es ON t.FK_ID_Estudiante = es.ID_Estudiante
+INNER JOIN tbl_persona pe ON es.FK_ID_Persona = pe.ID_Persona
+INNER JOIN tbl_grado g_act ON es.FK_ID_Grado_Actual = g_act.ID_Grado
+LEFT JOIN tbl_grado g_prx ON es.FK_ID_Grado_Proximo = g_prx.ID_Grado
+INNER JOIN tbl_jornada jor ON t.FK_ID_Jornada_Preferencia = jor.ID_Jornada
+INNER JOIN tbl_tipo_afectacion afec ON t.FK_ID_Tipo_Afectacion = afec.ID_Tipo_Afectacion
+INNER JOIN tbl_barrio b ON t.FK_ID_Barrio = b.ID_Barrio
+LEFT JOIN tbl_tiempo_residencia tres ON t.FK_ID_Tiempo_Residencia = tres.ID_Tiempo_Residencia
+LEFT JOIN tbl_colegio col_pref ON t.FK_ID_Colegio_Preferencia = col_pref.ID_Colegio
+LEFT JOIN tbl_usuario ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
+LEFT JOIN tbl_persona pt ON ut.FK_ID_Persona = pt.ID_Persona
+LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+LEFT JOIN tbl_colegio col_asig ON cu.FK_ID_Colegio = col_asig.ID_Colegio
 
 WHERE t.Estado_Ticket = 1;
 
@@ -561,19 +561,19 @@ SELECT
     es.FK_ID_Grado_Proximo,
     t.FK_ID_Tipo_Afectacion
 
-FROM TBL_TICKET t
-INNER JOIN TBL_ESTADO_TICKET et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
-INNER JOIN TBL_ESTUDIANTE es ON t.FK_ID_Estudiante = es.ID_Estudiante
-INNER JOIN TBL_PERSONA pe ON es.FK_ID_Persona = pe.ID_Persona
-INNER JOIN TBL_GRADO g_act ON es.FK_ID_Grado_Actual = g_act.ID_Grado
-LEFT JOIN TBL_GRADO g_prx ON es.FK_ID_Grado_Proximo = g_prx.ID_Grado
-INNER JOIN TBL_TIPO_AFECTACION afec ON t.FK_ID_Tipo_Afectacion = afec.ID_Tipo_Afectacion
-INNER JOIN TBL_USUARIO ua ON t.FK_ID_Usuario_Creador = ua.ID_Usuario
-INNER JOIN TBL_PERSONA pa ON ua.FK_ID_Persona = pa.ID_Persona
-LEFT JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
-LEFT JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
-LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-LEFT JOIN TBL_COLEGIO col_asig ON cu.FK_ID_Colegio = col_asig.ID_Colegio
+FROM tbl_ticket t
+INNER JOIN tbl_estado_ticket et ON t.FK_ID_Estado_Ticket = et.ID_Estado_Ticket
+INNER JOIN tbl_estudiante es ON t.FK_ID_Estudiante = es.ID_Estudiante
+INNER JOIN tbl_persona pe ON es.FK_ID_Persona = pe.ID_Persona
+INNER JOIN tbl_grado g_act ON es.FK_ID_Grado_Actual = g_act.ID_Grado
+LEFT JOIN tbl_grado g_prx ON es.FK_ID_Grado_Proximo = g_prx.ID_Grado
+INNER JOIN tbl_tipo_afectacion afec ON t.FK_ID_Tipo_Afectacion = afec.ID_Tipo_Afectacion
+INNER JOIN tbl_usuario ua ON t.FK_ID_Usuario_Creador = ua.ID_Usuario
+INNER JOIN tbl_persona pa ON ua.FK_ID_Persona = pa.ID_Persona
+LEFT JOIN tbl_usuario ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
+LEFT JOIN tbl_persona pt ON ut.FK_ID_Persona = pt.ID_Persona
+LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+LEFT JOIN tbl_colegio col_asig ON cu.FK_ID_Colegio = col_asig.ID_Colegio
 
 WHERE t.Estado_Ticket = 1;
 
@@ -586,8 +586,8 @@ CREATE OR REPLACE VIEW vw_barrios_con_colegios AS
 SELECT DISTINCT
     b.ID_Barrio,
     b.Nombre_Barrio
-FROM TBL_BARRIO b
-INNER JOIN TBL_COLEGIO c
+FROM tbl_barrio b
+INNER JOIN tbl_colegio c
     ON c.FK_ID_Barrio = b.ID_Barrio
     AND c.Estado_Colegio = 1
 WHERE b.Estado_Barrio = 1
@@ -612,8 +612,8 @@ SELECT
     v.*,
     ut.ID_Usuario AS ID_Usuario_Tecnico   -- columna extra para filtros
 FROM vw_cases_general v
-LEFT JOIN TBL_TICKET   t  ON v.ID_Ticket = t.ID_Ticket
-LEFT JOIN TBL_USUARIO  ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario;
+LEFT JOIN tbl_ticket   t  ON v.ID_Ticket = t.ID_Ticket
+LEFT JOIN tbl_usuario  ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario;
 
 
 
@@ -640,12 +640,12 @@ SELECT
     est.FK_ID_Grado_Proximo,
 
     -- Datos del estudiante
-    -- TBL_ESTUDIANTE no tiene nombre; viene de TBL_PERSONA via FK_ID_Persona
+    -- tbl_estudiante no tiene nombre; viene de tbl_persona via FK_ID_Persona
     CONCAT(pe.Primer_Nombre, ' ', pe.Primer_Apellido) AS Nombre_Estudiante,
     TIMESTAMPDIFF(YEAR, pe.Fecha_Nacimiento, CURDATE()) AS Edad_Estudiante,
 
     -- Acudiente (usuario creador del ticket)
-    -- TBL_USUARIO no tiene nombre; viene de TBL_PERSONA via FK_ID_Persona
+    -- tbl_usuario no tiene nombre; viene de tbl_persona via FK_ID_Persona
     CONCAT(pa.Primer_Nombre, ' ', pa.Primer_Apellido) AS Nombre_Acudiente,
 
     -- Técnico asignado (LEFT JOIN porque puede ser NULL)
@@ -662,26 +662,26 @@ SELECT
     -- Colegio asignado a través del cupo
     COALESCE(co.Nombre_Colegio, 'Sin asignar') AS Colegio_Asignado
 
-FROM TBL_TICKET t
+FROM tbl_ticket t
 
 -- Estudiante y su persona
-JOIN TBL_ESTUDIANTE est ON t.FK_ID_Estudiante = est.ID_Estudiante
-JOIN TBL_PERSONA pe ON est.FK_ID_Persona = pe.ID_Persona
+JOIN tbl_estudiante est ON t.FK_ID_Estudiante = est.ID_Estudiante
+JOIN tbl_persona pe ON est.FK_ID_Persona = pe.ID_Persona
 -- Acudiente: usuario creador → persona
-JOIN TBL_USUARIO ua ON t.FK_ID_Usuario_Creador = ua.ID_Usuario
-JOIN TBL_PERSONA pa ON ua.FK_ID_Persona = pa.ID_Persona
+JOIN tbl_usuario ua ON t.FK_ID_Usuario_Creador = ua.ID_Usuario
+JOIN tbl_persona pa ON ua.FK_ID_Persona = pa.ID_Persona
 -- Técnico asignado → persona (opcional)
-LEFT JOIN TBL_USUARIO ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
-LEFT JOIN TBL_PERSONA pt ON ut.FK_ID_Persona = pt.ID_Persona
+LEFT JOIN tbl_usuario ut ON t.FK_ID_Usuario_Tecnico = ut.ID_Usuario
+LEFT JOIN tbl_persona pt ON ut.FK_ID_Persona = pt.ID_Persona
 -- Catálogos obligatorios
-JOIN TBL_ESTADO_TICKET es ON t.FK_ID_Estado_Ticket = es.ID_Estado_Ticket
-JOIN TBL_TIPO_AFECTACION af ON t.FK_ID_Tipo_Afectacion = af.ID_Tipo_Afectacion
+JOIN tbl_estado_ticket es ON t.FK_ID_Estado_Ticket = es.ID_Estado_Ticket
+JOIN tbl_tipo_afectacion af ON t.FK_ID_Tipo_Afectacion = af.ID_Tipo_Afectacion
 -- Grados (actual siempre existe; próximo puede ser NULL)
-JOIN TBL_GRADO ga ON est.FK_ID_Grado_Actual = ga.ID_Grado
-LEFT JOIN TBL_GRADO gp ON est.FK_ID_Grado_Proximo = gp.ID_Grado
+JOIN tbl_grado ga ON est.FK_ID_Grado_Actual = ga.ID_Grado
+LEFT JOIN tbl_grado gp ON est.FK_ID_Grado_Proximo = gp.ID_Grado
 -- Cupo y colegio asignados (opcionales)
-LEFT JOIN TBL_CUPOS cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
-LEFT JOIN TBL_COLEGIO co ON cu.FK_ID_Colegio = co.ID_Colegio
+LEFT JOIN tbl_cupos cu ON t.FK_ID_Cupo_Asignado = cu.ID_Cupos
+LEFT JOIN tbl_colegio co ON cu.FK_ID_Colegio = co.ID_Colegio
 
 WHERE t.Estado_Ticket = 1;
 
@@ -707,7 +707,7 @@ SELECT
     u.ID_Usuario,
     r.Nombre_Rol,
     CONCAT(p.Primer_Nombre, ' ', p.Primer_Apellido) AS Nombre_Completo_Usuario
-FROM TBL_TICKET_COMENTARIO tc
-INNER JOIN TBL_USUARIO u ON tc.FK_ID_Usuario = u.ID_Usuario
-INNER JOIN TBL_PERSONA p ON u.FK_ID_Persona = p.ID_Persona
-INNER JOIN TBL_ROL r ON u.FK_ID_Rol = r.ID_Rol;
+FROM tbl_ticket_comentario tc
+INNER JOIN tbl_usuario u ON tc.FK_ID_Usuario = u.ID_Usuario
+INNER JOIN tbl_persona p ON u.FK_ID_Persona = p.ID_Persona
+INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol;

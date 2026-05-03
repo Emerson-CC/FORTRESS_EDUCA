@@ -105,6 +105,39 @@ ALTER USER 'root'@'localhost'
 FLUSH PRIVILEGES;
 
 
+
+-- -------------------------------------------------------------
+-- VERSION PARA RDS (si se accede desde cualquier host, se usa '%')
+
+-- 1. Borrar usuario si existe (en RDS se usa '%' habitualmente)
+DROP USER IF EXISTS 'fortress_app'@'%'; 
+
+-- 2. Crear el usuario con restricciones de seguridad
+-- Nota: MySQL Native Password es compatible con la mayoría de clientes Python (como PyMySQL o mysql-connector)
+CREATE USER 'fortress_app'@'%' 
+    IDENTIFIED BY '6c_@t063!G$V+tCJ8RkqG2*'
+    WITH 
+    MAX_QUERIES_PER_HOUR 5000
+    MAX_UPDATES_PER_HOUR 2000
+    MAX_CONNECTIONS_PER_HOUR 500
+    MAX_USER_CONNECTIONS 20;
+
+-- 3. Configurar intentos fallidos (Si tu versión de RDS es MySQL 8.0+)
+ALTER USER 'fortress_app'@'%'
+    FAILED_LOGIN_ATTEMPTS 5
+    PASSWORD_LOCK_TIME 1;
+
+-- 4. Asignar solo los permisos necesarios en la base específica
+GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE
+    ON fortress_educa_db.*
+    TO 'fortress_app'@'%';
+
+FLUSH PRIVILEGES;
+
+
+-- ------------------------------------------------------------
+
+
 -- ============================================================
 -- PASO 8: TABLA DE AUDITORÍA (registro de acciones críticas)
 -- ============================================================

@@ -21,8 +21,8 @@ BEGIN
 
     SELECT u.ID_Usuario
     INTO v_tecnico_id
-    FROM TBL_USUARIO u
-    LEFT JOIN TBL_TICKET t 
+    FROM tbl_usuario u
+    LEFT JOIN tbl_ticket t 
         ON u.ID_Usuario = t.FK_ID_Usuario_Tecnico
         AND t.Estado_Ticket = 1
     WHERE u.FK_ID_Rol = 3
