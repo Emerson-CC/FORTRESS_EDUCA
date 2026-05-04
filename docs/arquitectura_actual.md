@@ -1,7 +1,3 @@
-Proyecto actual - estructura de carpetas y archivos
-
-Se excluyen las carpetas `docs/`, `database/` y `env/` de la raíz.
-
 root/
     .env
     .gitignore
@@ -247,5 +243,3 @@ root/
                 auth_decorators.py
                 technical_decorator.py
                 tickets_decorators.py
-    aws/
-        commants.txt
