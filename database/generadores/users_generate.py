@@ -170,7 +170,7 @@ def generar_dataset(cantidad_usuarios=50, estudiantes_por_usuario=2):
         for _ in range(estudiantes_por_usuario):
             script_final += gen.generar_estudiante(user_id, parentesco)
             
-    nombre_archivo = f"datos_prueba_{datetime.now().strftime('%Y%m%d_%H%M%S')}.sql"
+    nombre_archivo = f"datos_usuarios_{datetime.now().strftime('%Y%m%d_%H%M%S')}.sql"
 
     with open(nombre_archivo, "w", encoding="utf-8") as f:
         f.write(script_final)

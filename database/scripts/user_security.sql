@@ -26,6 +26,8 @@ ALTER USER 'root'@'localhost'
 
 FLUSH PRIVILEGES;
 
+ALTER USER 'root'@'localhost' WITH MAX_USER_CONNECTIONS 0;
+SET GLOBAL max_user_connections = 0; -- 0 significa ilimitado
 
 -- ============================================================
 -- USUARIO DE APLICACIÓN (reemplaza a root)
