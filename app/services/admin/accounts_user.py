@@ -1,4 +1,3 @@
-# app/services/admin/accounts_user.py
 import datetime
 import math
 
@@ -21,11 +20,31 @@ COLUMNAS_EST = ["ID", "Nombre", "Acudiente", "Edad", "Género", "Estado"]
 
 
 # ==============================================================================
+# Helpers de filtrado
+# ==============================================================================
+
+def _filtrar_por_estado(registros: list[dict], estado: int | None, campo: str) -> list[dict]:
+    if estado is None:
+        return registros
+    return [r for r in registros if r.get(campo) == estado]
+
+
+def _buscar_por_id(registros: list[dict], query: str | None, campos: tuple) -> list[dict]:
+    """Búsqueda solo sobre campos de ID."""
+    if not query:
+        return registros
+    termino = query.strip().lower()
+    return [
+        r for r in registros
+        if any(termino in str(r.get(c, "")).lower() for c in campos)
+    ]
+
+
+# ==============================================================================
 # Helpers de ordenamiento
 # ==============================================================================
 
 def _insertion_sort_solicitudes_desc(registros: list[dict]) -> list[dict]:
-    """Insertion Sort DESC por Total_Solicitudes."""
     lista = list(registros)
     for i in range(1, len(lista)):
         actual = lista[i]
@@ -41,8 +60,7 @@ def _insertion_sort_solicitudes_desc(registros: list[dict]) -> list[dict]:
     return lista
 
 
-def _selection_sort_id_desc(registros: list[dict], campo: str = "ID_Usuario") -> list[dict]:
-    """Selection Sort DESC por ID."""
+def _selection_sort_id_desc(registros: list[dict], campo: str) -> list[dict]:
     lista = list(registros)
     n = len(lista)
     for i in range(n):
@@ -68,17 +86,21 @@ def _paginar(registros: list[dict], pagina: int, por_pagina: int) -> list[dict]:
 # ==============================================================================
 
 class Accounts_User_Service:
-    """Lógica de negocio para accounts_user.html (acudientes y estudiantes)."""
 
     # ------------------------------------------------------------------
-    # Helpers
+    # Helpers privados
     # ------------------------------------------------------------------
     @staticmethod
     def _int_or_none(value) -> int | None:
         try:
-            return int(value) if value is not None and str(value).strip() != "" else None
+            v = int(value)
+            return v if v >= 0 else None   # acepta 0 (Desactivado/Eliminado)
         except (ValueError, TypeError):
             return None
+
+    @staticmethod
+    def _parse_busqueda(valor) -> str:
+        return (valor or "").strip()[:100]
 
     @staticmethod
     def _parse_pagina(valor) -> int:
@@ -94,26 +116,39 @@ class Accounts_User_Service:
     def listar_usuarios(self):
         form_toggle = FormToggleEstado()
 
+        # Filtros — parámetros independientes por tab
+        busqueda   = self._parse_busqueda(request.args.get("busqueda"))
+        estado_acu = self._int_or_none(request.args.get("estado_acu"))
+        estado_est = self._int_or_none(request.args.get("estado_est"))
+
         pagina_acu = self._parse_pagina(request.args.get("pagina_acu"))
         pagina_est = self._parse_pagina(request.args.get("pagina_est"))
 
         datos_metricas = sp_admin_metricas_usuarios()
 
-        # ── Acudientes ──
-        todos_acu = sp_admin_acudientes_listar()
-        ordenados_acu = _selection_sort_id_desc(todos_acu, "ID_Usuario")
+        # ── Acudientes ────────────────────────────────────────────────
+        todos_acu     = sp_admin_acudientes_listar()
+        buscados_acu  = _buscar_por_id(todos_acu, busqueda, ("ID_Formateado", "ID_Usuario"))
+        filtrados_acu = _filtrar_por_estado(buscados_acu, estado_acu, "Estado_Usuario")
 
-        total_acu = len(ordenados_acu)
+        # Con filtro → más recientes por solicitudes; sin filtro → mayor solicitudes primero
+        hay_restriccion_acu = estado_acu is not None or bool(busqueda)
+        ordenados_acu = _selection_sort_id_desc(filtrados_acu, "ID_Usuario") if hay_restriccion_acu \
+                        else _insertion_sort_solicitudes_desc(filtrados_acu)
+
+        total_acu         = len(ordenados_acu)
         total_paginas_acu = max(1, math.ceil(total_acu / POR_PAGINA))
         if pagina_acu > total_paginas_acu:
             pagina_acu = total_paginas_acu
         acudientes_pagina = _paginar(ordenados_acu, pagina_acu, POR_PAGINA)
 
-        # ── Estudiantes ──
-        todos_est  = sp_admin_estudiantes_listar()
-        ordenados_est = _selection_sort_id_desc(todos_est, "ID_Estudiante")
+        # ── Estudiantes ───────────────────────────────────────────────
+        todos_est     = sp_admin_estudiantes_listar()
+        buscados_est  = _buscar_por_id(todos_est, busqueda, ("ID_Formateado", "ID_Estudiante"))
+        filtrados_est = _filtrar_por_estado(buscados_est, estado_est, "Estado_Estudiante")
+        ordenados_est = _selection_sort_id_desc(filtrados_est, "ID_Estudiante")
 
-        total_est = len(ordenados_est)
+        total_est         = len(ordenados_est)
         total_paginas_est = max(1, math.ceil(total_est / POR_PAGINA))
         if pagina_est > total_paginas_est:
             pagina_est = total_paginas_est
@@ -121,21 +156,23 @@ class Accounts_User_Service:
 
         return render_template(
             "admin/accounts_user.html",
-            active_page = "users",
-            form_toggle = form_toggle,
-            metricas = datos_metricas,
-            # datos paginados
-            acudientes = acudientes_pagina,
-            estudiantes = estudiantes_pagina,
-            # totales
-            total_acu = total_acu,
-            total_est = total_est,
-            # paginación
-            pagina_acu = pagina_acu,
-            pagina_est = pagina_est,
+            active_page       = "users",
+            form_toggle       = form_toggle,
+            metricas          = datos_metricas,
+            acudientes        = acudientes_pagina,
+            estudiantes       = estudiantes_pagina,
+            total_acu         = total_acu,
+            total_est         = total_est,
+            pagina_acu        = pagina_acu,
+            pagina_est        = pagina_est,
             total_paginas_acu = total_paginas_acu,
             total_paginas_est = total_paginas_est,
-            por_pagina = POR_PAGINA,
+            por_pagina        = POR_PAGINA,
+            filtros = {
+                "busqueda":   busqueda,
+                "estado_acu": estado_acu,
+                "estado_est": estado_est,
+            },
             tab_activo = request.args.get("tab", "acudientes"),
         )
 
@@ -187,21 +224,26 @@ class Accounts_User_Service:
     # Exportar Acudientes
     # ------------------------------------------------------------------
     def exportar_acudientes(self):
-        formato = request.args.get("formato", "csv").lower()
-        todos = sp_admin_acudientes_listar()
-        ordenados = _insertion_sort_solicitudes_desc(todos)
+        formato    = request.args.get("formato", "csv").lower()
+        busqueda   = self._parse_busqueda(request.args.get("busqueda"))
+        estado_acu = self._int_or_none(request.args.get("estado_acu"))
+
+        todos     = sp_admin_acudientes_listar()
+        buscados  = _buscar_por_id(todos, busqueda, ("ID_Formateado", "ID_Usuario"))
+        filtrados = _filtrar_por_estado(buscados, estado_acu, "Estado_Usuario")
+        ordenados = _insertion_sort_solicitudes_desc(filtrados)
 
         def mapeador(r):
             return {
-                "ID": r["ID_Formateado"],
-                "Nombre": r["Nombre_Completo"],
-                "Correo": r.get("Email") or "—",
-                "MFA": "Activo" if r.get("MFA") == "ACTIVE" else "Inactivo",
+                "ID":          r["ID_Formateado"],
+                "Nombre":      r["Nombre_Completo"],
+                "Correo":      r.get("Email") or "—",
+                "MFA":         "Activo" if r.get("MFA") == "ACTIVE" else "Inactivo",
                 "Solicitudes": r.get("Total_Solicitudes", 0),
-                "Estado": "Activo" if r["Estado_Usuario"] == 1 else "Eliminado",
+                "Estado":      "Activo" if r["Estado_Usuario"] == 1 else "Eliminado",
             }
 
-        fila = ExportarReporte.cargar_fila(ordenados, mapeador)
+        fila  = ExportarReporte.cargar_fila(ordenados, mapeador)
         datos = fila.a_lista_datos()
         marca = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
 
@@ -213,21 +255,26 @@ class Accounts_User_Service:
     # Exportar Estudiantes
     # ------------------------------------------------------------------
     def exportar_estudiantes(self):
-        formato = request.args.get("formato", "csv").lower()
-        todos = sp_admin_estudiantes_listar()
-        ordenados = _selection_sort_id_desc(todos, "ID_Estudiante")
+        formato    = request.args.get("formato", "csv").lower()
+        busqueda   = self._parse_busqueda(request.args.get("busqueda"))
+        estado_est = self._int_or_none(request.args.get("estado_est"))
+
+        todos     = sp_admin_estudiantes_listar()
+        buscados  = _buscar_por_id(todos, busqueda, ("ID_Formateado", "ID_Estudiante"))
+        filtrados = _filtrar_por_estado(buscados, estado_est, "Estado_Estudiante")
+        ordenados = _selection_sort_id_desc(filtrados, "ID_Estudiante")
 
         def mapeador(r):
             return {
-                "ID": r["ID_Formateado"],
-                "Nombre": r["Nombre_Estudiante"],
+                "ID":        r["ID_Formateado"],
+                "Nombre":    r["Nombre_Estudiante"],
                 "Acudiente": r.get("Nombre_Acudiente") or "—",
-                "Edad": f"{r.get('Edad', '—')} años",
-                "Género": r.get("Genero") or "—",
-                "Estado": "Activo" if r["Estado_Estudiante"] == 1 else "Eliminado",
+                "Edad":      f"{r.get('Edad', '—')} años",
+                "Género":    r.get("Genero") or "—",
+                "Estado":    "Activo" if r["Estado_Estudiante"] == 1 else "Eliminado",
             }
 
-        fila = ExportarReporte.cargar_fila(ordenados, mapeador)
+        fila  = ExportarReporte.cargar_fila(ordenados, mapeador)
         datos = fila.a_lista_datos()
         marca = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
 

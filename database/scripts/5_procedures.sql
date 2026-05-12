@@ -2834,7 +2834,7 @@ DROP PROCEDURE IF EXISTS sp_admin_acudientes_listar;
 DELIMITER $$
 CREATE PROCEDURE sp_admin_acudientes_listar()
 BEGIN
-    SELECT * FROM VW_ADMIN_ACUDIENTES ORDER BY ID_Usuario DESC;
+    SELECT * FROM vw_admin_acudientes ORDER BY ID_Usuario DESC;
 END $$
 DELIMITER ;
 
@@ -2847,7 +2847,7 @@ DROP PROCEDURE IF EXISTS sp_admin_estudiantes_listar;
 DELIMITER $$
 CREATE PROCEDURE sp_admin_estudiantes_listar()
 BEGIN
-    SELECT * FROM VW_ADMIN_ESTUDIANTES ORDER BY ID_Estudiante DESC;
+    SELECT * FROM vw_admin_estudiantes ORDER BY ID_Estudiante DESC;
 END $$
 DELIMITER ;
 
@@ -2861,7 +2861,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_admin_metricas_usuarios()
 BEGIN
     SELECT
-        (SELECT COUNT(*) FROM VW_ADMIN_ACUDIENTES) AS acudientes,
+        (SELECT COUNT(*) FROM vw_admin_acudientes) AS acudientes,
         (SELECT COUNT(*) FROM tbl_estudiante) AS estudiantes,
         (SELECT COUNT(*) FROM tbl_usuario u
             INNER JOIN tbl_rol r ON u.FK_ID_Rol = r.ID_Rol
@@ -2986,7 +2986,7 @@ CREATE PROCEDURE sp_admin_tecnicos_listar(
 )
 BEGIN
     SELECT *
-    FROM VW_ADMIN_TECNICOS
+    FROM vw_admin_tecnicos
     WHERE (p_estado IS NULL OR Estado_Usuario = p_estado)
     ORDER BY ID_Usuario DESC;
 END $$
@@ -3001,7 +3001,7 @@ DROP PROCEDURE IF EXISTS sp_admin_administradores_listar;
 DELIMITER $$
 CREATE PROCEDURE sp_admin_administradores_listar()
 BEGIN
-    SELECT * FROM VW_ADMIN_ADMINISTRADORES ORDER BY ID_Usuario DESC;
+    SELECT * FROM vw_admin_administradores ORDER BY ID_Usuario DESC;
 END $$
 DELIMITER ;
 
@@ -3016,11 +3016,11 @@ CREATE PROCEDURE sp_admin_metricas_funcionarios()
 BEGIN
     SELECT
         (SELECT COUNT(*)
-         FROM VW_ADMIN_TECNICOS) AS tecnicos,
+         FROM vw_admin_tecnicos) AS tecnicos,
         (SELECT COUNT(*)
-         FROM VW_ADMIN_TECNICOS WHERE Estado_Usuario = 0) AS tecnicos_desactivados,
+         FROM vw_admin_tecnicos WHERE Estado_Usuario = 0) AS tecnicos_desactivados,
         (SELECT COUNT(*)
-         FROM VW_ADMIN_ADMINISTRADORES) AS administradores;
+         FROM vw_admin_administradores) AS administradores;
 END $$
 DELIMITER ;
 
@@ -3102,7 +3102,7 @@ BEGIN
         SUM(Estado_Colegio) AS Total_Activos,
         SUM(CASE WHEN Total_Cupos > 0 THEN 1 ELSE 0 END) AS Total_Configurados,
         COALESCE(SUM(Total_Cupos), 0) AS Total_Cupos
-    FROM VW_COLEGIOS_RESUMEN;
+    FROM vw_colegios_resumen;
 END $$
 DELIMITER ;
 
@@ -3127,7 +3127,7 @@ BEGIN
         Estado_Colegio,
         Total_Cupos,
         Jornadas_Activas
-    FROM VW_COLEGIOS_RESUMEN
+    FROM vw_colegios_resumen
     WHERE ID_Colegio <> 1    
     ORDER BY ID_Colegio;
 END $$
@@ -3154,7 +3154,7 @@ BEGIN
         Estado_Colegio,
         Total_Cupos,
         Jornadas_Activas
-    FROM VW_COLEGIOS_RESUMEN
+    FROM vw_colegios_resumen
     WHERE ID_Colegio = p_id_colegio;
 END $$
 DELIMITER ;
@@ -4303,7 +4303,7 @@ DELIMITER $$
 CREATE PROCEDURE sp_catalogo_barrios_con_colegios()
 BEGIN
     SELECT ID_Barrio, Nombre_Barrio
-    FROM VW_BARRIOS_CON_COLEGIOS;
+    FROM vw_barrios_con_colegios;
 END $$
 DELIMITER ;
 

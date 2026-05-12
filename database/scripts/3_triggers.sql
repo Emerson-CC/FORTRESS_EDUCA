@@ -23,7 +23,7 @@ BEGIN
         NEW.ID_Estudiante,
         NOW()
     );
-END;
+END $$
 DELIMITER ;
 
 -- ====================================================================================================================================================
@@ -221,5 +221,5 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Fecha de nacimiento inválida';
     END IF;
-END;
+END $$
 DELIMITER ;

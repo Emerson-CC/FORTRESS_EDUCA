@@ -76,7 +76,7 @@ mysql -h fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com -u admin_for
 
 	//Pasar base de datos - PUTTY
 sudo yum install mariadb105 -y 
-mysql -h fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com -u admin_fortress -p fortress_educa_db < /home/ec2-user/fortress.sql
+mysql -h fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com -u admin_fortress -p fortress_educa_db < /home/ec2-user/fortress_educa.sql
 Usuario: admin_fortress 
 Contraseña: Fortress0099
 // NOTA: Si el comando no funciona validar que no exista ninguna sentencia DEFINER en el script de la BD. De lo cantrario borrarlo
@@ -111,6 +111,8 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 
+	// Apagar servicio
+sudo systemctl stop mi_app
 
 	// Activar servicio
 sudo systemctl start mi_app
