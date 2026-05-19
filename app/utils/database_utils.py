@@ -71,8 +71,44 @@ class ConnectionDB:
     # ------------------------------------------------------------------
     # OPERACIÓN SIMPLE: obtiene, usa y libera la conexión en una sola llamada
     # ------------------------------------------------------------------
+    # def call_procedure(self, nombre_sp, params=None, commit=False, conn=None):
+    #     """Ejecuta un stored procedure"""
+    #     if params is None:
+    #         params = ()
+
+    #     external_conn = conn is not None
+    #     if not external_conn:
+    #         conn = self._get_connection()
+
+    #     try:
+    #         cursor = conn.cursor(dictionary=True, buffered=True)
+    #         cursor.callproc(nombre_sp, params)
+
+    #         resultados = []
+    #         for result in cursor.stored_results():
+    #             resultados.extend(result.fetchall())
+
+    #         cursor.close()
+
+    #         if commit and not external_conn:
+    #             conn.commit()
+
+    #         return resultados if resultados else None
+
+    #     except Error as e:
+    #         if not external_conn:
+    #             # rollback solo si manejamos la conexión aquí
+    #             self.rollback(conn)
+    #         print(f"[ERROR] Fallo ejecutando SP '{nombre_sp}': {e}")
+    #         return None
+
+    #     finally:
+    #         if not external_conn:
+    #             conn.close()  # siempre devuelve al pool
+
+
     def call_procedure(self, nombre_sp, params=None, commit=False, conn=None):
-        """Ejecuta un stored procedure"""
+        """Ejecuta un stored procedure con logs detallados de errores"""
         if params is None:
             params = ()
 
@@ -97,14 +133,26 @@ class ConnectionDB:
 
         except Error as e:
             if not external_conn:
-                # rollback solo si manejamos la conexión aquí
                 self.rollback(conn)
-            print(f"[ERROR] Fallo ejecutando SP '{nombre_sp}': {e}")
+            
+            # --- Bloque de Error Detallado ---
+            print("\n" + "="*60)
+            print(f"[ERROR DE BASE DE DATOS] Fallo en SP: {nombre_sp}")
+            print(f"Parámetros enviados: {params}")
+            if hasattr(e, 'errno'):
+                print(f"Código de Error (errno): {e.errno}")
+            if hasattr(e, 'sqlstate'):
+                print(f"Estado SQL (sqlstate): {e.sqlstate}")
+            print(f"Mensaje de error: {e.msg if hasattr(e, 'msg') else e}")
+            print("="*60 + "\n")
+            # ---------------------------------
             return None
 
         finally:
             if not external_conn:
-                conn.close()  # siempre devuelve al pool
+                conn.close()
+
+
 
     # ------------------------------------------------------------------
     # AUDITORÍA

@@ -115,11 +115,6 @@ GROUP BY FK_ID_Estado_Ticket;
 -- SEGURIDAD (USUARIOS, PERMISOS Y VISTAS)
 -- --------------------------------------------------------
 
--- Usuario de solo lectura
-CREATE USER 'report_user'@'%' IDENTIFIED BY 'StrongPass_2026!';
-GRANT SELECT ON fortress_db.* TO 'report_user'@'%';
-FLUSH PRIVILEGES;
-
 
 -- Vista Publica sin Email
 CREATE OR REPLACE VIEW v_estudiantes_publico AS
@@ -136,8 +131,6 @@ JOIN TBL_GRADO g
 ON g.ID_Grado = e.FK_ID_Grado;
 
 
--- Evidencia Permisos Asignados
-SHOW GRANTS FOR 'report_user'@'%';
 
 
 -- --------------------------------------------------------

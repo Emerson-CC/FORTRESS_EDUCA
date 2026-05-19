@@ -54,7 +54,7 @@ CREATE PROCEDURE sp_insertar_auditoria(
 )
 BEGIN
     INSERT INTO tbl_auditoria (
-        Tabla_Afectada,
+        Tabla_Afectada, 
         Tipo_Evento,
         ID_Registro_Afectado,
         Datos_Antiguo,

@@ -1,32 +1,6 @@
 USE FORTRESS_EDUCA_DB;
 
 -- ====================================================================================================================================================
--- TRG GENERALES PARA DEL SISTEMA
--- ====================================================================================================================================================
-
--- --------------------------------------------------------
--- TRG: Realiza el progceso de auditoria 
-
-DROP TRIGGER IF EXISTS trg_auditoria_estudiante_update;
-
-DELIMITER $$
-CREATE TRIGGER trg_auditoria_estudiante_update
-AFTER UPDATE ON tbl_estudiante
-FOR EACH ROW
-BEGIN
-    INSERT INTO tbl_auditoria(
-        Tabla, Accion, Registro_ID, Fecha
-    )
-    VALUES (
-        'tbl_estudiante',
-        'UPDATE',
-        NEW.ID_Estudiante,
-        NOW()
-    );
-END $$
-DELIMITER ;
-
--- ====================================================================================================================================================
 -- TRG GENERALES PARA DEL SISTEMA DE TICKETS 
 -- ====================================================================================================================================================
 

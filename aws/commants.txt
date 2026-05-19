@@ -56,6 +56,11 @@ fortress-educa-db.cobuoggm2pxc.us-east-1.rds.amazonaws.com
 	6rW(86J2nFW!$p44qKt
 
 
+	// CERTIFICADO 
+mkdir -p app/certs
+wget https://amazonaws.com -O app/certs/global-bundle.pem
+
+
 	//Verificar conectividad
 sudo yum update -y
 sudo dnf update -y
